@@ -5,9 +5,8 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant, ServiceCall, callback
+from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv, entity_registry as er
 
 from .const import (
@@ -51,7 +50,7 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
             return
 
         store.record_completion(entity_entry.config_subentry_id)
-        _refresh_coordinators(hass)
+        await _async_refresh_coordinators(hass)
 
     async def handle_reset_task(call: ServiceCall) -> None:
         """Handle the reset_task service call."""
@@ -63,7 +62,7 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
             return
 
         store.reset_history(entity_entry.config_subentry_id)
-        _refresh_coordinators(hass)
+        await _async_refresh_coordinators(hass)
 
     hass.services.async_register(
         DOMAIN, SERVICE_COMPLETE_TASK, handle_complete_task, schema=SERVICE_COMPLETE_SCHEMA
@@ -75,12 +74,11 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     return True
 
 
-@callback
-def _refresh_coordinators(hass: HomeAssistant) -> None:
+async def _async_refresh_coordinators(hass: HomeAssistant) -> None:
     """Request refresh on all task coordinators."""
     for entry in hass.config_entries.async_entries(DOMAIN):
         if hasattr(entry, "runtime_data") and isinstance(entry.runtime_data, TaskCoordinator):
-            entry.runtime_data.async_set_updated_data(entry.runtime_data.data)
+            await entry.runtime_data.async_request_refresh()
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: TaskConfigEntry) -> bool:

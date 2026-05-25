@@ -1,9 +1,6 @@
 """Sensor platform for the Task integration."""
 
-import logging
-
-from homeassistant.components.sensor import SensorEntity, SensorStateClass
-from homeassistant.const import UnitOfTime
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -18,99 +15,98 @@ from .const import (
 )
 from .coordinator import TaskConfigEntry, TaskCoordinator, TaskData
 
-_LOGGER = logging.getLogger(__name__)
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: TaskConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Task sensor entities from a config entry."""
+    """Set up Task sensor entities."""
     coordinator = entry.runtime_data
 
-    entities: list[TaskSensor] = [
-        TaskSensor(coordinator, subentry_id)
-        for subentry_id in coordinator.data.tasks
-    ]
-    async_add_entities(entities)
+    for subentry_id in coordinator.data.tasks:
+        async_add_entities(
+            [TaskSensorEntity(coordinator, subentry_id)],
+            config_subentry_id=subentry_id,
+        )
 
-    @callback
-    def _async_on_coordinator_update() -> None:
-        """Add new sensors when tasks are added."""
-        known = {
-            entity.subentry_id
-            for entity in entities
-        }
-        new_entities: list[TaskSensor] = []
-        for subentry_id in coordinator.data.tasks:
-            if subentry_id not in known:
-                sensor = TaskSensor(coordinator, subentry_id)
-                entities.append(sensor)
-                new_entities.append(sensor)
-        if new_entities:
-            async_add_entities(new_entities)
-
-    entry.async_on_unload(coordinator.async_add_listener(_async_on_coordinator_update))
+    entry.async_on_unload(
+        coordinator.async_add_listener(
+            lambda: _async_check_new_entities(coordinator, entry, async_add_entities)
+        )
+    )
 
 
-class TaskSensor(CoordinatorEntity[TaskCoordinator], SensorEntity):
+@callback
+def _async_check_new_entities(
+    coordinator: TaskCoordinator,
+    entry: TaskConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Add entities for newly added subentries."""
+    existing_subentry_ids = {
+        subentry_id
+        for subentry_id in coordinator.async_contexts()
+        if isinstance(subentry_id, str)
+    }
+    for subentry_id in coordinator.data.tasks:
+        if subentry_id not in existing_subentry_ids:
+            async_add_entities(
+                [TaskSensorEntity(coordinator, subentry_id)],
+                config_subentry_id=subentry_id,
+            )
+
+
+class TaskSensorEntity(CoordinatorEntity[TaskCoordinator], SensorEntity):
     """Sensor showing days until a task is due."""
 
     _attr_has_entity_name = True
-    _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_native_unit_of_measurement = UnitOfTime.DAYS
-    _attr_translation_key = "days_until_due"
+    _attr_native_unit_of_measurement = "days"
 
     def __init__(
-        self,
-        coordinator: TaskCoordinator,
-        subentry_id: str,
+        self, coordinator: TaskCoordinator, subentry_id: str
     ) -> None:
         """Initialize the sensor."""
-        super().__init__(coordinator)
+        super().__init__(coordinator, context=subentry_id)
         self.subentry_id = subentry_id
-        entry = coordinator.config_entry
-        self._attr_unique_id = f"{entry.entry_id}_{subentry_id}_sensor"
-        self._attr_config_entry_id = entry.entry_id
-        self._attr_config_subentry_id = subentry_id
+        self._attr_unique_id = f"{coordinator.config_entry.entry_id}_{subentry_id}_sensor"
 
     @property
     def _task_data(self) -> TaskData | None:
-        """Get the current task data."""
+        """Get current task data."""
+        if self.coordinator.data is None:
+            return None
         return self.coordinator.data.tasks.get(self.subentry_id)
-
-    @property
-    def available(self) -> bool:
-        """Return True if the task still exists."""
-        return super().available and self._task_data is not None
 
     @property
     def name(self) -> str | None:
         """Return the name of the sensor."""
-        if task := self._task_data:
+        task = self._task_data
+        if task:
             return task.name
         return None
 
     @property
     def native_value(self) -> int | None:
-        """Return the days until due."""
-        if task := self._task_data:
+        """Return days until due (negative if overdue)."""
+        task = self._task_data
+        if task:
             return task.days_until_due
         return None
 
     @property
-    def icon(self) -> str:
+    def icon(self) -> str | None:
         """Return the icon."""
-        if task := self._task_data:
-            return task.icon or "mdi:checkbox-marked-circle-outline"
-        return "mdi:checkbox-marked-circle-outline"
+        task = self._task_data
+        if task and task.icon:
+            return task.icon
+        return "mdi:clipboard-check-outline"
 
     @property
     def extra_state_attributes(self) -> dict[str, str | int | bool | None]:
-        """Return extra state attributes."""
+        """Return additional attributes."""
         task = self._task_data
-        if task is None:
+        if not task:
             return {}
         return {
             ATTR_ASSIGNEE: task.assignee,
@@ -119,6 +115,6 @@ class TaskSensor(CoordinatorEntity[TaskCoordinator], SensorEntity):
                 task.last_completed.isoformat() if task.last_completed else None
             ),
             ATTR_NEXT_DUE: task.next_due.isoformat() if task.next_due else None,
-            ATTR_AREA_ID: self.coordinator.data.area_id,
             ATTR_OVERDUE: task.overdue,
+            ATTR_AREA_ID: self.coordinator.data.area_id,
         }

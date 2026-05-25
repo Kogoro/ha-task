@@ -1,6 +1,6 @@
 """Todo platform for the Task integration."""
 
-import logging
+from types import MappingProxyType
 
 from homeassistant.components.todo import (
     TodoItem,
@@ -8,13 +8,13 @@ from homeassistant.components.todo import (
     TodoListEntity,
     TodoListEntityFeature,
 )
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.config_entries import ConfigSubentry
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .const import CONF_ASSIGNEE, CONF_INTERVAL_DAYS, SUBENTRY_TYPE_TASK
 from .coordinator import TaskConfigEntry, TaskCoordinator
-
-_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -22,76 +22,79 @@ async def async_setup_entry(
     entry: TaskConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the Task todo list entity."""
+    """Set up Task todo entity (one per area/config entry)."""
     coordinator = entry.runtime_data
-    async_add_entities([TaskTodoList(coordinator)])
+    async_add_entities([TaskTodoEntity(coordinator)])
 
 
-class TaskTodoList(CoordinatorEntity[TaskCoordinator], TodoListEntity):
+class TaskTodoEntity(CoordinatorEntity[TaskCoordinator], TodoListEntity):
     """A todo list representing all tasks in an area."""
 
     _attr_has_entity_name = True
-    _attr_translation_key = "task_list"
     _attr_supported_features = (
         TodoListEntityFeature.CREATE_TODO_ITEM
         | TodoListEntityFeature.UPDATE_TODO_ITEM
     )
 
     def __init__(self, coordinator: TaskCoordinator) -> None:
-        """Initialize the todo list entity."""
+        """Initialize the todo entity."""
         super().__init__(coordinator)
-        entry = coordinator.config_entry
-        self._attr_unique_id = f"{entry.entry_id}_todo"
-        self._attr_config_entry_id = entry.entry_id
+        self._attr_unique_id = f"{coordinator.config_entry.entry_id}_todo"
+        self._attr_config_entry_id = coordinator.config_entry.entry_id
 
     @property
     def name(self) -> str:
-        """Return the name of the todo list."""
-        return f"{self.coordinator.data.area_name} Tasks"
+        """Return the name."""
+        return f"{self.coordinator.data.area_name} tasks"
 
     @property
     def icon(self) -> str:
         """Return the icon."""
-        return "mdi:clipboard-check-outline"
+        return "mdi:clipboard-list"
 
     @property
-    def todo_items(self) -> list[TodoItem]:
-        """Return the todo items."""
+    def todo_items(self) -> list[TodoItem] | None:
+        """Return todo items for all tasks in this area."""
+        if self.coordinator.data is None:
+            return None
+
         items: list[TodoItem] = []
         for task in self.coordinator.data.tasks.values():
-            if task.last_completed and not task.overdue:
-                status = TodoItemStatus.COMPLETED
-            else:
-                status = TodoItemStatus.NEEDS_ACTION
-
+            status = (
+                TodoItemStatus.NEEDS_ACTION
+                if task.overdue or task.days_until_due is not None and task.days_until_due <= 0
+                else TodoItemStatus.COMPLETED
+            )
             items.append(
                 TodoItem(
                     uid=task.subentry_id,
                     summary=task.name,
+                    status=status,
                     description=task.description,
                     due=task.next_due,
-                    status=status,
                 )
             )
-
-        items.sort(
-            key=lambda item: (
-                item.status == TodoItemStatus.COMPLETED,
-                item.due or "9999-12-31",
-            )
-        )
         return items
 
     async def async_create_todo_item(self, item: TodoItem) -> None:
-        """Create a new todo item (task) via subentry."""
-        _LOGGER.info(
-            "Todo item creation requested for '%s' — "
-            "use the config flow to add tasks",
-            item.summary,
+        """Create a new task via subentry."""
+        entry = self.coordinator.config_entry
+        subentry = ConfigSubentry(
+            data=MappingProxyType({
+                CONF_INTERVAL_DAYS: 7,
+                CONF_ASSIGNEE: None,
+                "description": item.description,
+                "icon": None,
+            }),
+            subentry_type=SUBENTRY_TYPE_TASK,
+            title=item.summary or "New Task",
+            unique_id=None,
         )
+        self.hass.config_entries.async_add_subentry(entry, subentry)
+        await self.coordinator.async_request_refresh()
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
-        """Update a todo item status."""
+        """Update a todo item — mark as completed if status changed."""
         if item.uid is None:
             return
 

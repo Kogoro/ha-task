@@ -1,75 +1,85 @@
-# Task — Recurring Household Tasks for Home Assistant
+# ha-task
 
-A HACS custom integration that manages recurring household tasks and chores with area-based organization, optional assignees, and completion tracking.
+A Home Assistant custom component (HACS) for managing recurring household tasks and chores.
 
 ## Features
 
-- **Area-based organization** — group tasks by Home Assistant area (kitchen, bathroom, etc.)
-- **Recurring schedules** — define interval in days for each task
-- **Completion tracking** — record who completed a task and when
-- **Multiple entity platforms:**
-  - **Sensor** — days until each task is due (negative when overdue)
-  - **Button** — one-tap completion
-  - **Todo list** — all tasks for an area as a checklist
-  - **Calendar** — recurring events for task scheduling
+- **Area-based task management** — organize tasks by room/area
+- **Recurring schedules** — set interval in days for each task
+- **Assignees** — optionally assign tasks to HA Person entities
+- **Multiple entity platforms**:
+  - **Sensor** — shows days until next due (negative if overdue)
+  - **Todo** — tasks appear in HA's native todo lists
+  - **Calendar** — recurring events on your HA calendar
+  - **Button** — one-tap task completion
+- **Completion history** — persistent storage of when tasks were completed and by whom
+- **Services** — `task.complete_task` and `task.reset_task` for automations
 
 ## Installation
 
-### HACS
+### HACS (Recommended)
 
-1. Open HACS in Home Assistant
-2. Add this repository as a custom repository (Integration type)
-3. Search for "Task" and install
-4. Restart Home Assistant
+1. Add this repository as a custom repository in HACS
+2. Install "Task" from HACS
+3. Restart Home Assistant
 
 ### Manual
 
-Copy the `custom_components/task` folder to your Home Assistant `config/custom_components/` directory and restart.
+1. Copy `custom_components/task/` to your `config/custom_components/` directory
+2. Restart Home Assistant
 
 ## Configuration
 
 1. Go to **Settings → Devices & Services → Add Integration**
-2. Search for **Task**
-3. Select an area to manage tasks for
-4. Add individual tasks via the **Configure** button on the integration entry
+2. Search for "Task"
+3. Select an area (e.g., "Living Room")
+4. Add tasks as subentries within the config entry
 
-Each task has:
+### Adding Tasks
 
-| Field | Required | Description |
-|---|---|---|
-| Name | Yes | Name of the task |
-| Interval (days) | Yes | How often the task should be done |
-| Assignee | No | Person entity responsible |
-| Description | No | Additional details |
-| Icon | No | MDI icon override |
-
-## Services
-
-| Service | Description |
-|---|---|
-| `task.complete_task` | Mark a task as completed |
-| `task.reset_task` | Reset completion history for a task |
+After creating an area config entry, add individual tasks:
+- Click the config entry → "Add task"
+- Fill in name, interval (days), optional assignee, description, and icon
 
 ## Entity Platforms
 
 ### Sensor
+One sensor per task. State is the number of days until next due date (negative = overdue).
 
-One sensor per task. State is the number of days until due (negative if overdue).
-
-**Attributes:** `assignee`, `interval_days`, `last_completed`, `next_due`, `area_id`, `overdue`
-
-### Button
-
-One button per task. Press to mark the task as complete.
+**Attributes:** `assignee`, `interval_days`, `last_completed`, `next_due`, `overdue`, `area_id`
 
 ### Todo
-
-One todo list per area. Tasks appear as items with status reflecting due/overdue state.
+One todo list per area. Tasks appear as items — `NEEDS_ACTION` when due/overdue, `COMPLETED` otherwise.
 
 ### Calendar
-
 One calendar per area. Tasks appear as recurring all-day events based on their interval.
 
-## License
+### Button
+One button per task. Press to mark the task as completed.
 
-MIT
+## Services
+
+### `task.complete_task`
+Mark a task as complete. Records the completion timestamp.
+
+| Field | Description |
+|-------|-------------|
+| `entity_id` | The task sensor or button entity |
+
+### `task.reset_task`
+Reset a task's completion history.
+
+| Field | Description |
+|-------|-------------|
+| `entity_id` | The task sensor or button entity |
+
+## Data Model
+
+- **Config Entry** = an area (links to HA area registry)
+- **Config Subentry** = an individual task (name, interval, assignee, etc.)
+- **Storage** = completion history (persisted to `.storage/task.history`)
+
+## Requirements
+
+- Home Assistant 2025.12+
+- HACS (for automatic installation)

@@ -15,11 +15,12 @@ from homeassistant.core import callback
 from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers.selector import (
     AreaSelector,
+    EntitySelector,
+    EntitySelectorConfig,
     IconSelector,
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
-    PersonSelector,
     TextSelector,
 )
 
@@ -134,7 +135,9 @@ class TaskSubentryFlow(ConfigSubentryFlow):
                             mode=NumberSelectorMode.BOX,
                         )
                     ),
-                    vol.Optional(CONF_ASSIGNEE): PersonSelector(),
+                    vol.Optional(CONF_ASSIGNEE): EntitySelector(
+                        EntitySelectorConfig(domain="person")
+                    ),
                     vol.Optional(CONF_DESCRIPTION): TextSelector(),
                     vol.Optional(CONF_ICON): IconSelector(),
                 }
@@ -149,7 +152,7 @@ class TaskSubentryFlow(ConfigSubentryFlow):
 
         if user_input is not None:
             return self.async_update_and_abort(
-                self._get_reconfigure_entry(),
+                self._get_entry(),
                 subentry,
                 title=user_input.get("name", subentry.title),
                 data={
@@ -181,7 +184,9 @@ class TaskSubentryFlow(ConfigSubentryFlow):
                     vol.Optional(
                         CONF_ASSIGNEE,
                         default=subentry.data.get(CONF_ASSIGNEE),
-                    ): PersonSelector(),
+                    ): EntitySelector(
+                        EntitySelectorConfig(domain="person")
+                    ),
                     vol.Optional(
                         CONF_DESCRIPTION,
                         default=subentry.data.get(CONF_DESCRIPTION),

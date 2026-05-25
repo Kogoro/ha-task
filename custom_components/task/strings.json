@@ -2,18 +2,21 @@
   "config": {
     "step": {
       "user": {
-        "title": "Add Area for Tasks",
-        "description": "Select an area to manage recurring tasks for.",
+        "title": "Add area for task management",
+        "description": "Select an area to manage household tasks for.",
         "data": {
           "area_id": "Area"
         }
       },
       "reconfigure": {
-        "title": "Reconfigure Area",
+        "title": "Reconfigure area",
         "data": {
           "area_id": "Area"
         }
       }
+    },
+    "abort": {
+      "already_configured": "This area is already configured."
     }
   },
   "config_subentries": {
@@ -23,8 +26,8 @@
       },
       "step": {
         "user": {
-          "title": "Add Task",
-          "description": "Create a new recurring task.",
+          "title": "Add a new task",
+          "description": "Configure a recurring household task.",
           "data": {
             "name": "Task name",
             "interval_days": "Interval (days)",
@@ -34,7 +37,7 @@
           }
         },
         "reconfigure": {
-          "title": "Edit Task",
+          "title": "Edit task",
           "data": {
             "name": "Task name",
             "interval_days": "Interval (days)",
@@ -49,32 +52,22 @@
   "services": {
     "complete_task": {
       "name": "Complete task",
-      "description": "Mark a task as completed."
+      "description": "Mark a task as completed.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "The task sensor or button entity to mark as complete."
+        }
+      }
     },
     "reset_task": {
       "name": "Reset task",
-      "description": "Reset the completion history for a task."
-    }
-  },
-  "entity": {
-    "sensor": {
-      "days_until_due": {
-        "name": "Days until due"
-      }
-    },
-    "button": {
-      "complete_task": {
-        "name": "Complete task"
-      }
-    },
-    "todo": {
-      "task_list": {
-        "name": "Tasks"
-      }
-    },
-    "calendar": {
-      "task_schedule": {
-        "name": "Task schedule"
+      "description": "Reset a task's completion history.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "The task sensor or button entity to reset."
+        }
       }
     }
   }
