@@ -6,7 +6,6 @@ from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.util import dt as dt_util
 
 from .coordinator import TaskConfigEntry, TaskCoordinator, TaskData
 
@@ -30,7 +29,6 @@ class TaskCalendarEntity(CoordinatorEntity[TaskCoordinator], CalendarEntity):
         """Initialize the calendar entity."""
         super().__init__(coordinator)
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_calendar"
-        self._attr_config_entry_id = coordinator.config_entry.entry_id
 
     @property
     def name(self) -> str:

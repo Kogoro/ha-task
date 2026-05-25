@@ -40,7 +40,6 @@ class TaskTodoEntity(CoordinatorEntity[TaskCoordinator], TodoListEntity):
         """Initialize the todo entity."""
         super().__init__(coordinator)
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_todo"
-        self._attr_config_entry_id = coordinator.config_entry.entry_id
 
     @property
     def name(self) -> str:
