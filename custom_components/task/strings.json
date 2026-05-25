@@ -1,0 +1,81 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add Area for Tasks",
+        "description": "Select an area to manage recurring tasks for.",
+        "data": {
+          "area_id": "Area"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure Area",
+        "data": {
+          "area_id": "Area"
+        }
+      }
+    }
+  },
+  "config_subentries": {
+    "task": {
+      "initiate_flow": {
+        "user": "Add task"
+      },
+      "step": {
+        "user": {
+          "title": "Add Task",
+          "description": "Create a new recurring task.",
+          "data": {
+            "name": "Task name",
+            "interval_days": "Interval (days)",
+            "assignee": "Assignee",
+            "description": "Description",
+            "icon": "Icon"
+          }
+        },
+        "reconfigure": {
+          "title": "Edit Task",
+          "data": {
+            "name": "Task name",
+            "interval_days": "Interval (days)",
+            "assignee": "Assignee",
+            "description": "Description",
+            "icon": "Icon"
+          }
+        }
+      }
+    }
+  },
+  "services": {
+    "complete_task": {
+      "name": "Complete task",
+      "description": "Mark a task as completed."
+    },
+    "reset_task": {
+      "name": "Reset task",
+      "description": "Reset the completion history for a task."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "days_until_due": {
+        "name": "Days until due"
+      }
+    },
+    "button": {
+      "complete_task": {
+        "name": "Complete task"
+      }
+    },
+    "todo": {
+      "task_list": {
+        "name": "Tasks"
+      }
+    },
+    "calendar": {
+      "task_schedule": {
+        "name": "Task schedule"
+      }
+    }
+  }
+}

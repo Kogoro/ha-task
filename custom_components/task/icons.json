@@ -1,0 +1,28 @@
+{
+  "entity": {
+    "sensor": {
+      "days_until_due": {
+        "default": "mdi:checkbox-marked-circle-outline"
+      }
+    },
+    "button": {
+      "complete_task": {
+        "default": "mdi:check-circle"
+      }
+    },
+    "todo": {
+      "task_list": {
+        "default": "mdi:clipboard-check-outline"
+      }
+    },
+    "calendar": {
+      "task_schedule": {
+        "default": "mdi:calendar-check"
+      }
+    }
+  },
+  "services": {
+    "complete_task": "mdi:check-circle",
+    "reset_task": "mdi:restart"
+  }
+}

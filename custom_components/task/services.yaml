@@ -1,0 +1,25 @@
+complete_task:
+  target:
+    entity:
+      domain: sensor
+      integration: task
+  fields:
+    entity_id:
+      required: true
+      selector:
+        entity:
+          integration: task
+          domain: sensor
+
+reset_task:
+  target:
+    entity:
+      domain: sensor
+      integration: task
+  fields:
+    entity_id:
+      required: true
+      selector:
+        entity:
+          integration: task
+          domain: sensor
