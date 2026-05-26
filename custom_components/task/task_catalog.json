@@ -1,0 +1,1255 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "kitchen",
+      "name": {
+        "en": "Kitchen",
+        "de": "Küche"
+      },
+      "icon": "mdi:stove",
+      "tasks": [
+        {
+          "id": "clean_oven",
+          "name": {
+            "en": "Clean Oven",
+            "de": "Backofen reinigen"
+          },
+          "description": {
+            "en": "Clean the oven interior, racks, and door glass",
+            "de": "Backofen innen, Roste und Türglas reinigen"
+          },
+          "icon": "mdi:stove",
+          "default_interval_days": 90,
+          "type": "task"
+        },
+        {
+          "id": "clean_fridge",
+          "name": {
+            "en": "Clean Fridge",
+            "de": "Kühlschrank reinigen"
+          },
+          "description": {
+            "en": "Sort food, discard expired items, and wipe shelves, drawers, and seals",
+            "de": "Lebensmittel sortieren, Abgelaufenes entsorgen und Fächer, Schubladen sowie Dichtungen abwischen"
+          },
+          "icon": "mdi:fridge-outline",
+          "default_interval_days": 30,
+          "type": "task"
+        },
+        {
+          "id": "clean_microwave",
+          "name": {
+            "en": "Clean Microwave",
+            "de": "Mikrowelle reinigen"
+          },
+          "description": {
+            "en": "Clean the microwave interior, door, and turntable",
+            "de": "Mikrowelle innen, Tür und Drehteller reinigen"
+          },
+          "icon": "mdi:microwave",
+          "default_interval_days": 14,
+          "type": "task"
+        },
+        {
+          "id": "clean_range_hood",
+          "name": {
+            "en": "Clean Range Hood",
+            "de": "Dunstabzugshaube reinigen"
+          },
+          "description": {
+            "en": "Degrease the hood surface and clean or replace the grease filter",
+            "de": "Oberfläche der Dunstabzugshaube entfetten und Fettfilter reinigen oder wechseln"
+          },
+          "icon": "mdi:air-filter",
+          "default_interval_days": 60,
+          "type": "maintenance"
+        },
+        {
+          "id": "clean_dishwasher",
+          "name": {
+            "en": "Clean Dishwasher",
+            "de": "Spülmaschine reinigen"
+          },
+          "description": {
+            "en": "Clean the dishwasher filter, spray arms, seals, and interior",
+            "de": "Sieb, Sprüharme, Dichtungen und Innenraum der Spülmaschine reinigen"
+          },
+          "icon": "mdi:dishwasher",
+          "default_interval_days": 30,
+          "type": "maintenance"
+        },
+        {
+          "id": "descale_kettle",
+          "name": {
+            "en": "Descale Kettle",
+            "de": "Wasserkocher entkalken"
+          },
+          "description": {
+            "en": "Remove limescale buildup from the kettle",
+            "de": "Kalkablagerungen im Wasserkocher entfernen"
+          },
+          "icon": "mdi:kettle-outline",
+          "default_interval_days": 30,
+          "type": "maintenance"
+        },
+        {
+          "id": "defrost_freezer",
+          "name": {
+            "en": "Defrost Freezer",
+            "de": "Gefrierschrank abtauen"
+          },
+          "description": {
+            "en": "Defrost and wipe out the freezer",
+            "de": "Gefrierschrank abtauen und auswischen"
+          },
+          "icon": "mdi:snowflake-melt",
+          "default_interval_days": 180,
+          "type": "maintenance"
+        },
+        {
+          "id": "clean_small_kitchen_appliances",
+          "name": {
+            "en": "Clean Small Kitchen Appliances",
+            "de": "Kleine Küchengeräte reinigen"
+          },
+          "description": {
+            "en": "Clean coffee grinder, blender, food processor, toaster, or similar appliances",
+            "de": "Kaffeemühle, Mixer, Küchenmaschine, Toaster oder ähnliche Geräte reinigen"
+          },
+          "icon": "mdi:blender",
+          "default_interval_days": 30,
+          "type": "maintenance"
+        }
+      ]
+    },
+    {
+      "id": "bathroom",
+      "name": {
+        "en": "Bathroom",
+        "de": "Badezimmer"
+      },
+      "icon": "mdi:shower-head",
+      "tasks": [
+        {
+          "id": "clean_shower_drain",
+          "name": {
+            "en": "Clean Shower Drain",
+            "de": "Duschabfluss reinigen"
+          },
+          "description": {
+            "en": "Remove hair and debris from the shower drain",
+            "de": "Haare und Rückstände aus dem Duschabfluss entfernen"
+          },
+          "icon": "mdi:waves",
+          "default_interval_days": 30,
+          "type": "task"
+        },
+        {
+          "id": "descale_showerhead",
+          "name": {
+            "en": "Descale Showerhead",
+            "de": "Duschkopf entkalken"
+          },
+          "description": {
+            "en": "Descale the showerhead and rinse nozzles",
+            "de": "Duschkopf entkalken und Düsen ausspülen"
+          },
+          "icon": "mdi:shower-head",
+          "default_interval_days": 60,
+          "type": "maintenance"
+        },
+        {
+          "id": "clean_bathroom_grout",
+          "name": {
+            "en": "Clean Bathroom Grout",
+            "de": "Badfugen reinigen"
+          },
+          "description": {
+            "en": "Scrub grout in the shower, tub, or tile areas",
+            "de": "Fugen in Dusche, Wanne oder Fliesenbereichen schrubben"
+          },
+          "icon": "mdi:grid",
+          "default_interval_days": 90,
+          "type": "task"
+        },
+        {
+          "id": "clean_bathroom_fan",
+          "name": {
+            "en": "Clean Bathroom Exhaust Fan",
+            "de": "Badlüfter reinigen"
+          },
+          "description": {
+            "en": "Clean dust from the bathroom fan cover and accessible fan parts",
+            "de": "Staub vom Badlüftergitter und erreichbaren Lüfterteilen entfernen"
+          },
+          "icon": "mdi:fan",
+          "default_interval_days": 90,
+          "type": "maintenance"
+        },
+        {
+          "id": "clean_toilet_tank",
+          "name": {
+            "en": "Clean Toilet Tank",
+            "de": "Spülkasten reinigen"
+          },
+          "description": {
+            "en": "Clean the inside of the toilet tank to reduce mineral buildup",
+            "de": "Spülkasten innen reinigen, um Kalkablagerungen zu reduzieren"
+          },
+          "icon": "mdi:toilet",
+          "default_interval_days": 180,
+          "type": "task"
+        },
+        {
+          "id": "replace_toothbrush_heads",
+          "name": {
+            "en": "Replace Toothbrush Heads",
+            "de": "Zahnbürstenköpfe wechseln"
+          },
+          "description": {
+            "en": "Replace electric toothbrush heads",
+            "de": "Elektrische Zahnbürstenköpfe wechseln"
+          },
+          "icon": "mdi:toothbrush-paste",
+          "default_interval_days": 90,
+          "type": "maintenance"
+        },
+        {
+          "id": "replace_shower_curtain_liner",
+          "name": {
+            "en": "Replace Shower Curtain Liner",
+            "de": "Duschvorhang-Einlage wechseln"
+          },
+          "description": {
+            "en": "Replace or wash the shower curtain liner",
+            "de": "Duschvorhang-Einlage wechseln oder waschen"
+          },
+          "icon": "mdi:curtains",
+          "default_interval_days": 180,
+          "type": "task"
+        },
+        {
+          "id": "clean_faucet_aerators",
+          "name": {
+            "en": "Clean Faucet Aerators",
+            "de": "Perlatoren reinigen"
+          },
+          "description": {
+            "en": "Clean faucet aerators in bathroom sinks",
+            "de": "Perlatoren an Badwaschbecken reinigen"
+          },
+          "icon": "mdi:faucet",
+          "default_interval_days": 90,
+          "type": "maintenance"
+        }
+      ]
+    },
+    {
+      "id": "floors_surfaces",
+      "name": {
+        "en": "Floors & Surfaces",
+        "de": "Böden & Oberflächen"
+      },
+      "icon": "mdi:broom",
+      "tasks": [
+        {
+          "id": "vacuum_floors",
+          "name": {
+            "en": "Vacuum Floors",
+            "de": "Böden saugen"
+          },
+          "description": {
+            "en": "Vacuum floors and rugs in the selected area",
+            "de": "Böden und Teppiche im ausgewählten Bereich saugen"
+          },
+          "icon": "mdi:vacuum",
+          "default_interval_days": 7,
+          "type": "task"
+        },
+        {
+          "id": "mop_hard_floors",
+          "name": {
+            "en": "Mop Hard Floors",
+            "de": "Hartböden wischen"
+          },
+          "description": {
+            "en": "Wet-mop hard floors in the selected area",
+            "de": "Hartböden im ausgewählten Bereich feucht wischen"
+          },
+          "icon": "mdi:bucket-outline",
+          "default_interval_days": 14,
+          "type": "task"
+        },
+        {
+          "id": "dust_surfaces",
+          "name": {
+            "en": "Dust Surfaces",
+            "de": "Oberflächen abstauben"
+          },
+          "description": {
+            "en": "Dust shelves, tables, sideboards, and decorative surfaces",
+            "de": "Regale, Tische, Sideboards und Deko-Oberflächen abstauben"
+          },
+          "icon": "mdi:spray-bottle",
+          "default_interval_days": 14,
+          "type": "task"
+        },
+        {
+          "id": "clean_under_furniture",
+          "name": {
+            "en": "Clean Under Furniture",
+            "de": "Unter Möbeln reinigen"
+          },
+          "description": {
+            "en": "Move accessible furniture and clean underneath",
+            "de": "Erreichbare Möbel verschieben und darunter reinigen"
+          },
+          "icon": "mdi:sofa-outline",
+          "default_interval_days": 30,
+          "type": "task"
+        },
+        {
+          "id": "clean_baseboards",
+          "name": {
+            "en": "Clean Baseboards",
+            "de": "Fußleisten reinigen"
+          },
+          "description": {
+            "en": "Dust and wipe baseboards along walls and corners",
+            "de": "Fußleisten entlang von Wänden und Ecken abstauben und abwischen"
+          },
+          "icon": "mdi:wall",
+          "default_interval_days": 180,
+          "type": "task"
+        },
+        {
+          "id": "clean_door_handles_switches",
+          "name": {
+            "en": "Clean Handles & Light Switches",
+            "de": "Griffe und Lichtschalter reinigen"
+          },
+          "description": {
+            "en": "Wipe frequently touched handles, knobs, and light switches",
+            "de": "Häufig berührte Griffe, Knäufe und Lichtschalter abwischen"
+          },
+          "icon": "mdi:gesture-tap-button",
+          "default_interval_days": 14,
+          "type": "task"
+        }
+      ]
+    },
+    {
+      "id": "living",
+      "name": {
+        "en": "Living Areas",
+        "de": "Wohnbereiche"
+      },
+      "icon": "mdi:sofa-outline",
+      "tasks": [
+        {
+          "id": "clean_upholstery",
+          "name": {
+            "en": "Clean Upholstery",
+            "de": "Polstermöbel reinigen"
+          },
+          "description": {
+            "en": "Vacuum and spot-clean sofas, chairs, and upholstered furniture",
+            "de": "Sofas, Sessel und Polstermöbel absaugen und Flecken behandeln"
+          },
+          "icon": "mdi:sofa-outline",
+          "default_interval_days": 60,
+          "type": "task"
+        },
+        {
+          "id": "clean_remotes_controllers",
+          "name": {
+            "en": "Clean Remotes & Controllers",
+            "de": "Fernbedienungen und Controller reinigen"
+          },
+          "description": {
+            "en": "Wipe and disinfect remotes, game controllers, and media controls",
+            "de": "Fernbedienungen, Controller und Medienbedienungen abwischen und desinfizieren"
+          },
+          "icon": "mdi:remote-tv",
+          "default_interval_days": 30,
+          "type": "task"
+        },
+        {
+          "id": "tidy_media_area",
+          "name": {
+            "en": "Tidy Media Area",
+            "de": "Medienbereich aufräumen"
+          },
+          "description": {
+            "en": "Organize remotes, controllers, cables, and accessories around the TV or media cabinet",
+            "de": "Fernbedienungen, Controller, Kabel und Zubehör rund um TV oder Medienregal ordnen"
+          },
+          "icon": "mdi:television-classic",
+          "default_interval_days": 30,
+          "type": "task"
+        },
+        {
+          "id": "wash_throw_blankets",
+          "name": {
+            "en": "Wash Throw Blankets",
+            "de": "Wohndecken waschen"
+          },
+          "description": {
+            "en": "Wash blankets and throws used in living areas",
+            "de": "Decken und Plaids aus Wohnbereichen waschen"
+          },
+          "icon": "mdi:blanket-outline",
+          "default_interval_days": 30,
+          "type": "task"
+        }
+      ]
+    },
+    {
+      "id": "bedroom",
+      "name": {
+        "en": "Bedroom",
+        "de": "Schlafzimmer"
+      },
+      "icon": "mdi:bed-outline",
+      "tasks": [
+        {
+          "id": "wash_bedding",
+          "name": {
+            "en": "Wash Bedding",
+            "de": "Bettwäsche waschen"
+          },
+          "description": {
+            "en": "Wash sheets, pillowcases, duvet covers, and mattress protector if needed",
+            "de": "Laken, Kissenbezüge, Bettbezüge und bei Bedarf Matratzenschoner waschen"
+          },
+          "icon": "mdi:bed-outline",
+          "default_interval_days": 14,
+          "type": "task"
+        },
+        {
+          "id": "wash_pillows_duvets",
+          "name": {
+            "en": "Wash Pillows & Duvets",
+            "de": "Kissen und Bettdecken waschen"
+          },
+          "description": {
+            "en": "Wash or air pillows and duvets to refresh bedding",
+            "de": "Kissen und Bettdecken waschen oder lüften, um Bettzeug aufzufrischen"
+          },
+          "icon": "mdi:sleep",
+          "default_interval_days": 90,
+          "type": "task"
+        },
+        {
+          "id": "rotate_mattress",
+          "name": {
+            "en": "Rotate Mattress",
+            "de": "Matratze drehen"
+          },
+          "description": {
+            "en": "Rotate or flip the mattress according to the manufacturer guidance",
+            "de": "Matratze gemäß Herstellerhinweis drehen oder wenden"
+          },
+          "icon": "mdi:bed-outline",
+          "default_interval_days": 90,
+          "type": "maintenance"
+        },
+        {
+          "id": "clean_bedroom_storage",
+          "name": {
+            "en": "Clean Bedroom Storage",
+            "de": "Schlafzimmer-Stauraum reinigen"
+          },
+          "description": {
+            "en": "Clean under the bed and tidy bedside or wardrobe storage",
+            "de": "Unter dem Bett reinigen und Nachttisch- oder Kleiderschrank-Stauraum ordnen"
+          },
+          "icon": "mdi:wardrobe-outline",
+          "default_interval_days": 60,
+          "type": "task"
+        }
+      ]
+    },
+    {
+      "id": "windows_textiles",
+      "name": {
+        "en": "Windows & Textiles",
+        "de": "Fenster & Textilien"
+      },
+      "icon": "mdi:window-closed-variant",
+      "tasks": [
+        {
+          "id": "clean_windows",
+          "name": {
+            "en": "Clean Windows",
+            "de": "Fenster putzen"
+          },
+          "description": {
+            "en": "Clean window glass, frames, tracks, and sills",
+            "de": "Fensterglas, Rahmen, Führungsschienen und Fensterbänke reinigen"
+          },
+          "icon": "mdi:window-closed-variant",
+          "default_interval_days": 90,
+          "type": "task"
+        },
+        {
+          "id": "wash_curtains",
+          "name": {
+            "en": "Wash Curtains",
+            "de": "Vorhänge waschen"
+          },
+          "description": {
+            "en": "Take down and wash or dry-clean curtains and drapes",
+            "de": "Vorhänge und Gardinen abnehmen und waschen oder reinigen lassen"
+          },
+          "icon": "mdi:curtains",
+          "default_interval_days": 180,
+          "type": "task"
+        },
+        {
+          "id": "clean_blinds_shutters",
+          "name": {
+            "en": "Clean Blinds & Shutters",
+            "de": "Jalousien und Rollläden reinigen"
+          },
+          "description": {
+            "en": "Dust or wipe blinds, shades, and shutters",
+            "de": "Jalousien, Rollos und Rollläden abstauben oder abwischen"
+          },
+          "icon": "mdi:blinds-horizontal",
+          "default_interval_days": 90,
+          "type": "task"
+        },
+        {
+          "id": "clean_light_fixtures",
+          "name": {
+            "en": "Clean Light Fixtures",
+            "de": "Lampen und Leuchten reinigen"
+          },
+          "description": {
+            "en": "Dust and wipe ceiling lights, lampshades, and wall lights",
+            "de": "Deckenlampen, Lampenschirme und Wandleuchten abstauben und abwischen"
+          },
+          "icon": "mdi:ceiling-light-outline",
+          "default_interval_days": 90,
+          "type": "task"
+        }
+      ]
+    },
+    {
+      "id": "outdoor",
+      "name": {
+        "en": "Outdoor & Garden",
+        "de": "Außenbereich & Garten"
+      },
+      "icon": "mdi:flower-outline",
+      "tasks": [
+        {
+          "id": "mow_lawn",
+          "name": {
+            "en": "Mow Lawn",
+            "de": "Rasen mähen"
+          },
+          "description": {
+            "en": "Mow the lawn to keep grass at a healthy height",
+            "de": "Rasen mähen, um das Gras auf einer gesunden Höhe zu halten"
+          },
+          "icon": "mdi:mower",
+          "default_interval_days": 7,
+          "type": "task"
+        },
+        {
+          "id": "care_for_lawn",
+          "name": {
+            "en": "Care for Lawn",
+            "de": "Rasen pflegen"
+          },
+          "description": {
+            "en": "Fertilize, reseed, or treat the lawn as needed for the season",
+            "de": "Rasen je nach Saison düngen, nachsäen oder behandeln"
+          },
+          "icon": "mdi:grass",
+          "default_interval_days": 90,
+          "type": "task"
+        },
+        {
+          "id": "prune_hedges_shrubs",
+          "name": {
+            "en": "Prune Hedges & Shrubs",
+            "de": "Hecken und Sträucher schneiden"
+          },
+          "description": {
+            "en": "Trim hedges, shrubs, and bushes",
+            "de": "Hecken, Sträucher und Büsche schneiden"
+          },
+          "icon": "mdi:tree-outline",
+          "default_interval_days": 60,
+          "type": "task"
+        },
+        {
+          "id": "clean_patio_deck",
+          "name": {
+            "en": "Clean Patio / Deck",
+            "de": "Terrasse reinigen"
+          },
+          "description": {
+            "en": "Sweep, wash, or pressure-clean the patio or deck surface",
+            "de": "Terrasse fegen, waschen oder mit dem Hochdruckreiniger säubern"
+          },
+          "icon": "mdi:dock-window",
+          "default_interval_days": 60,
+          "type": "task"
+        },
+        {
+          "id": "clean_gutters",
+          "name": {
+            "en": "Clean Gutters",
+            "de": "Dachrinnen reinigen"
+          },
+          "description": {
+            "en": "Remove leaves and debris from gutters and downspouts",
+            "de": "Laub und Schmutz aus Dachrinnen und Fallrohren entfernen"
+          },
+          "icon": "mdi:home-roof",
+          "default_interval_days": 180,
+          "type": "task"
+        },
+        {
+          "id": "clean_outdoor_furniture",
+          "name": {
+            "en": "Clean Outdoor Furniture",
+            "de": "Gartenmöbel reinigen"
+          },
+          "description": {
+            "en": "Clean outdoor chairs, tables, and cushions",
+            "de": "Gartenstühle, Tische und Polster reinigen"
+          },
+          "icon": "mdi:chair-rolling",
+          "default_interval_days": 30,
+          "type": "task"
+        },
+        {
+          "id": "clean_grill_bbq",
+          "name": {
+            "en": "Clean Grill / BBQ",
+            "de": "Grill reinigen"
+          },
+          "description": {
+            "en": "Clean grill grates, burners, and drip tray",
+            "de": "Grillrost, Brenner und Auffangschale reinigen"
+          },
+          "icon": "mdi:grill-outline",
+          "default_interval_days": 30,
+          "type": "task"
+        },
+        {
+          "id": "check_outdoor_lighting",
+          "name": {
+            "en": "Check Outdoor Lighting",
+            "de": "Außenbeleuchtung prüfen"
+          },
+          "description": {
+            "en": "Check outdoor lights and replace failed bulbs",
+            "de": "Außenbeleuchtung prüfen und defekte Leuchtmittel ersetzen"
+          },
+          "icon": "mdi:outdoor-lamp",
+          "default_interval_days": 90,
+          "type": "maintenance"
+        }
+      ]
+    },
+    {
+      "id": "laundry",
+      "name": {
+        "en": "Laundry",
+        "de": "Wäsche"
+      },
+      "icon": "mdi:washing-machine",
+      "tasks": [
+        {
+          "id": "clean_dryer_lint_filter",
+          "name": {
+            "en": "Clean Dryer Lint Filter",
+            "de": "Flusensieb im Trockner reinigen"
+          },
+          "description": {
+            "en": "Remove lint from the dryer filter",
+            "de": "Flusensieb im Trockner reinigen"
+          },
+          "icon": "mdi:tumble-dryer",
+          "default_interval_days": 1,
+          "type": "task"
+        },
+        {
+          "id": "clean_washing_machine",
+          "name": {
+            "en": "Clean Washing Machine",
+            "de": "Waschmaschine reinigen"
+          },
+          "description": {
+            "en": "Clean the drum, door seal, detergent drawer, and run a cleaning or descaling cycle",
+            "de": "Trommel, Türdichtung und Waschmittelfach reinigen sowie Reinigungs- oder Entkalkungsprogramm durchführen"
+          },
+          "icon": "mdi:washing-machine",
+          "default_interval_days": 30,
+          "type": "maintenance"
+        },
+        {
+          "id": "clean_dryer_vent",
+          "name": {
+            "en": "Clean Dryer Vent",
+            "de": "Trockner-Abluft reinigen"
+          },
+          "description": {
+            "en": "Clean lint from the dryer vent path and accessible ducting",
+            "de": "Flusen aus Abluftweg und erreichbaren Schläuchen des Trockners entfernen"
+          },
+          "icon": "mdi:hvac",
+          "default_interval_days": 180,
+          "type": "maintenance"
+        },
+        {
+          "id": "clean_laundry_baskets",
+          "name": {
+            "en": "Clean Laundry Baskets",
+            "de": "Wäschekörbe reinigen"
+          },
+          "description": {
+            "en": "Clean laundry bags, hampers, and baskets",
+            "de": "Wäschebeutel, Wäschesammler und Wäschekörbe reinigen"
+          },
+          "icon": "mdi:basket-outline",
+          "default_interval_days": 30,
+          "type": "task"
+        },
+        {
+          "id": "clean_iron_steam_station",
+          "name": {
+            "en": "Clean Iron / Steam Station",
+            "de": "Bügeleisen / Dampfstation reinigen"
+          },
+          "description": {
+            "en": "Descale and clean the iron soleplate and water reservoir",
+            "de": "Bügeleisensohle und Wassertank entkalken und reinigen"
+          },
+          "icon": "mdi:iron-outline",
+          "default_interval_days": 60,
+          "type": "maintenance"
+        }
+      ]
+    },
+    {
+      "id": "hvac",
+      "name": {
+        "en": "HVAC & Climate",
+        "de": "Heizung, Lüftung & Klima"
+      },
+      "icon": "mdi:hvac",
+      "tasks": [
+        {
+          "id": "replace_hvac_air_filter",
+          "name": {
+            "en": "Replace HVAC Air Filter",
+            "de": "HVAC-Luftfilter wechseln"
+          },
+          "description": {
+            "en": "Replace the HVAC or ventilation system air filter",
+            "de": "Filter der Heizungs-, Klima- oder Lüftungsanlage wechseln"
+          },
+          "icon": "mdi:air-filter",
+          "default_interval_days": 90,
+          "type": "maintenance"
+        },
+        {
+          "id": "clean_air_vents_registers",
+          "name": {
+            "en": "Clean Air Vents & Registers",
+            "de": "Lüftungsgitter reinigen"
+          },
+          "description": {
+            "en": "Vacuum and wipe vents, grilles, and registers",
+            "de": "Lüftungs- und Heizungsgitter absaugen und abwischen"
+          },
+          "icon": "mdi:air-purifier",
+          "default_interval_days": 90,
+          "type": "task"
+        },
+        {
+          "id": "clean_ac_unit",
+          "name": {
+            "en": "Clean AC Unit",
+            "de": "Klimaanlage reinigen"
+          },
+          "description": {
+            "en": "Clean accessible AC filters, coils, fins, and drain line",
+            "de": "Erreichbare Filter, Lamellen, Register und Ablaufleitung der Klimaanlage reinigen"
+          },
+          "icon": "mdi:air-conditioner",
+          "default_interval_days": 180,
+          "type": "maintenance"
+        },
+        {
+          "id": "bleed_radiators",
+          "name": {
+            "en": "Bleed Radiators",
+            "de": "Heizkörper entlüften"
+          },
+          "description": {
+            "en": "Bleed trapped air from radiators before heating season",
+            "de": "Vor der Heizsaison Luft aus Heizkörpern ablassen"
+          },
+          "icon": "mdi:radiator",
+          "default_interval_days": 365,
+          "type": "maintenance"
+        },
+        {
+          "id": "check_thermostat_batteries",
+          "name": {
+            "en": "Check Thermostat Batteries",
+            "de": "Thermostat-Batterien prüfen"
+          },
+          "description": {
+            "en": "Check and replace batteries in thermostats and radiator valves",
+            "de": "Batterien in Thermostaten und Heizkörperventilen prüfen und wechseln"
+          },
+          "icon": "mdi:thermostat",
+          "default_interval_days": 180,
+          "type": "maintenance"
+        },
+        {
+          "id": "service_heat_pump",
+          "name": {
+            "en": "Service Heat Pump",
+            "de": "Wärmepumpe warten"
+          },
+          "description": {
+            "en": "Inspect and clean the outdoor heat pump unit and clear debris around it",
+            "de": "Außeneinheit der Wärmepumpe kontrollieren, reinigen und Umgebung freihalten"
+          },
+          "icon": "mdi:heat-pump-outline",
+          "default_interval_days": 365,
+          "type": "maintenance"
+        },
+        {
+          "id": "check_indoor_humidity",
+          "name": {
+            "en": "Check Indoor Humidity",
+            "de": "Raumluftfeuchtigkeit prüfen"
+          },
+          "description": {
+            "en": "Verify indoor humidity is in a healthy range",
+            "de": "Prüfen, ob die Raumluftfeuchtigkeit im gesunden Bereich liegt"
+          },
+          "icon": "mdi:water-percent",
+          "default_interval_days": 30,
+          "type": "task"
+        }
+      ]
+    },
+    {
+      "id": "appliances",
+      "name": {
+        "en": "Appliance Maintenance",
+        "de": "Gerätewartung"
+      },
+      "icon": "mdi:cog-outline",
+      "tasks": [
+        {
+          "id": "descale_coffee_machine",
+          "name": {
+            "en": "Descale Coffee Machine",
+            "de": "Kaffeemaschine entkalken"
+          },
+          "description": {
+            "en": "Run a descaling cycle on the coffee machine",
+            "de": "Entkalkungszyklus an der Kaffeemaschine durchführen"
+          },
+          "icon": "mdi:coffee-maker-outline",
+          "default_interval_days": 30,
+          "type": "maintenance"
+        },
+        {
+          "id": "maintain_robot_vacuum",
+          "name": {
+            "en": "Maintain Robot Vacuum",
+            "de": "Saugroboter warten"
+          },
+          "description": {
+            "en": "Empty bins, clean brushes, wipe sensors, and check the dock",
+            "de": "Behälter leeren, Bürsten reinigen, Sensoren abwischen und Station prüfen"
+          },
+          "icon": "mdi:robot-vacuum",
+          "default_interval_days": 14,
+          "type": "maintenance"
+        },
+        {
+          "id": "replace_vacuum_bags_filter",
+          "name": {
+            "en": "Replace Vacuum Bags / Filter",
+            "de": "Staubsaugerbeutel / Filter wechseln"
+          },
+          "description": {
+            "en": "Replace vacuum bags or filters for good suction",
+            "de": "Staubsaugerbeutel oder Filter wechseln, um die Saugkraft zu erhalten"
+          },
+          "icon": "mdi:vacuum",
+          "default_interval_days": 60,
+          "type": "maintenance"
+        },
+        {
+          "id": "replace_water_filters",
+          "name": {
+            "en": "Replace Water Filters",
+            "de": "Wasserfilter wechseln"
+          },
+          "description": {
+            "en": "Replace fridge, faucet, or under-sink water filter cartridges",
+            "de": "Wasserfilterkartuschen in Kühlschrank, Wasserhahn oder Untertischsystem wechseln"
+          },
+          "icon": "mdi:water-sync",
+          "default_interval_days": 120,
+          "type": "maintenance"
+        },
+        {
+          "id": "clean_dehumidifier_humidifier",
+          "name": {
+            "en": "Clean Humidifier / Dehumidifier",
+            "de": "Luftbe- oder entfeuchter reinigen"
+          },
+          "description": {
+            "en": "Empty tanks, clean filters, and descale humidifier or dehumidifier parts",
+            "de": "Tanks leeren, Filter reinigen und Teile von Luftbe- oder entfeuchtern entkalken"
+          },
+          "icon": "mdi:air-humidifier",
+          "default_interval_days": 14,
+          "type": "maintenance"
+        }
+      ]
+    },
+    {
+      "id": "safety",
+      "name": {
+        "en": "Safety & Systems",
+        "de": "Sicherheit & Systeme"
+      },
+      "icon": "mdi:shield-home-outline",
+      "tasks": [
+        {
+          "id": "test_smoke_detectors",
+          "name": {
+            "en": "Test Smoke Detectors",
+            "de": "Rauchmelder testen"
+          },
+          "description": {
+            "en": "Test each smoke detector",
+            "de": "Jeden Rauchmelder testen"
+          },
+          "icon": "mdi:smoke-detector-variant",
+          "default_interval_days": 30,
+          "type": "task"
+        },
+        {
+          "id": "replace_smoke_detector_batteries",
+          "name": {
+            "en": "Replace Smoke Detector Batteries",
+            "de": "Rauchmelder-Batterien wechseln"
+          },
+          "description": {
+            "en": "Replace batteries in smoke detectors",
+            "de": "Batterien in Rauchmeldern wechseln"
+          },
+          "icon": "mdi:smoke-detector-variant-alert",
+          "default_interval_days": 365,
+          "type": "maintenance"
+        },
+        {
+          "id": "test_co_detector",
+          "name": {
+            "en": "Test CO Detector",
+            "de": "CO-Melder testen"
+          },
+          "description": {
+            "en": "Test the carbon monoxide detector",
+            "de": "Kohlenmonoxid-Melder testen"
+          },
+          "icon": "mdi:molecule-co",
+          "default_interval_days": 30,
+          "type": "task"
+        },
+        {
+          "id": "check_fire_extinguisher",
+          "name": {
+            "en": "Check Fire Extinguisher",
+            "de": "Feuerlöscher prüfen"
+          },
+          "description": {
+            "en": "Check pressure, accessibility, and inspection date",
+            "de": "Druck, Zugänglichkeit und Prüfdatum kontrollieren"
+          },
+          "icon": "mdi:fire-extinguisher",
+          "default_interval_days": 180,
+          "type": "task"
+        },
+        {
+          "id": "check_emergency_kit",
+          "name": {
+            "en": "Check Emergency Kit",
+            "de": "Notfallausrüstung prüfen"
+          },
+          "description": {
+            "en": "Check emergency supplies and replace expired items",
+            "de": "Notfallausrüstung prüfen und abgelaufene Artikel ersetzen"
+          },
+          "icon": "mdi:medical-bag",
+          "default_interval_days": 180,
+          "type": "task"
+        },
+        {
+          "id": "backup_important_data",
+          "name": {
+            "en": "Backup Important Data",
+            "de": "Wichtige Daten sichern"
+          },
+          "description": {
+            "en": "Verify automated backups or perform a manual backup",
+            "de": "Automatische Backups prüfen oder manuelles Backup durchführen"
+          },
+          "icon": "mdi:backup-restore",
+          "default_interval_days": 30,
+          "type": "task"
+        },
+        {
+          "id": "test_gfci_rcd_outlets",
+          "name": {
+            "en": "Test GFCI / RCD Outlets",
+            "de": "FI-Schutzschalter testen"
+          },
+          "description": {
+            "en": "Test GFCI/RCD outlets and breakers",
+            "de": "FI-Schutzschalter und entsprechende Steckdosen testen"
+          },
+          "icon": "mdi:power-plug-outline",
+          "default_interval_days": 30,
+          "type": "task"
+        },
+        {
+          "id": "check_water_shutoff_valves",
+          "name": {
+            "en": "Check Water Shut-Off Valves",
+            "de": "Wasserabsperrventile prüfen"
+          },
+          "description": {
+            "en": "Move main and fixture shut-off valves to ensure they are usable",
+            "de": "Haupt- und Geräte-Absperrventile bewegen, damit sie bedienbar bleiben"
+          },
+          "icon": "mdi:valve",
+          "default_interval_days": 180,
+          "type": "task"
+        }
+      ]
+    },
+    {
+      "id": "seasonal",
+      "name": {
+        "en": "Seasonal",
+        "de": "Saisonale Aufgaben"
+      },
+      "icon": "mdi:weather-partly-snowy-rainy",
+      "tasks": [
+        {
+          "id": "winterize_outdoor_faucets",
+          "name": {
+            "en": "Winterize Outdoor Faucets",
+            "de": "Außenwasserhähne winterfest machen"
+          },
+          "description": {
+            "en": "Shut off and drain outdoor faucets and hoses before frost",
+            "de": "Außenwasserhähne und Schläuche vor Frost abstellen und entleeren"
+          },
+          "icon": "mdi:snowflake",
+          "default_interval_days": 365,
+          "type": "task"
+        },
+        {
+          "id": "service_lawn_mower",
+          "name": {
+            "en": "Service Lawn Mower",
+            "de": "Rasenmäher warten"
+          },
+          "description": {
+            "en": "Service the lawn mower before or after the season",
+            "de": "Rasenmäher vor oder nach der Saison warten"
+          },
+          "icon": "mdi:mower",
+          "default_interval_days": 365,
+          "type": "maintenance"
+        },
+        {
+          "id": "store_patio_furniture_for_winter",
+          "name": {
+            "en": "Store Patio Furniture for Winter",
+            "de": "Gartenmöbel winterfest einlagern"
+          },
+          "description": {
+            "en": "Clean and store patio furniture and cushions for winter",
+            "de": "Gartenmöbel und Polster reinigen und winterfest einlagern"
+          },
+          "icon": "mdi:archive-arrow-down-outline",
+          "default_interval_days": 365,
+          "type": "task"
+        },
+        {
+          "id": "check_weather_stripping",
+          "name": {
+            "en": "Check Weather Stripping",
+            "de": "Tür- und Fensterdichtungen prüfen"
+          },
+          "description": {
+            "en": "Inspect door and window seals before heating or cooling season",
+            "de": "Tür- und Fensterdichtungen vor Heiz- oder Kühlsaison prüfen"
+          },
+          "icon": "mdi:door",
+          "default_interval_days": 365,
+          "type": "maintenance"
+        },
+        {
+          "id": "test_sump_pump",
+          "name": {
+            "en": "Test Sump Pump",
+            "de": "Tauchpumpe / Hebeanlage testen"
+          },
+          "description": {
+            "en": "Test the sump pump or lifting station before heavy rain season",
+            "de": "Tauchpumpe oder Hebeanlage vor der Starkregenzeit testen"
+          },
+          "icon": "mdi:pump",
+          "default_interval_days": 90,
+          "type": "maintenance"
+        },
+        {
+          "id": "seal_driveway_deck",
+          "name": {
+            "en": "Seal Driveway / Deck",
+            "de": "Einfahrt / Terrasse versiegeln"
+          },
+          "description": {
+            "en": "Seal driveway or deck surfaces when seasonal maintenance is due",
+            "de": "Einfahrt oder Terrasse versiegeln, wenn saisonale Pflege fällig ist"
+          },
+          "icon": "mdi:brush-variant",
+          "default_interval_days": 365,
+          "type": "task"
+        }
+      ]
+    },
+    {
+      "id": "pets",
+      "name": {
+        "en": "Pets",
+        "de": "Haustiere"
+      },
+      "icon": "mdi:paw",
+      "tasks": [
+        {
+          "id": "deep_clean_litter_box_area",
+          "name": {
+            "en": "Deep-Clean Litter Box Area",
+            "de": "Katzenklo-Bereich gründlich reinigen"
+          },
+          "description": {
+            "en": "Wash the litter box, mat, and surrounding area",
+            "de": "Katzenklo, Matte und Umgebung gründlich reinigen"
+          },
+          "icon": "mdi:cat",
+          "default_interval_days": 7,
+          "type": "task"
+        },
+        {
+          "id": "wash_pet_bedding",
+          "name": {
+            "en": "Wash Pet Bedding",
+            "de": "Haustierbettzeug waschen"
+          },
+          "description": {
+            "en": "Wash pet beds, blankets, and covers",
+            "de": "Haustierbetten, Decken und Bezüge waschen"
+          },
+          "icon": "mdi:bed-outline",
+          "default_interval_days": 14,
+          "type": "task"
+        },
+        {
+          "id": "replace_pet_water_filter",
+          "name": {
+            "en": "Replace Pet Water Fountain Filter",
+            "de": "Filter des Haustier-Trinkbrunnens wechseln"
+          },
+          "description": {
+            "en": "Replace the pet water fountain filter",
+            "de": "Filter im Trinkbrunnen für Haustiere wechseln"
+          },
+          "icon": "mdi:fountain",
+          "default_interval_days": 30,
+          "type": "maintenance"
+        },
+        {
+          "id": "apply_flea_tick_treatment",
+          "name": {
+            "en": "Apply Flea & Tick Treatment",
+            "de": "Floh- und Zeckenschutz auftragen"
+          },
+          "description": {
+            "en": "Apply flea and tick treatment to pets",
+            "de": "Floh- und Zeckenschutz bei Haustieren anwenden"
+          },
+          "icon": "mdi:bug-outline",
+          "default_interval_days": 30,
+          "type": "task"
+        },
+        {
+          "id": "clean_pet_bowls_toys",
+          "name": {
+            "en": "Clean Pet Bowls & Toys",
+            "de": "Näpfchen und Spielzeug reinigen"
+          },
+          "description": {
+            "en": "Wash food bowls, water bowls, and washable pet toys",
+            "de": "Futter- und Wassernäpfe sowie waschbares Haustierspielzeug reinigen"
+          },
+          "icon": "mdi:bowl-outline",
+          "default_interval_days": 7,
+          "type": "task"
+        },
+        {
+          "id": "trim_pet_nails",
+          "name": {
+            "en": "Trim Pet Nails",
+            "de": "Krallen des Haustiers kürzen"
+          },
+          "description": {
+            "en": "Trim pet nails to a safe length",
+            "de": "Krallen des Haustiers auf sichere Länge kürzen"
+          },
+          "icon": "mdi:content-cut",
+          "default_interval_days": 30,
+          "type": "task"
+        },
+        {
+          "id": "maintain_aquarium",
+          "name": {
+            "en": "Maintain Aquarium",
+            "de": "Aquarium pflegen"
+          },
+          "description": {
+            "en": "Do a partial water change, clean glass, and check the filter",
+            "de": "Teilwasserwechsel durchführen, Glas reinigen und Filter prüfen"
+          },
+          "icon": "mdi:fishbowl-outline",
+          "default_interval_days": 7,
+          "type": "task"
+        }
+      ]
+    }
+  ]
+}

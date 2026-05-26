@@ -103,6 +103,57 @@
         "assignees_required": "Please select at least one person."
       }
     },
+    "import": {
+      "entry_type": "Import from catalog",
+      "initiate_flow": {
+        "user": "Import tasks from catalog"
+      },
+      "step": {
+        "user": {
+          "title": "Select categories",
+          "description": "Choose which categories of tasks you'd like to browse. You can pick individual tasks in the next step.",
+          "data": {
+            "categories": "Categories"
+          },
+          "data_description": {
+            "categories": "Select one or more categories to see available tasks."
+          }
+        },
+        "select_tasks": {
+          "title": "Select tasks to import",
+          "description": "Pick the tasks you want to add. Tasks marked with • exists are already set up — importing them again will create duplicates.",
+          "data": {
+            "tasks": "Tasks"
+          },
+          "data_description": {
+            "tasks": "Select the tasks you want to import."
+          }
+        },
+        "configure": {
+          "title": "Configure imported tasks",
+          "description": "Optionally adjust settings for all imported tasks. Leave fields empty to use each task's default values.",
+          "data": {
+            "interval_override": "Override interval (days)",
+            "assignees": "Assign to",
+            "rotation_mode": "Rotation mode"
+          },
+          "data_description": {
+            "interval_override": "If set, all imported tasks will use this interval instead of their defaults.",
+            "assignees": "Optionally assign people to all imported tasks.",
+            "rotation_mode": "How to pick the next person when a task is completed."
+          }
+        }
+      },
+      "error": {
+        "no_categories_selected": "Please select at least one category.",
+        "no_tasks_selected": "Please select at least one task."
+      },
+      "abort": {
+        "import_success": "Successfully imported {count} tasks.",
+        "catalog_empty": "The task catalog is empty.",
+        "no_tasks_found": "No tasks found in the selected categories."
+      }
+    },
     "maintenance": {
       "entry_type": "Maintenance",
       "initiate_flow": {

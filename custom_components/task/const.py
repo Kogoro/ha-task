@@ -15,6 +15,7 @@ CONF_ICON = "icon"
 
 SUBENTRY_TYPE_TASK = "task"
 SUBENTRY_TYPE_MAINTENANCE = "maintenance"
+SUBENTRY_TYPE_IMPORT = "import"
 
 STORAGE_KEY = "task.history"
 STORAGE_VERSION = 1

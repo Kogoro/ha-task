@@ -103,6 +103,57 @@
         "assignees_required": "Bitte wählen Sie mindestens eine Person aus."
       }
     },
+    "import": {
+      "entry_type": "Aus Katalog importieren",
+      "initiate_flow": {
+        "user": "Aufgaben aus Katalog importieren"
+      },
+      "step": {
+        "user": {
+          "title": "Kategorien auswählen",
+          "description": "Wählen Sie die Kategorien, deren Aufgaben Sie durchstöbern möchten. Im nächsten Schritt können Sie einzelne Aufgaben auswählen.",
+          "data": {
+            "categories": "Kategorien"
+          },
+          "data_description": {
+            "categories": "Wählen Sie eine oder mehrere Kategorien, um verfügbare Aufgaben zu sehen."
+          }
+        },
+        "select_tasks": {
+          "title": "Aufgaben zum Importieren auswählen",
+          "description": "Wähle die Aufgaben aus, die du hinzufügen möchtest. Aufgaben mit • vorhanden sind bereits eingerichtet — ein erneuter Import erstellt Duplikate.",
+          "data": {
+            "tasks": "Aufgaben"
+          },
+          "data_description": {
+            "tasks": "Wählen Sie die Aufgaben, die Sie importieren möchten."
+          }
+        },
+        "configure": {
+          "title": "Importierte Aufgaben konfigurieren",
+          "description": "Passen Sie optional die Einstellungen für alle importierten Aufgaben an. Lassen Sie Felder leer, um die Standardwerte der jeweiligen Aufgabe zu verwenden.",
+          "data": {
+            "interval_override": "Intervall überschreiben (Tage)",
+            "assignees": "Zuweisen an",
+            "rotation_mode": "Rotationsmodus"
+          },
+          "data_description": {
+            "interval_override": "Falls gesetzt, verwenden alle importierten Aufgaben dieses Intervall statt ihrer Standardwerte.",
+            "assignees": "Optional Personen für alle importierten Aufgaben zuweisen.",
+            "rotation_mode": "Wie die nächste Person bestimmt wird, wenn eine Aufgabe erledigt wurde."
+          }
+        }
+      },
+      "error": {
+        "no_categories_selected": "Bitte wählen Sie mindestens eine Kategorie aus.",
+        "no_tasks_selected": "Bitte wählen Sie mindestens eine Aufgabe aus."
+      },
+      "abort": {
+        "import_success": "{count} Aufgaben erfolgreich importiert.",
+        "catalog_empty": "Der Aufgabenkatalog ist leer.",
+        "no_tasks_found": "Keine Aufgaben in den gewählten Kategorien gefunden."
+      }
+    },
     "maintenance": {
       "entry_type": "Wartung",
       "initiate_flow": {
