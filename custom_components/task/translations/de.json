@@ -101,6 +101,9 @@
       "error": {
         "name_required": "Bitte geben Sie einen Aufgabennamen an.",
         "assignees_required": "Bitte wählen Sie mindestens eine Person aus."
+      },
+      "abort": {
+        "reconfigure_successful": "Aufgabe erfolgreich aktualisiert."
       }
     },
     "import": {
@@ -230,6 +233,9 @@
         "name_required": "Bitte geben Sie einen Aufgabennamen an.",
         "device_required": "Bitte wählen Sie ein Gerät aus.",
         "assignees_required": "Bitte wählen Sie mindestens eine Person aus."
+      },
+      "abort": {
+        "reconfigure_successful": "Wartungsaufgabe erfolgreich aktualisiert."
       }
     }
   },

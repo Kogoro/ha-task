@@ -14,7 +14,7 @@ from homeassistant.config_entries import (
     SubentryFlowResult,
 )
 from homeassistant.core import callback
-from homeassistant.helpers import area_registry as ar
+from homeassistant.helpers import area_registry as ar, device_registry as dr
 from homeassistant.helpers.selector import (
     AreaSelector,
     BooleanSelector,
@@ -302,10 +302,17 @@ class TaskSubentryFlow(ConfigSubentryFlow):
 
     def _update_entry(self, subentry) -> SubentryFlowResult:
         """Update the subentry from collected data."""
+        entry = self._get_entry()
+        new_title = self._data.get("name", subentry.title)
+        if new_title != subentry.title:
+            dev_reg = dr.async_get(self.hass)
+            dev_reg.async_clear_config_subentry(
+                entry.entry_id, subentry.subentry_id
+            )
         return self.async_update_and_abort(
-            self._get_entry(),
+            entry,
             subentry,
-            title=self._data.get("name", subentry.title),
+            title=new_title,
             data={
                 CONF_INTERVAL_DAYS: int(self._data[CONF_INTERVAL_DAYS]),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
@@ -535,12 +542,22 @@ class MaintenanceSubentryFlow(ConfigSubentryFlow):
 
     def _update_entry(self, subentry) -> SubentryFlowResult:
         """Update the subentry from collected data."""
+        entry = self._get_entry()
+        old_device_id = subentry.data.get(CONF_DEVICE_ID)
+        new_device_id = self._data[CONF_DEVICE_ID]
+
+        if old_device_id and old_device_id != new_device_id:
+            dev_reg = dr.async_get(self.hass)
+            dev_reg.async_clear_config_subentry(
+                entry.entry_id, subentry.subentry_id
+            )
+
         return self.async_update_and_abort(
-            self._get_entry(),
+            entry,
             subentry,
             title=self._data.get("name", subentry.title),
             data={
-                CONF_DEVICE_ID: self._data[CONF_DEVICE_ID],
+                CONF_DEVICE_ID: new_device_id,
                 CONF_INTERVAL_DAYS: int(self._data[CONF_INTERVAL_DAYS]),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
                 CONF_ROTATION_MODE: self._data.get(

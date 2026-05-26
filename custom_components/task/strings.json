@@ -101,6 +101,9 @@
       "error": {
         "name_required": "Please provide a task name.",
         "assignees_required": "Please select at least one person."
+      },
+      "abort": {
+        "reconfigure_successful": "Task updated successfully."
       }
     },
     "import": {
@@ -230,6 +233,9 @@
         "name_required": "Please provide a task name.",
         "device_required": "Please select a device.",
         "assignees_required": "Please select at least one person."
+      },
+      "abort": {
+        "reconfigure_successful": "Maintenance task updated successfully."
       }
     }
   },
