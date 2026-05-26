@@ -21,7 +21,7 @@ from .coordinator import TaskConfigEntry, TaskCoordinator
 from .store import TaskStore
 
 FRONTEND_SCRIPT_PATH = f"/{DOMAIN}/task-card.js"
-FRONTEND_SCRIPT_URL = f"{FRONTEND_SCRIPT_PATH}?v=0.5.0"
+FRONTEND_SCRIPT_URL = f"{FRONTEND_SCRIPT_PATH}?v=0.6.0"
 
 _LOGGER = logging.getLogger(__name__)
 

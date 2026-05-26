@@ -1938,4 +1938,1177 @@
   }
 
   customElements.define("task-single-card-editor", TaskSingleCardEditor);
+
+  // ─────────────────────────────────────────────────────────
+  // TaskActivityCard — recent activity feed across areas
+  // ─────────────────────────────────────────────────────────
+
+  class TaskActivityCard extends LitElement {
+    static get properties() {
+      return {
+        hass: { type: Object },
+        _config: { type: Object },
+      };
+    }
+
+    setConfig(config) {
+      if (!config.area && !config.areas) {
+        throw new Error("Please define 'area' or 'areas'");
+      }
+      this._config = {
+        title: "",
+        icon: "mdi:history",
+        max_items: 15,
+        show_task_type: true,
+        ...config,
+      };
+    }
+
+    set hass(hass) {
+      this._hass = hass;
+      this.requestUpdate();
+    }
+
+    get hass() {
+      return this._hass;
+    }
+
+    getCardSize() {
+      return 4;
+    }
+
+    static getConfigElement() {
+      return document.createElement("task-activity-card-editor");
+    }
+
+    static getStubConfig() {
+      return { area: "", max_items: 15 };
+    }
+
+    _getAreaList() {
+      return this._config.areas
+        || (this._config.area ? (Array.isArray(this._config.area) ? this._config.area : [this._config.area]) : null);
+    }
+
+    _getTaskEntities() {
+      if (!this.hass) return [];
+      const areaList = this._getAreaList();
+      if (!areaList) return [];
+      return Object.entries(this.hass.states)
+        .filter(([eid, state]) => {
+          if (!eid.startsWith("sensor.")) return false;
+          const attrs = state.attributes;
+          return (
+            areaList.includes(attrs.area_id) &&
+            attrs.interval_days !== undefined &&
+            !eid.endsWith("_history")
+          );
+        })
+        .map(([eid, state]) => ({ entityId: eid, state }));
+    }
+
+    _getPersonName(personEntityId) {
+      if (!personEntityId || !this.hass) return null;
+      const state = this.hass.states[personEntityId];
+      return state ? state.attributes.friendly_name || state.state : personEntityId.replace("person.", "").replace(/_/g, " ");
+    }
+
+    _getPersonAvatar(personEntityId) {
+      if (!personEntityId || !this.hass) return null;
+      const state = this.hass.states[personEntityId];
+      return state?.attributes?.entity_picture || null;
+    }
+
+    _renderAvatar(personEntityId, size) {
+      const avatar = this._getPersonAvatar(personEntityId);
+      const name = this._getPersonName(personEntityId);
+      const cls = size === "small" ? "avatar" : "avatar";
+      if (avatar) {
+        return html`<img class="${cls}" src="${avatar}" alt="${name}" />`;
+      }
+      const initial = name ? name.charAt(0).toUpperCase() : "?";
+      return html`<span class="${cls} avatar-fallback">${initial}</span>`;
+    }
+
+    _formatRelativeTime(isoStr) {
+      if (!isoStr) return "never";
+      const date = new Date(isoStr);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      if (diffMins < 1) return "just now";
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays === 1) return "yesterday";
+      if (diffDays < 30) return `${diffDays} days ago`;
+      const diffMonths = Math.floor(diffDays / 30);
+      return `${diffMonths} month${diffMonths !== 1 ? "s" : ""} ago`;
+    }
+
+    _getHeaderTitle() {
+      if (this._config.title) return this._config.title;
+      return "Recent Activity";
+    }
+
+    _getDayLabel(date) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const diffDays = Math.round((today - target) / 86400000);
+      if (diffDays === 0) return "Today";
+      if (diffDays === 1) return "Yesterday";
+      return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    }
+
+    _getActivityItems() {
+      const tasks = this._getTaskEntities();
+      const items = [];
+
+      for (const { entityId, state } of tasks) {
+        const completions = state.attributes.recent_completions;
+        if (!completions) continue;
+        const taskName = state.attributes.friendly_name || entityId;
+        const subentryType = state.attributes.subentry_type;
+        for (const entry of completions) {
+          items.push({
+            taskName,
+            completedAt: entry.completed_at,
+            completedBy: entry.completed_by,
+            subentryType,
+          });
+        }
+      }
+
+      items.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+      return items.slice(0, this._config.max_items);
+    }
+
+    render() {
+      if (!this.hass || !this._config) {
+        return html`<ha-card>
+          <div class="loading">
+            <div class="loading-pulse"></div>
+            <span>Loading activity…</span>
+          </div>
+        </ha-card>`;
+      }
+
+      const items = this._getActivityItems();
+      const title = this._getHeaderTitle();
+
+      if (items.length === 0) {
+        return html`
+          <ha-card>
+            <div class="card-header">
+              <ha-icon icon=${this._config.icon || "mdi:history"} class="header-icon"></ha-icon>
+              <span class="header-title">${title}</span>
+            </div>
+            <div class="empty-state">
+              <ha-icon icon="mdi:clock-outline" class="empty-icon"></ha-icon>
+              <span class="empty-title">No activity recorded yet</span>
+              <span class="empty-subtitle">Completions will appear here</span>
+            </div>
+          </ha-card>
+        `;
+      }
+
+      const grouped = [];
+      let currentDay = null;
+      for (const item of items) {
+        const date = new Date(item.completedAt);
+        const dayLabel = this._getDayLabel(date);
+        if (dayLabel !== currentDay) {
+          currentDay = dayLabel;
+          grouped.push({ type: "separator", label: dayLabel });
+        }
+        grouped.push({ type: "item", ...item });
+      }
+
+      return html`
+        <ha-card>
+          <div class="card-header">
+            <ha-icon icon=${this._config.icon || "mdi:history"} class="header-icon"></ha-icon>
+            <span class="header-title">${title}</span>
+            <span class="item-count">${items.length}</span>
+          </div>
+          <div class="activity-list">
+            ${grouped.map((entry) => {
+              if (entry.type === "separator") {
+                return html`<div class="day-separator"><span class="day-label">${entry.label}</span></div>`;
+              }
+              return html`
+                <div class="activity-item">
+                  ${entry.completedBy
+                    ? this._renderAvatar(entry.completedBy)
+                    : html`<span class="avatar avatar-fallback">?</span>`}
+                  <div class="activity-text">
+                    <span class="activity-person">${this._getPersonName(entry.completedBy) || "Unknown"}</span>
+                    <span class="activity-verb">completed</span>
+                    <span class="activity-task">${entry.taskName}</span>
+                    ${this._config.show_task_type && entry.subentryType === "maintenance"
+                      ? html`<span class="type-badge maintenance-type"><ha-icon icon="mdi:wrench" class="type-badge-icon"></ha-icon></span>`
+                      : ""}
+                  </div>
+                  <span class="activity-time">${this._formatRelativeTime(entry.completedAt)}</span>
+                </div>
+              `;
+            })}
+          </div>
+        </ha-card>
+      `;
+    }
+
+    static get styles() {
+      return css`
+        :host {
+          --task-card-spacing: 12px;
+        }
+
+        ha-card {
+          padding: 0;
+          overflow: hidden;
+        }
+
+        .card-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 16px 16px 12px;
+        }
+
+        .header-icon {
+          --mdc-icon-size: 22px;
+          color: var(--primary-color);
+        }
+
+        .header-title {
+          font-size: 16px;
+          font-weight: 500;
+          color: var(--primary-text-color);
+          flex: 1;
+        }
+
+        .item-count {
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--primary-color);
+          background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+          border-radius: 10px;
+          padding: 2px 8px;
+          min-width: 20px;
+          text-align: center;
+        }
+
+        .activity-list {
+          padding: 0 var(--task-card-spacing) var(--task-card-spacing);
+        }
+
+        .day-separator {
+          padding: 8px 4px 4px;
+        }
+
+        .day-separator:first-child {
+          padding-top: 0;
+        }
+
+        .day-label {
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: var(--secondary-text-color);
+          opacity: 0.7;
+        }
+
+        .activity-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 4px;
+          border-radius: 8px;
+          transition: background 0.15s ease;
+        }
+
+        .activity-item:hover {
+          background: color-mix(in srgb, var(--primary-text-color) 4%, transparent);
+        }
+
+        .avatar {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          object-fit: cover;
+          flex-shrink: 0;
+        }
+
+        .avatar-fallback {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: color-mix(in srgb, var(--primary-color) 18%, transparent);
+          color: var(--primary-color);
+          font-size: 11px;
+          font-weight: 600;
+        }
+
+        .activity-text {
+          flex: 1;
+          font-size: 12px;
+          color: var(--secondary-text-color);
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .activity-person {
+          font-weight: 500;
+          color: var(--primary-text-color);
+        }
+
+        .activity-verb {
+          margin: 0 3px;
+        }
+
+        .activity-task {
+          font-weight: 500;
+          color: var(--primary-text-color);
+        }
+
+        .type-badge {
+          display: inline-flex;
+          align-items: center;
+          vertical-align: middle;
+          margin-left: 4px;
+          padding: 1px 4px;
+          border-radius: 4px;
+          font-size: 10px;
+        }
+
+        .maintenance-type {
+          background: color-mix(in srgb, var(--info-color, #2196f3) 12%, transparent);
+          color: var(--info-color, #2196f3);
+        }
+
+        .type-badge-icon {
+          --mdc-icon-size: 12px;
+        }
+
+        .activity-time {
+          font-size: 11px;
+          color: var(--secondary-text-color);
+          opacity: 0.7;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+
+        .empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          padding: 32px 16px;
+          color: var(--secondary-text-color);
+        }
+
+        .empty-icon {
+          --mdc-icon-size: 48px;
+          opacity: 0.25;
+          margin-bottom: 4px;
+          color: var(--secondary-text-color);
+        }
+
+        .empty-title {
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--primary-text-color);
+        }
+
+        .empty-subtitle {
+          font-size: 12px;
+          opacity: 0.7;
+        }
+
+        .loading {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+          padding: 32px 16px;
+          color: var(--secondary-text-color);
+          font-size: 13px;
+        }
+
+        .loading-pulse {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+          animation: pulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% { transform: scale(0.9); opacity: 0.5; }
+          50% { transform: scale(1.1); opacity: 1; }
+        }
+      `;
+    }
+  }
+
+  customElements.define("task-activity-card", TaskActivityCard);
+
+  window.customCards.push({
+    type: "task-activity-card",
+    name: "Task Activity Card",
+    description: "Recent task completion activity feed",
+    preview: true,
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // TaskActivityCardEditor
+  // ─────────────────────────────────────────────────────────
+
+  class TaskActivityCardEditor extends LitElement {
+    static get properties() {
+      return {
+        hass: { type: Object },
+        _config: { type: Object },
+      };
+    }
+
+    setConfig(config) {
+      this._config = {
+        max_items: 15,
+        show_task_type: true,
+        ...config,
+      };
+    }
+
+    _fireChanged() {
+      this.dispatchEvent(
+        new CustomEvent("config-changed", {
+          detail: { config: this._config },
+          bubbles: true,
+          composed: true,
+        })
+      );
+    }
+
+    _schemaChanged(ev) {
+      this._config = { ...this._config, ...ev.detail.value };
+      this._fireChanged();
+    }
+
+    render() {
+      if (!this._config) return html``;
+
+      const schema = [
+        { name: "areas", selector: { area: { multiple: true } } },
+        { name: "title", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} } },
+        {
+          name: "max_items",
+          selector: { number: { min: 1, max: 100, mode: "box" } },
+        },
+        {
+          name: "show_task_type",
+          selector: { boolean: {} },
+        },
+      ];
+
+      return html`
+        <ha-form
+          .hass=${this.hass}
+          .data=${this._config}
+          .schema=${schema}
+          .computeLabel=${(s) => {
+            const labels = {
+              areas: "Areas",
+              title: "Title (optional)",
+              icon: "Icon (optional)",
+              max_items: "Maximum items",
+              show_task_type: "Show task/maintenance badge",
+            };
+            return labels[s.name] || s.name;
+          }}
+          @value-changed=${this._schemaChanged}
+        ></ha-form>
+      `;
+    }
+
+    static get styles() {
+      return css`
+        ha-form {
+          display: block;
+          padding: 16px;
+        }
+      `;
+    }
+  }
+
+  customElements.define("task-activity-card-editor", TaskActivityCardEditor);
+
+  // ─────────────────────────────────────────────────────────
+  // TaskRankingCard — leaderboard / user rankings
+  // ─────────────────────────────────────────────────────────
+
+  class TaskRankingCard extends LitElement {
+    static get properties() {
+      return {
+        hass: { type: Object },
+        _config: { type: Object },
+        _period: { type: String },
+      };
+    }
+
+    constructor() {
+      super();
+      this._period = "all_time";
+    }
+
+    setConfig(config) {
+      if (!config.area && !config.areas) {
+        throw new Error("Please define 'area' or 'areas'");
+      }
+      this._config = {
+        title: "Task Champions",
+        icon: "mdi:trophy",
+        period: "all_time",
+        show_streak: true,
+        show_bar: true,
+        ...config,
+      };
+      this._period = this._config.period;
+    }
+
+    set hass(hass) {
+      this._hass = hass;
+      this.requestUpdate();
+    }
+
+    get hass() {
+      return this._hass;
+    }
+
+    getCardSize() {
+      return 4;
+    }
+
+    static getConfigElement() {
+      return document.createElement("task-ranking-card-editor");
+    }
+
+    static getStubConfig() {
+      return { area: "", period: "all_time" };
+    }
+
+    _getAreaList() {
+      return this._config.areas
+        || (this._config.area ? (Array.isArray(this._config.area) ? this._config.area : [this._config.area]) : null);
+    }
+
+    _getTaskEntities() {
+      if (!this.hass) return [];
+      const areaList = this._getAreaList();
+      if (!areaList) return [];
+      return Object.entries(this.hass.states)
+        .filter(([eid, state]) => {
+          if (!eid.startsWith("sensor.")) return false;
+          const attrs = state.attributes;
+          return (
+            areaList.includes(attrs.area_id) &&
+            attrs.interval_days !== undefined &&
+            !eid.endsWith("_history")
+          );
+        })
+        .map(([eid, state]) => ({ entityId: eid, state }));
+    }
+
+    _getPersonName(personEntityId) {
+      if (!personEntityId || !this.hass) return null;
+      const state = this.hass.states[personEntityId];
+      return state ? state.attributes.friendly_name || state.state : personEntityId.replace("person.", "").replace(/_/g, " ");
+    }
+
+    _getPersonAvatar(personEntityId) {
+      if (!personEntityId || !this.hass) return null;
+      const state = this.hass.states[personEntityId];
+      return state?.attributes?.entity_picture || null;
+    }
+
+    _renderAvatar(personEntityId, large) {
+      const avatar = this._getPersonAvatar(personEntityId);
+      const name = this._getPersonName(personEntityId);
+      const cls = large ? "avatar avatar-large" : "avatar";
+      if (avatar) {
+        return html`<img class="${cls}" src="${avatar}" alt="${name}" />`;
+      }
+      const initial = name ? name.charAt(0).toUpperCase() : "?";
+      return html`<span class="${cls} avatar-fallback">${initial}</span>`;
+    }
+
+    _setPeriod(period) {
+      this._period = period;
+    }
+
+    _getPeriodCutoff() {
+      const now = new Date();
+      if (this._period === "week") {
+        return new Date(now.getTime() - 7 * 86400000);
+      }
+      if (this._period === "month") {
+        return new Date(now.getTime() - 30 * 86400000);
+      }
+      return null;
+    }
+
+    _getRankings() {
+      const tasks = this._getTaskEntities();
+      const cutoff = this._getPeriodCutoff();
+      const counts = {};
+
+      for (const { state } of tasks) {
+        const completions = state.attributes.recent_completions;
+        if (!completions) continue;
+        for (const entry of completions) {
+          if (cutoff && new Date(entry.completed_at) < cutoff) continue;
+          const person = entry.completed_by || "__unknown__";
+          counts[person] = (counts[person] || 0) + 1;
+        }
+      }
+
+      return Object.entries(counts)
+        .map(([personId, count]) => ({ personId, count }))
+        .sort((a, b) => b.count - a.count);
+    }
+
+    _getStreak(personId) {
+      const tasks = this._getTaskEntities();
+      const allDates = new Set();
+
+      for (const { state } of tasks) {
+        const completions = state.attributes.recent_completions;
+        if (!completions) continue;
+        for (const entry of completions) {
+          if (entry.completed_by !== personId) continue;
+          const d = new Date(entry.completed_at);
+          allDates.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+        }
+      }
+
+      if (allDates.size === 0) return 0;
+
+      let streak = 0;
+      const now = new Date();
+      let check = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      while (true) {
+        const key = `${check.getFullYear()}-${check.getMonth()}-${check.getDate()}`;
+        if (allDates.has(key)) {
+          streak++;
+          check = new Date(check.getTime() - 86400000);
+        } else if (streak === 0) {
+          check = new Date(check.getTime() - 86400000);
+          const prevKey = `${check.getFullYear()}-${check.getMonth()}-${check.getDate()}`;
+          if (allDates.has(prevKey)) {
+            streak++;
+            check = new Date(check.getTime() - 86400000);
+          } else {
+            break;
+          }
+        } else {
+          break;
+        }
+      }
+
+      return streak;
+    }
+
+    _getRankAccent(rank) {
+      if (rank === 1) return "#FFD700";
+      if (rank === 2) return "#C0C0C0";
+      if (rank === 3) return "#CD7F32";
+      return null;
+    }
+
+    _getRankIcon(rank) {
+      if (rank === 1) return "mdi:crown";
+      if (rank === 2) return "mdi:medal";
+      if (rank === 3) return "mdi:medal-outline";
+      return null;
+    }
+
+    render() {
+      if (!this.hass || !this._config) {
+        return html`<ha-card>
+          <div class="loading">
+            <div class="loading-pulse"></div>
+            <span>Loading rankings…</span>
+          </div>
+        </ha-card>`;
+      }
+
+      const rankings = this._getRankings();
+      const maxCount = rankings.length > 0 ? rankings[0].count : 1;
+      const title = this._config.title || "Task Champions";
+      const periodLabels = { all_time: "All Time", month: "Month", week: "Week" };
+
+      if (rankings.length === 0) {
+        return html`
+          <ha-card>
+            <div class="card-header">
+              <ha-icon icon=${this._config.icon || "mdi:trophy"} class="header-icon"></ha-icon>
+              <span class="header-title">${title}</span>
+            </div>
+            <div class="period-bar">
+              ${["all_time", "month", "week"].map(
+                (p) => html`
+                  <button class="period-chip ${this._period === p ? "active" : ""}" @click=${() => this._setPeriod(p)}>
+                    ${periodLabels[p]}
+                  </button>
+                `
+              )}
+            </div>
+            <div class="empty-state">
+              <ha-icon icon="mdi:trophy-outline" class="empty-icon"></ha-icon>
+              <span class="empty-title">No completions yet</span>
+              <span class="empty-subtitle">Who will be first?</span>
+            </div>
+          </ha-card>
+        `;
+      }
+
+      return html`
+        <ha-card>
+          <div class="card-header">
+            <ha-icon icon=${this._config.icon || "mdi:trophy"} class="header-icon"></ha-icon>
+            <span class="header-title">${title}</span>
+          </div>
+          <div class="period-bar">
+            ${["all_time", "month", "week"].map(
+              (p) => html`
+                <button class="period-chip ${this._period === p ? "active" : ""}" @click=${() => this._setPeriod(p)}>
+                  ${periodLabels[p]}
+                </button>
+              `
+            )}
+          </div>
+          <div class="ranking-list">
+            ${rankings.map((entry, idx) => {
+              const rank = idx + 1;
+              const accent = this._getRankAccent(rank);
+              const rankIcon = this._getRankIcon(rank);
+              const isTop3 = rank <= 3;
+              const barWidth = this._config.show_bar ? Math.max(8, (entry.count / maxCount) * 100) : 0;
+              const streak = this._config.show_streak ? this._getStreak(entry.personId) : 0;
+
+              return html`
+                <div class="rank-row ${isTop3 ? "top-3" : ""}" style=${accent ? `--rank-accent: ${accent}` : ""}>
+                  ${this._config.show_bar ? html`
+                    <div class="rank-bar" style="width: ${barWidth}%"></div>
+                  ` : ""}
+                  <div class="rank-content">
+                    <span class="rank-number ${isTop3 ? "rank-top" : ""}">
+                      ${rankIcon
+                        ? html`<ha-icon icon=${rankIcon} class="rank-icon" style="color: ${accent}"></ha-icon>`
+                        : html`${rank}`}
+                    </span>
+                    ${this._renderAvatar(entry.personId, isTop3)}
+                    <div class="rank-info">
+                      <span class="rank-name">${this._getPersonName(entry.personId) || "Unknown"}</span>
+                      ${streak > 0 ? html`
+                        <span class="streak-badge">
+                          <ha-icon icon="mdi:fire" class="streak-icon"></ha-icon>${streak}d
+                        </span>
+                      ` : ""}
+                    </div>
+                    <span class="rank-count ${isTop3 ? "count-top" : ""}">${entry.count}</span>
+                  </div>
+                </div>
+              `;
+            })}
+          </div>
+        </ha-card>
+      `;
+    }
+
+    static get styles() {
+      return css`
+        :host {
+          --task-card-spacing: 12px;
+        }
+
+        ha-card {
+          padding: 0;
+          overflow: hidden;
+        }
+
+        .card-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 16px 16px 8px;
+        }
+
+        .header-icon {
+          --mdc-icon-size: 22px;
+          color: var(--primary-color);
+        }
+
+        .header-title {
+          font-size: 16px;
+          font-weight: 500;
+          color: var(--primary-text-color);
+          flex: 1;
+        }
+
+        /* ── Period chips ── */
+
+        .period-bar {
+          display: flex;
+          gap: 6px;
+          padding: 0 16px 10px;
+        }
+
+        .period-chip {
+          border: none;
+          border-radius: 12px;
+          padding: 4px 10px;
+          font-size: 11px;
+          font-weight: 500;
+          font-family: inherit;
+          cursor: pointer;
+          transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+          background: color-mix(in srgb, var(--primary-text-color) 8%, transparent);
+          color: var(--secondary-text-color);
+          height: 24px;
+          display: inline-flex;
+          align-items: center;
+        }
+
+        .period-chip:hover {
+          background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+          color: var(--primary-color);
+        }
+
+        .period-chip.active {
+          background: var(--primary-color);
+          color: var(--text-primary-color, #fff);
+        }
+
+        .period-chip:active {
+          transform: scale(0.95);
+        }
+
+        /* ── Ranking list ── */
+
+        .ranking-list {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          padding: 0 var(--task-card-spacing) var(--task-card-spacing);
+        }
+
+        .rank-row {
+          position: relative;
+          border-radius: 10px;
+          overflow: hidden;
+          transition: transform 0.15s ease;
+        }
+
+        .rank-row:hover {
+          transform: translateX(2px);
+        }
+
+        .rank-bar {
+          position: absolute;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          background: color-mix(in srgb, var(--rank-accent, var(--primary-color)) 10%, transparent);
+          border-radius: 10px;
+          transition: width 0.4s ease;
+        }
+
+        .rank-content {
+          position: relative;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 8px 10px;
+          z-index: 1;
+        }
+
+        .top-3 .rank-content {
+          padding: 10px;
+        }
+
+        .rank-number {
+          width: 24px;
+          text-align: center;
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--secondary-text-color);
+          flex-shrink: 0;
+        }
+
+        .rank-top {
+          font-size: 0;
+        }
+
+        .rank-icon {
+          --mdc-icon-size: 20px;
+        }
+
+        .top-3 .rank-icon {
+          --mdc-icon-size: 22px;
+        }
+
+        .avatar {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          object-fit: cover;
+          flex-shrink: 0;
+        }
+
+        .avatar-large {
+          width: 34px;
+          height: 34px;
+        }
+
+        .avatar-fallback {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: color-mix(in srgb, var(--primary-color) 18%, transparent);
+          color: var(--primary-color);
+          font-size: 12px;
+          font-weight: 600;
+        }
+
+        .avatar-large.avatar-fallback {
+          font-size: 14px;
+        }
+
+        .rank-info {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .rank-name {
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--primary-text-color);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .top-3 .rank-name {
+          font-size: 14px;
+          font-weight: 600;
+        }
+
+        .streak-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 2px;
+          font-size: 10px;
+          font-weight: 600;
+          color: var(--warning-color, #ff9800);
+          background: color-mix(in srgb, var(--warning-color, #ff9800) 12%, transparent);
+          border-radius: 8px;
+          padding: 1px 5px;
+          flex-shrink: 0;
+        }
+
+        .streak-icon {
+          --mdc-icon-size: 12px;
+          color: var(--warning-color, #ff9800);
+        }
+
+        .rank-count {
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--primary-text-color);
+          flex-shrink: 0;
+          min-width: 28px;
+          text-align: right;
+        }
+
+        .count-top {
+          font-size: 18px;
+          color: var(--rank-accent, var(--primary-color));
+        }
+
+        /* ── States ── */
+
+        .empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          padding: 32px 16px;
+          color: var(--secondary-text-color);
+        }
+
+        .empty-icon {
+          --mdc-icon-size: 48px;
+          opacity: 0.25;
+          margin-bottom: 4px;
+          color: var(--secondary-text-color);
+        }
+
+        .empty-title {
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--primary-text-color);
+        }
+
+        .empty-subtitle {
+          font-size: 12px;
+          opacity: 0.7;
+        }
+
+        .loading {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+          padding: 32px 16px;
+          color: var(--secondary-text-color);
+          font-size: 13px;
+        }
+
+        .loading-pulse {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+          animation: pulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% { transform: scale(0.9); opacity: 0.5; }
+          50% { transform: scale(1.1); opacity: 1; }
+        }
+      `;
+    }
+  }
+
+  customElements.define("task-ranking-card", TaskRankingCard);
+
+  window.customCards.push({
+    type: "task-ranking-card",
+    name: "Task Ranking Card",
+    description: "Leaderboard showing who completes the most tasks",
+    preview: true,
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // TaskRankingCardEditor
+  // ─────────────────────────────────────────────────────────
+
+  class TaskRankingCardEditor extends LitElement {
+    static get properties() {
+      return {
+        hass: { type: Object },
+        _config: { type: Object },
+      };
+    }
+
+    setConfig(config) {
+      this._config = {
+        title: "Task Champions",
+        icon: "mdi:trophy",
+        period: "all_time",
+        show_streak: true,
+        show_bar: true,
+        ...config,
+      };
+    }
+
+    _fireChanged() {
+      this.dispatchEvent(
+        new CustomEvent("config-changed", {
+          detail: { config: this._config },
+          bubbles: true,
+          composed: true,
+        })
+      );
+    }
+
+    _schemaChanged(ev) {
+      this._config = { ...this._config, ...ev.detail.value };
+      this._fireChanged();
+    }
+
+    render() {
+      if (!this._config) return html``;
+
+      const schema = [
+        { name: "areas", selector: { area: { multiple: true } } },
+        { name: "title", selector: { text: {} } },
+        { name: "icon", selector: { icon: {} } },
+        {
+          name: "period",
+          selector: {
+            select: {
+              options: [
+                { value: "all_time", label: "All Time" },
+                { value: "month", label: "Last 30 Days" },
+                { value: "week", label: "Last 7 Days" },
+              ],
+              mode: "dropdown",
+            },
+          },
+        },
+        {
+          name: "show_streak",
+          selector: { boolean: {} },
+        },
+        {
+          name: "show_bar",
+          selector: { boolean: {} },
+        },
+      ];
+
+      return html`
+        <ha-form
+          .hass=${this.hass}
+          .data=${this._config}
+          .schema=${schema}
+          .computeLabel=${(s) => {
+            const labels = {
+              areas: "Areas",
+              title: "Title (optional)",
+              icon: "Icon (optional)",
+              period: "Default period",
+              show_streak: "Show streak badges",
+              show_bar: "Show visual bar",
+            };
+            return labels[s.name] || s.name;
+          }}
+          @value-changed=${this._schemaChanged}
+        ></ha-form>
+      `;
+    }
+
+    static get styles() {
+      return css`
+        ha-form {
+          display: block;
+          padding: 16px;
+        }
+      `;
+    }
+  }
+
+  customElements.define("task-ranking-card-editor", TaskRankingCardEditor);
 })();
