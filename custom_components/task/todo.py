@@ -10,10 +10,18 @@ from homeassistant.components.todo import (
 )
 from homeassistant.config_entries import ConfigSubentry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_ASSIGNEE, CONF_INTERVAL_DAYS, SUBENTRY_TYPE_TASK
+from .const import (
+    CONF_ASSIGNEES,
+    CONF_INTERVAL_DAYS,
+    CONF_ROTATION_MODE,
+    DOMAIN,
+    SUBENTRY_TYPE_TASK,
+    RotationMode,
+)
 from .coordinator import TaskConfigEntry, TaskCoordinator
 
 
@@ -40,6 +48,13 @@ class TaskTodoEntity(CoordinatorEntity[TaskCoordinator], TodoListEntity):
         """Initialize the todo entity."""
         super().__init__(coordinator)
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_todo"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, coordinator.config_entry.entry_id)},
+            name=f"{coordinator.data.area_name} Tasks",
+            suggested_area=coordinator.data.area_name,
+            manufacturer="Task",
+            model="Task Manager",
+        )
 
     @property
     def name(self) -> str:
@@ -53,22 +68,21 @@ class TaskTodoEntity(CoordinatorEntity[TaskCoordinator], TodoListEntity):
 
     @property
     def todo_items(self) -> list[TodoItem] | None:
-        """Return todo items for all tasks in this area."""
+        """Return todo items for all tasks and maintenance in this area."""
         if self.coordinator.data is None:
             return None
 
         items: list[TodoItem] = []
-        for task in self.coordinator.data.tasks.values():
-            status = (
-                TodoItemStatus.NEEDS_ACTION
-                if task.overdue or task.days_until_due is not None and task.days_until_due <= 0
-                else TodoItemStatus.COMPLETED
-            )
+        all_items = {
+            **self.coordinator.data.tasks,
+            **self.coordinator.data.maintenance,
+        }
+        for task in all_items.values():
             items.append(
                 TodoItem(
                     uid=task.subentry_id,
                     summary=task.name,
-                    status=status,
+                    status=TodoItemStatus.NEEDS_ACTION,
                     description=task.description,
                     due=task.next_due,
                 )
@@ -81,7 +95,8 @@ class TaskTodoEntity(CoordinatorEntity[TaskCoordinator], TodoListEntity):
         subentry = ConfigSubentry(
             data=MappingProxyType({
                 CONF_INTERVAL_DAYS: 7,
-                CONF_ASSIGNEE: None,
+                CONF_ASSIGNEES: [],
+                CONF_ROTATION_MODE: RotationMode.ROUND_ROBIN,
                 "description": item.description,
                 "icon": None,
             }),
@@ -93,10 +108,12 @@ class TaskTodoEntity(CoordinatorEntity[TaskCoordinator], TodoListEntity):
         await self.coordinator.async_request_refresh()
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
-        """Update a todo item — mark as completed if status changed."""
+        """Update a todo item — record completion when checked off."""
         if item.uid is None:
             return
 
         if item.status == TodoItemStatus.COMPLETED:
-            self.coordinator.store.record_completion(item.uid)
+            task = self.coordinator._find_item(item.uid)
+            completed_by = task.current_assignee if task else None
+            self.coordinator.complete_task(item.uid, completed_by=completed_by)
             await self.coordinator.async_request_refresh()

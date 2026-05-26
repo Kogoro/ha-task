@@ -1,0 +1,217 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Bereich hinzufügen",
+        "description": "Wählen Sie den Bereich Ihres Zuhauses, für den Sie wiederkehrende Aufgaben verwalten möchten. Jeder Bereich erhält einen eigenen Satz an Aufgaben.",
+        "data": {
+          "area_id": "Bereich"
+        },
+        "data_description": {
+          "area_id": "Der Bereich, in dem Aufgaben verfolgt werden."
+        }
+      },
+      "reconfigure": {
+        "title": "Bereich ändern",
+        "description": "Verschieben Sie diese Aufgabengruppe in einen anderen Bereich.",
+        "data": {
+          "area_id": "Bereich"
+        },
+        "data_description": {
+          "area_id": "Wählen Sie einen anderen Bereich für diese Aufgabengruppe."
+        }
+      }
+    },
+    "error": {
+      "area_required": "Bitte wählen Sie einen Bereich aus."
+    },
+    "abort": {
+      "already_configured": "Für diesen Bereich ist bereits eine Aufgabenverwaltung eingerichtet."
+    }
+  },
+  "config_subentries": {
+    "task": {
+      "entry_type": "Aufgabe",
+      "initiate_flow": {
+        "user": "Aufgabe hinzufügen",
+        "reconfigure": "Aufgabe bearbeiten"
+      },
+      "step": {
+        "user": {
+          "title": "Aufgabe hinzufügen",
+          "description": "Richten Sie eine neue wiederkehrende Haushaltsaufgabe ein. Wählen Sie, wie oft sie sich wiederholen soll.",
+          "data": {
+            "name": "Aufgabenname",
+            "interval_days": "Wiederholung alle (Tage)",
+            "description": "Beschreibung",
+            "icon": "Symbol",
+            "unassigned": "Nicht zugewiesen lassen"
+          },
+          "data_description": {
+            "name": "Ein kurzer, beschreibender Name wie \"Wohnzimmer saugen\" oder \"Pflanzen gießen\".",
+            "interval_days": "Wie viele Tage zwischen jeder Wiederholung dieser Aufgabe.",
+            "description": "Optionale Hinweise oder Anweisungen für die ausführende Person.",
+            "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Aufgabe.",
+            "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen."
+          }
+        },
+        "assignees": {
+          "title": "Personen zuweisen (optional)",
+          "description": "Wählen Sie, wer für diese Aufgabe verantwortlich ist und wie zwischen den Personen gewechselt wird.",
+          "data": {
+            "assignees": "Zugewiesen an",
+            "rotation_mode": "Rotationsmodus"
+          },
+          "data_description": {
+            "assignees": "Wählen Sie eine oder mehrere Personen für die Rotation.",
+            "rotation_mode": "Wie die nächste Person bestimmt wird, wenn die Aufgabe erledigt wurde."
+          }
+        },
+        "reconfigure": {
+          "title": "Aufgabe bearbeiten",
+          "description": "Aktualisieren Sie die Einstellungen für diese Aufgabe.",
+          "data": {
+            "name": "Aufgabenname",
+            "interval_days": "Wiederholung alle (Tage)",
+            "description": "Beschreibung",
+            "icon": "Symbol",
+            "unassigned": "Nicht zugewiesen lassen"
+          },
+          "data_description": {
+            "name": "Ein kurzer, beschreibender Name wie \"Wohnzimmer saugen\" oder \"Pflanzen gießen\".",
+            "interval_days": "Wie viele Tage zwischen jeder Wiederholung dieser Aufgabe.",
+            "description": "Optionale Hinweise oder Anweisungen für die ausführende Person.",
+            "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Aufgabe.",
+            "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen."
+          }
+        },
+        "reconfigure_assignees": {
+          "title": "Personen zuweisen (optional)",
+          "description": "Wählen Sie, wer für diese Aufgabe verantwortlich ist und wie zwischen den Personen gewechselt wird.",
+          "data": {
+            "assignees": "Zugewiesen an",
+            "rotation_mode": "Rotationsmodus"
+          },
+          "data_description": {
+            "assignees": "Wählen Sie eine oder mehrere Personen für die Rotation.",
+            "rotation_mode": "Wie die nächste Person bestimmt wird, wenn die Aufgabe erledigt wurde."
+          }
+        }
+      },
+      "error": {
+        "name_required": "Bitte geben Sie einen Aufgabennamen an.",
+        "assignees_required": "Bitte wählen Sie mindestens eine Person aus."
+      }
+    },
+    "maintenance": {
+      "entry_type": "Wartung",
+      "initiate_flow": {
+        "user": "Wartungsaufgabe hinzufügen",
+        "reconfigure": "Wartungsaufgabe bearbeiten"
+      },
+      "step": {
+        "user": {
+          "title": "Wartungsaufgabe hinzufügen",
+          "description": "Richten Sie eine wiederkehrende Wartungsaufgabe für ein Gerät ein. Verfolgen Sie Filterwechsel, Reinigungspläne und andere Gerätepflege.",
+          "data": {
+            "name": "Aufgabenname",
+            "device_id": "Gerät",
+            "interval_days": "Wiederholung alle (Tage)",
+            "description": "Beschreibung",
+            "icon": "Symbol",
+            "unassigned": "Nicht zugewiesen lassen"
+          },
+          "data_description": {
+            "name": "Ein kurzer Name wie \"Filter wechseln\" oder \"Entkalken\".",
+            "device_id": "Das Gerät, für das diese Wartungsaufgabe gilt.",
+            "interval_days": "Wie viele Tage zwischen jeder Wartung.",
+            "description": "Optionale Hinweise oder Wartungsanweisungen.",
+            "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Wartungsaufgabe.",
+            "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen."
+          }
+        },
+        "assignees": {
+          "title": "Personen zuweisen (optional)",
+          "description": "Wählen Sie, wer für diese Wartungsaufgabe verantwortlich ist und wie zwischen den Personen gewechselt wird.",
+          "data": {
+            "assignees": "Zugewiesen an",
+            "rotation_mode": "Rotationsmodus"
+          },
+          "data_description": {
+            "assignees": "Wählen Sie eine oder mehrere Personen für die Rotation.",
+            "rotation_mode": "Wie die nächste Person bestimmt wird, wenn die Aufgabe erledigt wurde."
+          }
+        },
+        "reconfigure": {
+          "title": "Wartungsaufgabe bearbeiten",
+          "description": "Aktualisieren Sie die Einstellungen für diese Wartungsaufgabe.",
+          "data": {
+            "name": "Aufgabenname",
+            "device_id": "Gerät",
+            "interval_days": "Wiederholung alle (Tage)",
+            "description": "Beschreibung",
+            "icon": "Symbol",
+            "unassigned": "Nicht zugewiesen lassen"
+          },
+          "data_description": {
+            "name": "Ein kurzer Name wie \"Filter wechseln\" oder \"Entkalken\".",
+            "device_id": "Das Gerät, für das diese Wartungsaufgabe gilt.",
+            "interval_days": "Wie viele Tage zwischen jeder Wartung.",
+            "description": "Optionale Hinweise oder Wartungsanweisungen.",
+            "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Wartungsaufgabe.",
+            "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen."
+          }
+        },
+        "reconfigure_assignees": {
+          "title": "Personen zuweisen (optional)",
+          "description": "Wählen Sie, wer für diese Wartungsaufgabe verantwortlich ist und wie zwischen den Personen gewechselt wird.",
+          "data": {
+            "assignees": "Zugewiesen an",
+            "rotation_mode": "Rotationsmodus"
+          },
+          "data_description": {
+            "assignees": "Wählen Sie eine oder mehrere Personen für die Rotation.",
+            "rotation_mode": "Wie die nächste Person bestimmt wird, wenn die Aufgabe erledigt wurde."
+          }
+        }
+      },
+      "error": {
+        "name_required": "Bitte geben Sie einen Aufgabennamen an.",
+        "device_required": "Bitte wählen Sie ein Gerät aus.",
+        "assignees_required": "Bitte wählen Sie mindestens eine Person aus."
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "overdue": {
+        "name": "Überfällig"
+      },
+      "area_overdue": {
+        "name": "Aufgaben überfällig"
+      }
+    }
+  },
+  "services": {
+    "complete_task": {
+      "name": "Aufgabe erledigen",
+      "description": "Markiert eine Aufgabe als erledigt und setzt die Zuweisungsrotation fort.",
+      "fields": {
+        "entity_id": {
+          "name": "Entität",
+          "description": "Die Aufgaben-Sensor- oder Button-Entität, die als erledigt markiert werden soll."
+        }
+      }
+    },
+    "reset_task": {
+      "name": "Aufgabe zurücksetzen",
+      "description": "Setzt den Erledigungsverlauf und den Rotationsstatus einer Aufgabe zurück.",
+      "fields": {
+        "entity_id": {
+          "name": "Entität",
+          "description": "Die Aufgaben-Sensor- oder Button-Entität, die zurückgesetzt werden soll."
+        }
+      }
+    }
+  }
+}

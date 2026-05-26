@@ -4,10 +4,24 @@ import datetime
 
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .const import DOMAIN
 from .coordinator import TaskConfigEntry, TaskCoordinator, TaskData
+
+
+def _build_event_description(task: TaskData) -> str | None:
+    """Build a rich event description with assignee, task info, and device."""
+    parts: list[str] = []
+    if task.current_assignee:
+        parts.append(f"Assigned to: {task.current_assignee}")
+    if task.description:
+        parts.append(task.description)
+    if task.device_id:
+        parts.append(f"Device: {task.device_id}")
+    return "\n".join(parts) if parts else None
 
 
 async def async_setup_entry(
@@ -29,6 +43,13 @@ class TaskCalendarEntity(CoordinatorEntity[TaskCoordinator], CalendarEntity):
         """Initialize the calendar entity."""
         super().__init__(coordinator)
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_calendar"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, coordinator.config_entry.entry_id)},
+            name=f"{coordinator.data.area_name} Tasks",
+            suggested_area=coordinator.data.area_name,
+            manufacturer="Task",
+            model="Task Manager",
+        )
 
     @property
     def name(self) -> str:
@@ -46,12 +67,14 @@ class TaskCalendarEntity(CoordinatorEntity[TaskCoordinator], CalendarEntity):
         if self.coordinator.data is None:
             return None
 
-        tasks = self.coordinator.data.tasks.values()
-        if not tasks:
+        all_items = list(self.coordinator.data.tasks.values()) + list(
+            self.coordinator.data.maintenance.values()
+        )
+        if not all_items:
             return None
 
         soonest: TaskData | None = None
-        for task in tasks:
+        for task in all_items:
             if task.next_due is None:
                 continue
             if soonest is None or (
@@ -66,7 +89,9 @@ class TaskCalendarEntity(CoordinatorEntity[TaskCoordinator], CalendarEntity):
             start=soonest.next_due,
             end=soonest.next_due + datetime.timedelta(days=1),
             summary=soonest.name,
-            description=soonest.description,
+            description=_build_event_description(soonest),
+            uid=soonest.subentry_id,
+            rrule=f"FREQ=DAILY;INTERVAL={soonest.interval_days}",
         )
 
     async def async_get_events(
@@ -83,9 +108,17 @@ class TaskCalendarEntity(CoordinatorEntity[TaskCoordinator], CalendarEntity):
         start = start_date.date() if isinstance(start_date, datetime.datetime) else start_date
         end = end_date.date() if isinstance(end_date, datetime.datetime) else end_date
 
-        for task in self.coordinator.data.tasks.values():
+        all_items = list(self.coordinator.data.tasks.values()) + list(
+            self.coordinator.data.maintenance.values()
+        )
+
+        for task in all_items:
             if task.next_due is None or task.interval_days <= 0:
                 continue
+
+            desc = _build_event_description(task)
+
+            rrule = f"FREQ=DAILY;INTERVAL={task.interval_days}"
 
             occurrence = task.next_due
             while occurrence > start:
@@ -101,8 +134,10 @@ class TaskCalendarEntity(CoordinatorEntity[TaskCoordinator], CalendarEntity):
                             start=occurrence,
                             end=occurrence + datetime.timedelta(days=1),
                             summary=task.name,
-                            description=task.description,
-                            uid=f"{task.subentry_id}_{occurrence.isoformat()}",
+                            description=desc,
+                            uid=task.subentry_id,
+                            rrule=rrule,
+                            recurrence_id=occurrence.isoformat(),
                         )
                     )
                 occurrence += datetime.timedelta(days=task.interval_days)

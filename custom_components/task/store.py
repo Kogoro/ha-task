@@ -2,13 +2,14 @@
 
 import datetime
 from dataclasses import dataclass, field
+import random
 from typing import Any
 
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
-from .const import STORAGE_KEY, STORAGE_VERSION
+from .const import STORAGE_KEY, STORAGE_VERSION, RotationMode
 
 
 @dataclass
@@ -25,6 +26,9 @@ class TaskHistory:
 
     last_completed: datetime.datetime | None = None
     completions: list[CompletionEntry] = field(default_factory=list)
+    current_assignee_index: int = 0
+    remaining_assignees: list[str] = field(default_factory=list)
+    claimed_by: str | None = None
 
 
 class TaskStore:
@@ -63,6 +67,13 @@ class TaskStore:
             self._data[subentry_id] = TaskHistory(
                 last_completed=last_completed,
                 completions=completions,
+                current_assignee_index=history_data.get(
+                    "current_assignee_index", 0
+                ),
+                remaining_assignees=history_data.get(
+                    "remaining_assignees", []
+                ),
+                claimed_by=history_data.get("claimed_by"),
             )
 
     @callback
@@ -84,6 +95,65 @@ class TaskStore:
             CompletionEntry(completed_at=now, completed_by=completed_by)
         )
         self._schedule_save()
+
+    @callback
+    def advance_rotation(
+        self,
+        subentry_id: str,
+        assignees: list[str],
+        rotation_mode: str,
+    ) -> None:
+        """Advance to the next assignee after completion."""
+        history = self.get_history(subentry_id)
+
+        if not assignees:
+            return
+
+        if rotation_mode == RotationMode.ROUND_ROBIN:
+            history.current_assignee_index = (
+                (history.current_assignee_index + 1) % len(assignees)
+            )
+        else:
+            if history.remaining_assignees:
+                history.remaining_assignees.pop(0)
+            if not history.remaining_assignees:
+                pool = list(assignees)
+                random.shuffle(pool)
+                history.remaining_assignees = pool
+
+        self._schedule_save()
+
+    @callback
+    def init_random_pool(
+        self, subentry_id: str, assignees: list[str]
+    ) -> None:
+        """Initialize the random assignee pool if empty or stale."""
+        history = self.get_history(subentry_id)
+        valid = [a for a in history.remaining_assignees if a in assignees]
+        if not valid:
+            pool = list(assignees)
+            random.shuffle(pool)
+            history.remaining_assignees = pool
+        elif len(valid) != len(history.remaining_assignees):
+            history.remaining_assignees = valid
+        else:
+            return
+        self._schedule_save()
+
+    @callback
+    def claim_task(self, subentry_id: str, person_id: str) -> None:
+        """Set claimed_by for an unassigned task."""
+        history = self.get_history(subentry_id)
+        history.claimed_by = person_id
+        self._schedule_save()
+
+    @callback
+    def clear_claim(self, subentry_id: str) -> None:
+        """Clear claimed_by so the task returns to unassigned."""
+        history = self.get_history(subentry_id)
+        if history.claimed_by is not None:
+            history.claimed_by = None
+            self._schedule_save()
 
     @callback
     def reset_history(self, subentry_id: str) -> None:
@@ -120,5 +190,8 @@ class TaskStore:
                     }
                     for entry in history.completions
                 ],
+                "current_assignee_index": history.current_assignee_index,
+                "remaining_assignees": history.remaining_assignees,
+                "claimed_by": history.claimed_by,
             }
         return {"tasks": tasks}

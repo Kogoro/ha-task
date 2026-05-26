@@ -1,4 +1,27 @@
 {
+  "entity": {
+    "binary_sensor": {
+      "overdue": {
+        "default": "mdi:alert-circle"
+      },
+      "area_overdue": {
+        "default": "mdi:alert"
+      }
+    },
+    "sensor": {
+      "days_until_due": {
+        "default": "mdi:clipboard-check-outline"
+      }
+    },
+    "button": {
+      "complete": {
+        "default": "mdi:check-circle"
+      },
+      "assign_to_me": {
+        "default": "mdi:account-arrow-left"
+      }
+    }
+  },
   "services": {
     "complete_task": {
       "service": "mdi:check-circle"
