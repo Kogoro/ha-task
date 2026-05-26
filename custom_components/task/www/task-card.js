@@ -31,6 +31,7 @@
       this._config = {
         show_history: true,
         default_filter: "all",
+        filter_user: "all",
         sort_by: "due_date",
         show_overdue_first: true,
         compact: false,
@@ -118,6 +119,46 @@
         return tasks.filter(({ state }) => state.attributes.subentry_type === "maintenance");
       }
       return tasks.filter(({ state }) => state.attributes.subentry_type !== "maintenance");
+    }
+
+    _getCurrentUserPersonEntity() {
+      if (!this.hass?.user?.id) return null;
+      const userId = this.hass.user.id;
+      for (const [entityId, state] of Object.entries(this.hass.states)) {
+        if (!entityId.startsWith("person.")) continue;
+        if (state.attributes.user_id === userId) return entityId;
+      }
+      return null;
+    }
+
+    _getUserFilteredTasks(tasks) {
+      const filterUser = this._config.filter_user;
+      if (!filterUser || filterUser === "all") return tasks;
+
+      let personEntityId;
+      const mode = filterUser === "current" || filterUser === "current_turn"
+        ? filterUser : null;
+
+      if (mode) {
+        personEntityId = this._getCurrentUserPersonEntity();
+        if (!personEntityId) return tasks;
+      } else {
+        personEntityId = filterUser;
+      }
+
+      if (filterUser === "current_turn") {
+        return tasks.filter(({ state }) =>
+          state.attributes.current_assignee === personEntityId
+        );
+      }
+
+      return tasks.filter(({ state }) => {
+        const attrs = state.attributes;
+        const assignees = attrs.assignees;
+        const inRotation = Array.isArray(assignees) && assignees.includes(personEntityId);
+        const isCurrentTurn = attrs.current_assignee === personEntityId;
+        return inRotation || isCurrentTurn;
+      });
     }
 
     _getSortedTasks(tasks) {
@@ -430,7 +471,8 @@
 
       const allTasks = this._getTaskEntities();
       const showFilters = this._hasMultipleTypes(allTasks);
-      const filteredTasks = this._getFilteredTasks(allTasks);
+      const typeFiltered = this._getFilteredTasks(allTasks);
+      const filteredTasks = this._getUserFilteredTasks(typeFiltered);
       const tasks = this._getSortedTasks(filteredTasks);
       const headerTitle = this._getHeaderTitle();
 
@@ -1090,6 +1132,7 @@
         show_history: true,
         show_calendar: false,
         default_filter: "all",
+        filter_user: "all",
         sort_by: "due_date",
         show_overdue_first: true,
         compact: false,
@@ -1125,6 +1168,21 @@
     render() {
       if (!this._config) return html``;
 
+      const personOptions = [
+        { value: "all", label: "All Users" },
+        { value: "current_turn", label: "My Turn" },
+        { value: "current", label: "In Rotation" },
+      ];
+      if (this.hass) {
+        for (const [eid, state] of Object.entries(this.hass.states)) {
+          if (!eid.startsWith("person.")) continue;
+          personOptions.push({
+            value: eid,
+            label: state.attributes.friendly_name || eid.replace("person.", "").replace(/_/g, " "),
+          });
+        }
+      }
+
       const schema = [
         { name: "areas", selector: { area: { multiple: true } } },
         { name: "title", selector: { text: {} } },
@@ -1138,6 +1196,15 @@
                 { value: "tasks", label: "Tasks Only" },
                 { value: "maintenance", label: "Maintenance Only" },
               ],
+              mode: "dropdown",
+            },
+          },
+        },
+        {
+          name: "filter_user",
+          selector: {
+            select: {
+              options: personOptions,
               mode: "dropdown",
             },
           },
@@ -1185,6 +1252,7 @@
               icon: "Icon (optional)",
               show_history: "Show recent activity",
               default_filter: "Default filter",
+              filter_user: "Filter by user",
               sort_by: "Sort by",
               show_overdue_first: "Pin overdue items to top",
               compact: "Compact mode",
