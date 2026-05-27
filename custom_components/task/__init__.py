@@ -1,6 +1,7 @@
 """The Task integration."""
 
 import logging
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +23,7 @@ from .store import TaskStore
 
 FRONTEND_SCRIPT_PATH = f"/{DOMAIN}/task-card.js"
 FRONTEND_SCRIPT_URL = f"{FRONTEND_SCRIPT_PATH}?v=0.6.0"
+BLUEPRINTS_DIR = Path(__file__).parent / "blueprints"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -99,7 +101,27 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
         DOMAIN, SERVICE_RESET_TASK, handle_reset_task, schema=SERVICE_RESET_SCHEMA
     )
 
+    await _async_install_blueprints(hass)
+
     return True
+
+
+async def _async_install_blueprints(hass: HomeAssistant) -> None:
+    """Copy bundled automation blueprints into the user's config directory."""
+    if not BLUEPRINTS_DIR.is_dir():
+        return
+
+    target_dir = Path(hass.config.path("blueprints", "automation", DOMAIN))
+
+    def _copy() -> None:
+        target_dir.mkdir(parents=True, exist_ok=True)
+        for source in BLUEPRINTS_DIR.glob("*.yaml"):
+            dest = target_dir / source.name
+            if not dest.exists():
+                shutil.copy2(source, dest)
+                _LOGGER.debug("Installed blueprint %s", source.name)
+
+    await hass.async_add_executor_job(_copy)
 
 
 def _find_coordinator_for_subentry(
