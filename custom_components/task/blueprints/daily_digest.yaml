@@ -1,0 +1,53 @@
+blueprint:
+  name: "Task — Daily digest"
+  description: >
+    Send a daily summary of tasks that are due today or overdue.
+  domain: automation
+  source_url: https://github.com/Kogoro/ha-task/blob/main/custom_components/task/blueprints/daily_digest.yaml
+  input:
+    notify_target:
+      name: Notification service
+      description: "The service to call, e.g. notify.mobile_app_phone."
+      selector:
+        text: {}
+    digest_time:
+      name: Time to send digest
+      default: "08:00:00"
+      selector:
+        time: {}
+
+triggers:
+  - trigger: time
+    at: !input digest_time
+
+actions:
+  - variables:
+      task_sensors: >
+        {{ states.sensor
+           | selectattr('attributes.interval_days', 'defined')
+           | list }}
+      overdue: >
+        {{ task_sensors
+           | selectattr('attributes.overdue', 'eq', true)
+           | list }}
+      due_today: >
+        {{ task_sensors
+           | selectattr('state', 'eq', '0')
+           | rejectattr('attributes.overdue', 'eq', true)
+           | list }}
+      all_due: >
+        {{ overdue + due_today }}
+  - condition: template
+    value_template: "{{ all_due | length > 0 }}"
+  - action: !input notify_target
+    data:
+      title: "Tasks for today ({{ all_due | length }})"
+      message: >-
+        {% for s in overdue %}
+        ⚠ {{ s.attributes.friendly_name }} — overdue {{ s.state | int | abs }} day(s)
+        {%- if s.attributes.current_assignee %} · {{ state_attr(s.attributes.current_assignee, 'friendly_name') }}{% endif %}
+        {% endfor %}
+        {%- for s in due_today %}
+        • {{ s.attributes.friendly_name }} — due today
+        {%- if s.attributes.current_assignee %} · {{ state_attr(s.attributes.current_assignee, 'friendly_name') }}{% endif %}
+        {% endfor %}

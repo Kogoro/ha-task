@@ -1,0 +1,50 @@
+blueprint:
+  name: "Task — Notify when overdue"
+  description: >
+    Send a notification when any household task or maintenance item becomes
+    overdue. Optionally filter by area.
+  domain: automation
+  source_url: https://github.com/Kogoro/ha-task/blob/main/custom_components/task/blueprints/notify_overdue.yaml
+  input:
+    notify_target:
+      name: Notification service
+      description: "The service to call, e.g. notify.mobile_app_phone."
+      selector:
+        text: {}
+    area_filter:
+      name: Area filter
+      description: "Only notify for tasks in this area. Leave empty for all areas."
+      default: ""
+      selector:
+        area: {}
+    title_template:
+      name: Notification title
+      default: "Task overdue"
+      selector:
+        text: {}
+    message_template:
+      name: Notification message
+      default: >-
+        {{ trigger.event.data.task_name }} in
+        {{ trigger.event.data.area_name }} is
+        {{ trigger.event.data.days_overdue }} day(s) overdue.
+      selector:
+        template: {}
+
+triggers:
+  - trigger: event
+    event_type: task_overdue
+  - trigger: event
+    event_type: maintenance_overdue
+
+conditions:
+  - condition: template
+    value_template: >
+      {% set filter_area = area_filter | default('', true) %}
+      {{ filter_area == '' or trigger.event.data.area_id == filter_area }}
+
+actions:
+  - action: !input notify_target
+    data:
+      title: !input title_template
+      message: !input message_template
