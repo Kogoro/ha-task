@@ -13,6 +13,7 @@
         _config: { type: Object },
         _completing: { type: Object },
         _expandedHistory: { type: Object },
+        _expandedDescription: { type: Object },
         _filter: { type: String },
       };
     }
@@ -21,6 +22,7 @@
       super();
       this._completing = {};
       this._expandedHistory = {};
+      this._expandedDescription = {};
       this._filter = "all";
     }
 
@@ -301,6 +303,13 @@
       };
     }
 
+    _toggleDescription(entityId) {
+      this._expandedDescription = {
+        ...this._expandedDescription,
+        [entityId]: !this._expandedDescription[entityId],
+      };
+    }
+
     _renderInlineHistory(entityId) {
       const state = this.hass?.states[entityId];
       const completions = state?.attributes?.recent_completions;
@@ -334,6 +343,8 @@
       const isMaintenance = attrs.subentry_type === "maintenance";
       const deviceName = isMaintenance ? this._getDeviceName(attrs.device_id) : null;
       const compact = this._config.compact;
+      const description = attrs.description;
+      const descExpanded = this._expandedDescription[entityId];
 
       return html`
         <div class="task-item ${isCompleting ? "completing" : ""} ${dueInfo.cssClass} ${isMaintenance ? "maintenance" : ""} ${compact ? "compact" : ""}">
@@ -342,10 +353,20 @@
               <div class="task-name-row">
                 <ha-icon .icon=${attrs.icon || "mdi:clipboard-check-outline"} class="task-icon"></ha-icon>
                 <span class="task-name">${attrs.friendly_name || state.entity_id}</span>
+                ${description ? html`
+                  <ha-icon
+                    icon=${descExpanded ? "mdi:information" : "mdi:information-outline"}
+                    class="desc-toggle-icon ${descExpanded ? "active" : ""}"
+                    @click=${() => this._toggleDescription(entityId)}
+                  ></ha-icon>
+                ` : ""}
                 ${isMaintenance && this._config.show_device_info ? html`
                   <span class="maintenance-badge"><ha-icon icon="mdi:wrench" class="maintenance-badge-icon"></ha-icon>${deviceName ? html`<span class="badge-separator">·</span>${deviceName}` : ""}</span>
                 ` : ""}
               </div>
+              ${descExpanded && description ? html`
+                <div class="task-description">${description}</div>
+              ` : ""}
               <div class="task-meta-row">
                 <span class="assignee-chip">
                 ${attrs.current_assignee
@@ -729,6 +750,40 @@
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+        }
+
+        /* ── Description toggle + text ── */
+
+        .desc-toggle-icon {
+          --mdc-icon-size: 16px;
+          color: var(--secondary-text-color);
+          opacity: 0.5;
+          cursor: pointer;
+          flex-shrink: 0;
+          border-radius: 50%;
+          transition: opacity 0.15s ease, color 0.15s ease;
+        }
+
+        .desc-toggle-icon:hover {
+          opacity: 0.85;
+          color: var(--primary-color);
+        }
+
+        .desc-toggle-icon.active {
+          opacity: 0.85;
+          color: var(--primary-color);
+        }
+
+        .task-description {
+          font-size: 12px;
+          line-height: 1.4;
+          color: var(--secondary-text-color);
+          background: color-mix(in srgb, var(--primary-color) 5%, transparent);
+          border-radius: 6px;
+          padding: 6px 8px;
+          margin: 2px 0 4px 24px;
+          white-space: pre-line;
+          word-break: break-word;
         }
 
         /* ── Meta row (assignee + due) ── */
@@ -1299,6 +1354,7 @@
         _config: { type: Object },
         _completing: { type: Boolean },
         _expandedHistory: { type: Boolean },
+        _expandedDescription: { type: Boolean },
       };
     }
 
@@ -1306,6 +1362,7 @@
       super();
       this._completing = false;
       this._expandedHistory = false;
+      this._expandedDescription = false;
     }
 
     setConfig(config) {
@@ -1434,6 +1491,10 @@
       this._expandedHistory = !this._expandedHistory;
     }
 
+    _toggleDescription() {
+      this._expandedDescription = !this._expandedDescription;
+    }
+
     _renderInlineHistory() {
       const entityId = this._getTaskSensor();
       const state = entityId ? this.hass?.states[entityId] : null;
@@ -1496,16 +1557,28 @@
       const assigneeName = this._getPersonName(attrs.current_assignee);
       const isMaintenance = attrs.subentry_type === "maintenance";
       const deviceName = isMaintenance ? this._getDeviceName(attrs.device_id) : null;
+      const description = attrs.description;
 
       return html`
         <ha-card class="${this._completing ? "completing" : ""}">
           <div class="single-header">
             <ha-icon .icon=${attrs.icon || "mdi:clipboard-check-outline"} class="single-task-icon"></ha-icon>
             <span class="single-task-name">${attrs.friendly_name || entityId}</span>
+            ${description ? html`
+              <ha-icon
+                icon=${this._expandedDescription ? "mdi:information" : "mdi:information-outline"}
+                class="desc-toggle-icon ${this._expandedDescription ? "active" : ""}"
+                @click=${() => this._toggleDescription()}
+              ></ha-icon>
+            ` : ""}
             ${isMaintenance && this._config.show_device_info ? html`
               <span class="single-maintenance-badge"><ha-icon icon="mdi:wrench" class="maintenance-badge-icon"></ha-icon>${deviceName ? html`<span class="badge-separator">·</span>${deviceName}` : ""}</span>
             ` : ""}
           </div>
+
+          ${this._expandedDescription && description ? html`
+            <div class="single-description">${description}</div>
+          ` : ""}
 
           <div class="single-body">
             <div class="single-row">
@@ -1610,6 +1683,38 @@
           text-overflow: ellipsis;
           flex: 1;
           min-width: 0;
+        }
+
+        .desc-toggle-icon {
+          --mdc-icon-size: 16px;
+          color: var(--secondary-text-color);
+          opacity: 0.5;
+          cursor: pointer;
+          flex-shrink: 0;
+          border-radius: 50%;
+          transition: opacity 0.15s ease, color 0.15s ease;
+        }
+
+        .desc-toggle-icon:hover {
+          opacity: 0.85;
+          color: var(--primary-color);
+        }
+
+        .desc-toggle-icon.active {
+          opacity: 0.85;
+          color: var(--primary-color);
+        }
+
+        .single-description {
+          font-size: 12px;
+          line-height: 1.4;
+          color: var(--secondary-text-color);
+          background: color-mix(in srgb, var(--primary-color) 5%, transparent);
+          border-radius: 6px;
+          padding: 6px 10px;
+          margin: 0 16px;
+          white-space: pre-line;
+          word-break: break-word;
         }
 
         .single-maintenance-badge {
