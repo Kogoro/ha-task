@@ -15,3 +15,5 @@ build/
 .pytest_cache/
 .coverage
 htmlcov/
+.venv/
+ha-config/

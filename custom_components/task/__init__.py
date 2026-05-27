@@ -146,4 +146,18 @@ async def _async_entry_updated(
 
 async def async_unload_entry(hass: HomeAssistant, entry: TaskConfigEntry) -> bool:
     """Unload a config entry."""
+    from .calendar import (  # noqa: PLC0415
+        UNIFIED_CALENDAR_ENTITY_KEY,
+        UNIFIED_CALENDAR_OWNER_KEY,
+        UNIFIED_COORDINATORS_KEY,
+    )
+
+    domain_data = hass.data.get(DOMAIN, {})
+    unified_coords = domain_data.get(UNIFIED_COORDINATORS_KEY, {})
+    unified_coords.pop(entry.entry_id, None)
+
+    if domain_data.get(UNIFIED_CALENDAR_OWNER_KEY) == entry.entry_id:
+        domain_data.pop(UNIFIED_CALENDAR_OWNER_KEY, None)
+        domain_data.pop(UNIFIED_CALENDAR_ENTITY_KEY, None)
+
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

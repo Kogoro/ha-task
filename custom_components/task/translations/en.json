@@ -5,20 +5,28 @@
         "title": "Add area",
         "description": "Choose the area of your home you'd like to manage recurring tasks for. Each area gets its own set of tasks.",
         "data": {
-          "area_id": "Area"
+          "area_id": "Area",
+          "calendar_name": "Calendar name",
+          "unified_calendar": "Use unified calendar"
         },
         "data_description": {
-          "area_id": "The area where tasks will be tracked."
+          "area_id": "The area where tasks will be tracked.",
+          "calendar_name": "Custom name for the calendar entity. Leave empty to use the area name.",
+          "unified_calendar": "Show this area's tasks in a single shared calendar instead of a separate one."
         }
       },
       "reconfigure": {
         "title": "Change area",
         "description": "Move this task group to a different area.",
         "data": {
-          "area_id": "Area"
+          "area_id": "Area",
+          "calendar_name": "Calendar name",
+          "unified_calendar": "Use unified calendar"
         },
         "data_description": {
-          "area_id": "Select a different area for this task group."
+          "area_id": "Select a different area for this task group.",
+          "calendar_name": "Custom name for the calendar entity. Leave empty to use the area name.",
+          "unified_calendar": "Show this area's tasks in a single shared calendar instead of a separate one."
         }
       }
     },

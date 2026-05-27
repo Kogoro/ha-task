@@ -38,11 +38,13 @@ from .const import (
     CONF_AREA_ID,
     CONF_ASSIGNEE,
     CONF_ASSIGNEES,
+    CONF_CALENDAR_NAME,
     CONF_DESCRIPTION,
     CONF_DEVICE_ID,
     CONF_ICON,
     CONF_INTERVAL_DAYS,
     CONF_ROTATION_MODE,
+    CONF_UNIFIED_CALENDAR,
     DOMAIN,
     SUBENTRY_TYPE_IMPORT,
     SUBENTRY_TYPE_MAINTENANCE,
@@ -87,9 +89,17 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(area_id)
                 self._abort_if_unique_id_configured()
 
+                data: dict[str, Any] = {CONF_AREA_ID: area_id}
+                calendar_name = user_input.get(CONF_CALENDAR_NAME)
+                if calendar_name and calendar_name.strip():
+                    data[CONF_CALENDAR_NAME] = calendar_name.strip()
+                data[CONF_UNIFIED_CALENDAR] = user_input.get(
+                    CONF_UNIFIED_CALENDAR, False
+                )
+
                 return self.async_create_entry(
                     title=title,
-                    data={CONF_AREA_ID: area_id},
+                    data=data,
                 )
 
         return self.async_show_form(
@@ -97,6 +107,12 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required(CONF_AREA_ID): AreaSelector(),
+                    vol.Optional(CONF_CALENDAR_NAME): TextSelector(
+                        TextSelectorConfig(type=TextSelectorType.TEXT)
+                    ),
+                    vol.Optional(
+                        CONF_UNIFIED_CALENDAR, default=False
+                    ): BooleanSelector(),
                 }
             ),
             errors=errors,
@@ -112,13 +128,27 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
             area_entry = area_reg.async_get_area(area_id)
             title = area_entry.name if area_entry else area_id
 
+            data: dict[str, Any] = {CONF_AREA_ID: area_id}
+            calendar_name = user_input.get(CONF_CALENDAR_NAME)
+            if calendar_name and calendar_name.strip():
+                data[CONF_CALENDAR_NAME] = calendar_name.strip()
+            data[CONF_UNIFIED_CALENDAR] = user_input.get(
+                CONF_UNIFIED_CALENDAR, False
+            )
+
             return self.async_update_reload_and_abort(
                 self._get_reconfigure_entry(),
                 title=title,
-                data={CONF_AREA_ID: area_id},
+                data=data,
             )
 
         entry = self._get_reconfigure_entry()
+        cal_name_default = entry.data.get(CONF_CALENDAR_NAME)
+        cal_name_schema = (
+            vol.Optional(CONF_CALENDAR_NAME, default=cal_name_default)
+            if cal_name_default
+            else vol.Optional(CONF_CALENDAR_NAME)
+        )
         return self.async_show_form(
             step_id="reconfigure",
             data_schema=vol.Schema(
@@ -126,6 +156,13 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
                     vol.Required(
                         CONF_AREA_ID, default=entry.data.get(CONF_AREA_ID)
                     ): AreaSelector(),
+                    cal_name_schema: TextSelector(
+                        TextSelectorConfig(type=TextSelectorType.TEXT)
+                    ),
+                    vol.Optional(
+                        CONF_UNIFIED_CALENDAR,
+                        default=entry.data.get(CONF_UNIFIED_CALENDAR, False),
+                    ): BooleanSelector(),
                 }
             ),
         )
