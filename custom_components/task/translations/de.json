@@ -5,20 +5,28 @@
         "title": "Bereich hinzufügen",
         "description": "Wählen Sie den Bereich Ihres Zuhauses, für den Sie wiederkehrende Aufgaben verwalten möchten. Jeder Bereich erhält einen eigenen Satz an Aufgaben.",
         "data": {
-          "area_id": "Bereich"
+          "area_id": "Bereich",
+          "calendar_name": "Kalendername",
+          "unified_calendar": "Gemeinsamen Kalender verwenden"
         },
         "data_description": {
-          "area_id": "Der Bereich, in dem Aufgaben verfolgt werden."
+          "area_id": "Der Bereich, in dem Aufgaben verfolgt werden.",
+          "calendar_name": "Eigener Name für die Kalender-Entität. Leer lassen, um den Bereichsnamen zu verwenden.",
+          "unified_calendar": "Aufgaben dieses Bereichs in einem einzigen gemeinsamen Kalender anzeigen, statt in einem separaten."
         }
       },
       "reconfigure": {
         "title": "Bereich ändern",
         "description": "Verschieben Sie diese Aufgabengruppe in einen anderen Bereich.",
         "data": {
-          "area_id": "Bereich"
+          "area_id": "Bereich",
+          "calendar_name": "Kalendername",
+          "unified_calendar": "Gemeinsamen Kalender verwenden"
         },
         "data_description": {
-          "area_id": "Wählen Sie einen anderen Bereich für diese Aufgabengruppe."
+          "area_id": "Wählen Sie einen anderen Bereich für diese Aufgabengruppe.",
+          "calendar_name": "Eigener Name für die Kalender-Entität. Leer lassen, um den Bereichsnamen zu verwenden.",
+          "unified_calendar": "Aufgaben dieses Bereichs in einem einzigen gemeinsamen Kalender anzeigen, statt in einem separaten."
         }
       }
     },
