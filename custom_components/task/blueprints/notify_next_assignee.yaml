@@ -1,0 +1,33 @@
+blueprint:
+  name: "Task — Notify next assignee"
+  description: >
+    When a task is completed, notify the next person in the rotation that
+    it is now their turn.
+  domain: automation
+  source_url: https://github.com/Kogoro/ha-task/blob/main/custom_components/task/blueprints/notify_next_assignee.yaml
+  input:
+    notify_target:
+      name: Notification service
+      description: "The service to call, e.g. notify.mobile_app_phone."
+      selector:
+        text: {}
+
+triggers:
+  - trigger: event
+    event_type: task_completed
+  - trigger: event
+    event_type: maintenance_completed
+
+conditions:
+  - condition: template
+    value_template: >
+      {{ trigger.event.data.next_assignee not in [none, ''] }}
+
+actions:
+  - action: !input notify_target
+    data:
+      title: "Your turn: {{ trigger.event.data.task_name }}"
+      message: >-
+        {{ trigger.event.data.task_name }} in
+        {{ trigger.event.data.area_name }} is now assigned to you.
+        Due {{ trigger.event.data.next_due }}.
