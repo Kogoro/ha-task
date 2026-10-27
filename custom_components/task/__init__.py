@@ -6,12 +6,12 @@ from pathlib import Path
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.helpers import config_validation as cv, entity_registry as er
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import entity_registry as er
 
 from .const import (
     DOMAIN,
@@ -168,7 +168,7 @@ async def _async_entry_updated(
 
 async def async_unload_entry(hass: HomeAssistant, entry: TaskConfigEntry) -> bool:
     """Unload a config entry."""
-    from .calendar import (  # noqa: PLC0415
+    from .calendar import (
         UNIFIED_CALENDAR_ENTITY_KEY,
         UNIFIED_CALENDAR_OWNER_KEY,
         UNIFIED_COORDINATORS_KEY,

@@ -1,8 +1,8 @@
 """Completion history store for the Task integration."""
 
 import datetime
-from dataclasses import dataclass, field
 import random
+from dataclasses import dataclass, field
 from typing import Any
 
 from homeassistant.core import HomeAssistant, callback

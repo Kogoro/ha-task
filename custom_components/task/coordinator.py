@@ -1,8 +1,8 @@
 """DataUpdateCoordinator for the Task integration."""
 
 import datetime
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant

@@ -4,7 +4,6 @@ from contextlib import suppress
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -14,7 +13,8 @@ from homeassistant.config_entries import (
     SubentryFlowResult,
 )
 from homeassistant.core import callback
-from homeassistant.helpers import area_registry as ar, device_registry as dr
+from homeassistant.helpers import area_registry as ar
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.selector import (
     AreaSelector,
     BooleanSelector,
@@ -626,12 +626,12 @@ class ImportSubentryFlow(ConfigSubentryFlow):
 
         lang: str | None = None
         with suppress(Exception):
-            from homeassistant.helpers.http import current_request  # noqa: PLC0415
+            from homeassistant.helpers.http import current_request
 
             if (request := current_request.get()) is not None:
                 user = request.get("hass_user")
                 if user is not None:
-                    from homeassistant.components.frontend import (  # noqa: PLC0415
+                    from homeassistant.components.frontend import (
                         storage as frontend_store,
                     )
 
