@@ -4,8 +4,6 @@ from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -18,9 +16,9 @@ from .const import (
     ATTR_NEXT_DUE,
     ATTR_OVERDUE,
     ATTR_ROTATION_MODE,
-    DOMAIN,
 )
 from .coordinator import TaskConfigEntry, TaskCoordinator, TaskData
+from .device import task_device_info
 
 
 async def async_setup_entry(
@@ -60,33 +58,7 @@ class TaskSensorEntity(CoordinatorEntity[TaskCoordinator], SensorEntity):
         super().__init__(coordinator, context=subentry_id)
         self.subentry_id = subentry_id
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_{subentry_id}_sensor"
-        item = coordinator._find_item(subentry_id)
-        task_name = item.name if item else "Task"
-        if item and item.device_id:
-            dev_reg = dr.async_get(coordinator.hass)
-            device = dev_reg.async_get(item.device_id)
-            if device:
-                self._attr_device_info = DeviceInfo(
-                    identifiers=device.identifiers,
-                )
-            else:
-                self._attr_device_info = DeviceInfo(
-                    identifiers={(DOMAIN, f"{coordinator.config_entry.entry_id}_{subentry_id}")},
-                    name=task_name,
-                    suggested_area=coordinator.data.area_name,
-                    manufacturer="Task",
-                    model="Device Maintenance",
-                )
-        else:
-            entry_slug = coordinator.config_entry.title.lower().replace(" ", "_")
-            task_slug = task_name.lower().replace(" ", "_")
-            self._attr_device_info = DeviceInfo(
-                identifiers={(DOMAIN, f"{entry_slug}_{task_slug}")},
-                name=task_name,
-                suggested_area=coordinator.data.area_name,
-                manufacturer="Task",
-                model="Household Task",
-            )
+        self._attr_device_info = task_device_info(coordinator, subentry_id)
 
     @property
     def _task_data(self) -> TaskData | None:

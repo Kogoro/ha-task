@@ -79,6 +79,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             _LOGGER,
             config_entry=config_entry,
             name=f"{DOMAIN}_{config_entry.entry_id}",
+            update_interval=datetime.timedelta(minutes=15),
         )
 
     def _resolve_assignees(self, subentry_data: dict) -> list[str]:

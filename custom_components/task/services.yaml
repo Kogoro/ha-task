@@ -4,7 +4,7 @@ complete_task:
       required: true
       selector:
         entity:
-          domain: task
+          integration: task
 
 reset_task:
   fields:
@@ -12,4 +12,4 @@ reset_task:
       required: true
       selector:
         entity:
-          domain: task
+          integration: task

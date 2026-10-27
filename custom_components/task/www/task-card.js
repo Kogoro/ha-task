@@ -1167,7 +1167,7 @@
     name: "Task Card",
     description: "Display and manage household tasks",
     preview: true,
-    documentationURL: "https://github.com/home-assistant/ha-task",
+    documentationURL: "https://github.com/Kogoro/ha-task",
   });
 
   // ─────────────────────────────────────────────────────────
@@ -2040,6 +2040,12 @@
     name: "Task Single Card",
     description: "Display a single household task",
     preview: true,
+    getEntitySuggestion: (hass, entityId) => {
+      if (!entityId.startsWith("sensor.") || hass.entities?.[entityId]?.platform !== "task") {
+        return null;
+      }
+      return { config: { type: "custom:task-single-card", entity: entityId } };
+    },
   });
 
   // ─────────────────────────────────────────────────────────
