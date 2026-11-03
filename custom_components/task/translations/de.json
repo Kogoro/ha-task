@@ -281,6 +281,20 @@
           "description": "Die Aufgaben-Sensor- oder Button-Entität, die zurückgesetzt werden soll."
         }
       }
+    },
+    "postpone_task": {
+      "name": "Aufgabe verschieben",
+      "description": "Verschiebt das Fälligkeitsdatum, ohne eine Erledigung zu erfassen. Verlauf, Rangliste und Rotation bleiben unverändert.",
+      "fields": {
+        "entity_id": {
+          "name": "Entität",
+          "description": "Der Aufgaben-Sensor oder -Button, der verschoben werden soll."
+        },
+        "days": {
+          "name": "Tage",
+          "description": "Um wie viele Tage verschoben wird. Gerechnet ab dem aktuellen Fälligkeitsdatum, bei überfälligen Aufgaben ab heute."
+        }
+      }
     }
   },
   "exceptions": {

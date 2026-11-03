@@ -42,4 +42,5 @@ ATTR_OVERDUE = "overdue"
 ATTR_AREA_ID = "area_id"
 
 SERVICE_COMPLETE_TASK = "complete_task"
+SERVICE_POSTPONE_TASK = "postpone_task"
 SERVICE_RESET_TASK = "reset_task"

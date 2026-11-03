@@ -281,6 +281,20 @@
           "description": "The task sensor or button entity to reset."
         }
       }
+    },
+    "postpone_task": {
+      "name": "Postpone task",
+      "description": "Push the due date back without recording a completion. History, ranking and rotation stay unchanged.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "The task sensor or button entity to postpone."
+        },
+        "days": {
+          "name": "Days",
+          "description": "Number of days to postpone. Counts from the current due date, or from today if the task is overdue."
+        }
+      }
     }
   },
   "exceptions": {

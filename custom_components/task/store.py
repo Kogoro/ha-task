@@ -29,6 +29,7 @@ class TaskHistory:
     current_assignee_index: int = 0
     remaining_assignees: list[str] = field(default_factory=list)
     claimed_by: str | None = None
+    postponed_until: datetime.date | None = None
 
 
 class TaskStore:
@@ -64,7 +65,13 @@ class TaskStore:
                 last_completed = dt_util.parse_datetime(
                     history_data["last_completed"]
                 )
+            postponed_until = None
+            if history_data.get("postponed_until"):
+                postponed_until = datetime.date.fromisoformat(
+                    history_data["postponed_until"]
+                )
             self._data[subentry_id] = TaskHistory(
+                postponed_until=postponed_until,
                 last_completed=last_completed,
                 completions=completions,
                 current_assignee_index=history_data.get(
@@ -98,6 +105,13 @@ class TaskStore:
         )
         history.completions.sort(key=lambda entry: entry.completed_at)
         history.last_completed = history.completions[-1].completed_at
+        history.postponed_until = None
+        self._schedule_save()
+
+    @callback
+    def postpone(self, subentry_id: str, until: datetime.date) -> None:
+        """Push the due date of a task back without recording a completion."""
+        self.get_history(subentry_id).postponed_until = until
         self._schedule_save()
 
     @callback
@@ -197,5 +211,10 @@ class TaskStore:
                 "current_assignee_index": history.current_assignee_index,
                 "remaining_assignees": history.remaining_assignees,
                 "claimed_by": history.claimed_by,
+                "postponed_until": (
+                    history.postponed_until.isoformat()
+                    if history.postponed_until
+                    else None
+                ),
             }
         return {"tasks": tasks}

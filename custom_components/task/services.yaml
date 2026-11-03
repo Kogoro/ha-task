@@ -10,6 +10,23 @@ complete_task:
       selector:
         datetime:
 
+postpone_task:
+  fields:
+    entity_id:
+      required: true
+      selector:
+        entity:
+          integration: task
+    days:
+      required: false
+      default: 1
+      selector:
+        number:
+          min: 1
+          max: 365
+          mode: box
+          unit_of_measurement: days
+
 reset_task:
   fields:
     entity_id:

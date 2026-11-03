@@ -92,7 +92,8 @@ Per area:
 
 | Service | Description |
 |---------|-------------|
-| `task.complete_task` | Mark a task as completed and advance assignee rotation |
+| `task.complete_task` | Mark a task as completed and advance assignee rotation. Optional `completed_at` records a past completion (the next due date counts from it) |
+| `task.postpone_task` | Push the due date back by `days` (default 1) without recording a completion; counts from the current due date, or from today if overdue |
 | `task.reset_task` | Reset a task's completion history and rotation state |
 
 ## Lovelace Cards
