@@ -41,18 +41,23 @@ from .const import (
     CONF_CALENDAR_NAME,
     CONF_DESCRIPTION,
     CONF_DEVICE_ID,
+    CONF_ENTRY_TYPE,
     CONF_ICON,
     CONF_INTERVAL_DAYS,
     CONF_ROTATION_MODE,
     CONF_UNIFIED_CALENDAR,
     CONF_WARN_DAYS,
+    DEFAULT_HOUSEHOLD_CALENDAR_NAME,
     DEFAULT_WARN_DAYS,
     DOMAIN,
+    ENTRY_TYPE_HOUSEHOLD,
+    HOUSEHOLD_UNIQUE_ID,
     SUBENTRY_TYPE_IMPORT,
     SUBENTRY_TYPE_MAINTENANCE,
     SUBENTRY_TYPE_TASK,
     RotationMode,
 )
+from .household import household_entry, is_household
 
 
 class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -65,7 +70,9 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
     def async_get_supported_subentry_types(
         cls, config_entry: ConfigEntry
     ) -> dict[str, type[ConfigSubentryFlow]]:
-        """Return subentries supported by this handler."""
+        """Return subentries supported by this handler (none for the household)."""
+        if is_household(config_entry):
+            return {}
         return {
             SUBENTRY_TYPE_TASK: TaskSubentryFlow,
             SUBENTRY_TYPE_MAINTENANCE: MaintenanceSubentryFlow,
@@ -75,7 +82,48 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle the initial step to select an area."""
+        """Offer an area or the household; only an area once a household exists."""
+        if household_entry(self.hass) is None:
+            return self.async_show_menu(
+                step_id="user", menu_options=["area", "household"]
+            )
+        return await self.async_step_area()
+
+    async def async_step_household(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Set up the household entry: totals and the unified calendar."""
+        await self.async_set_unique_id(HOUSEHOLD_UNIQUE_ID)
+        self._abort_if_unique_id_configured()
+
+        if user_input is not None:
+            return self.async_create_entry(
+                title="Household", data=_household_data(user_input)
+            )
+
+        return self.async_show_form(
+            step_id="household",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_CALENDAR_NAME, default=DEFAULT_HOUSEHOLD_CALENDAR_NAME
+                    ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+                }
+            ),
+        )
+
+    async def async_step_import(
+        self, import_data: dict[str, Any]
+    ) -> ConfigFlowResult:
+        """Create the household entry for installs that used the unified calendar."""
+        await self.async_set_unique_id(HOUSEHOLD_UNIQUE_ID)
+        self._abort_if_unique_id_configured()
+        return self.async_create_entry(title="Household", data=_household_data(import_data))
+
+    async def async_step_area(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle the step to select an area."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -95,8 +143,8 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
                 calendar_name = user_input.get(CONF_CALENDAR_NAME)
                 if calendar_name and calendar_name.strip():
                     data[CONF_CALENDAR_NAME] = calendar_name.strip()
-                data[CONF_UNIFIED_CALENDAR] = user_input.get(
-                    CONF_UNIFIED_CALENDAR, False
+                data[CONF_UNIFIED_CALENDAR] = bool(
+                    user_input.get(CONF_UNIFIED_CALENDAR, False)
                 )
                 data[CONF_WARN_DAYS] = int(
                     user_input.get(CONF_WARN_DAYS, DEFAULT_WARN_DAYS)
@@ -107,29 +155,28 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
                     data=data,
                 )
 
-        return self.async_show_form(
-            step_id="user",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(CONF_AREA_ID): AreaSelector(),
-                    vol.Optional(CONF_CALENDAR_NAME): TextSelector(
-                        TextSelectorConfig(type=TextSelectorType.TEXT)
-                    ),
-                    vol.Optional(
-                        CONF_UNIFIED_CALENDAR, default=False
-                    ): BooleanSelector(),
-                    vol.Optional(
-                        CONF_WARN_DAYS, default=DEFAULT_WARN_DAYS
-                    ): _warn_days_selector(),
-                }
+        schema: dict[Any, Any] = {
+            vol.Required(CONF_AREA_ID): AreaSelector(),
+            vol.Optional(CONF_CALENDAR_NAME): TextSelector(
+                TextSelectorConfig(type=TextSelectorType.TEXT)
             ),
-            errors=errors,
+        }
+        if household_entry(self.hass) is not None:
+            schema[vol.Optional(CONF_UNIFIED_CALENDAR, default=False)] = BooleanSelector()
+        schema[vol.Optional(CONF_WARN_DAYS, default=DEFAULT_WARN_DAYS)] = (
+            _warn_days_selector()
+        )
+        return self.async_show_form(
+            step_id="area", data_schema=vol.Schema(schema), errors=errors
         )
 
     async def async_step_reconfigure(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle reconfiguration of the area."""
+        """Handle reconfiguration of an area, or of the household."""
+        if is_household(self._get_reconfigure_entry()):
+            return await self.async_step_reconfigure_household(user_input)
+
         if user_input is not None:
             area_id = user_input[CONF_AREA_ID]
             area_reg = ar.async_get(self.hass)
@@ -140,8 +187,12 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
             calendar_name = user_input.get(CONF_CALENDAR_NAME)
             if calendar_name and calendar_name.strip():
                 data[CONF_CALENDAR_NAME] = calendar_name.strip()
-            data[CONF_UNIFIED_CALENDAR] = user_input.get(
-                CONF_UNIFIED_CALENDAR, False
+            # Without a household entry the option is hidden, so keep what is set.
+            data[CONF_UNIFIED_CALENDAR] = bool(
+                user_input.get(
+                    CONF_UNIFIED_CALENDAR,
+                    self._get_reconfigure_entry().data.get(CONF_UNIFIED_CALENDAR, False),
+                )
             )
             data[CONF_WARN_DAYS] = int(
                 user_input.get(CONF_WARN_DAYS, DEFAULT_WARN_DAYS)
@@ -160,27 +211,62 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
             if cal_name_default
             else vol.Optional(CONF_CALENDAR_NAME)
         )
+        schema: dict[Any, Any] = {
+            vol.Required(
+                CONF_AREA_ID, default=entry.data.get(CONF_AREA_ID)
+            ): AreaSelector(),
+            cal_name_schema: TextSelector(
+                TextSelectorConfig(type=TextSelectorType.TEXT)
+            ),
+        }
+        if household_entry(self.hass) is not None:
+            schema[
+                vol.Optional(
+                    CONF_UNIFIED_CALENDAR,
+                    default=entry.data.get(CONF_UNIFIED_CALENDAR, False),
+                )
+            ] = BooleanSelector()
+        schema[
+            vol.Optional(
+                CONF_WARN_DAYS,
+                default=entry.data.get(CONF_WARN_DAYS, DEFAULT_WARN_DAYS),
+            )
+        ] = _warn_days_selector()
         return self.async_show_form(
-            step_id="reconfigure",
+            step_id="reconfigure", data_schema=vol.Schema(schema)
+        )
+
+    async def async_step_reconfigure_household(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Reconfigure the household entry (the unified calendar's name)."""
+        entry = self._get_reconfigure_entry()
+        if user_input is not None:
+            return self.async_update_reload_and_abort(
+                entry, data=_household_data(user_input)
+            )
+        return self.async_show_form(
+            step_id="reconfigure_household",
             data_schema=vol.Schema(
                 {
-                    vol.Required(
-                        CONF_AREA_ID, default=entry.data.get(CONF_AREA_ID)
-                    ): AreaSelector(),
-                    cal_name_schema: TextSelector(
-                        TextSelectorConfig(type=TextSelectorType.TEXT)
-                    ),
                     vol.Optional(
-                        CONF_UNIFIED_CALENDAR,
-                        default=entry.data.get(CONF_UNIFIED_CALENDAR, False),
-                    ): BooleanSelector(),
-                    vol.Optional(
-                        CONF_WARN_DAYS,
-                        default=entry.data.get(CONF_WARN_DAYS, DEFAULT_WARN_DAYS),
-                    ): _warn_days_selector(),
+                        CONF_CALENDAR_NAME,
+                        default=entry.data.get(
+                            CONF_CALENDAR_NAME, DEFAULT_HOUSEHOLD_CALENDAR_NAME
+                        ),
+                    ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
                 }
             ),
         )
+
+
+def _household_data(user_input: dict[str, Any]) -> dict[str, Any]:
+    """Return the data of a household entry."""
+    data: dict[str, Any] = {CONF_ENTRY_TYPE: ENTRY_TYPE_HOUSEHOLD}
+    name = (user_input.get(CONF_CALENDAR_NAME) or "").strip()
+    if name:
+        data[CONF_CALENDAR_NAME] = name
+    return data
 
 
 def _warn_days_selector() -> NumberSelector:

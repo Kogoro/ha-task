@@ -7,6 +7,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .coordinator import TaskConfigEntry, TaskCoordinator, TaskData
 from .device import task_device_info
+from .household import is_household
 
 
 async def async_setup_entry(
@@ -15,6 +16,8 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Task button entities."""
+    if is_household(entry):
+        return
     coordinator = entry.runtime_data
 
     for subentry_id in coordinator.data.tasks:

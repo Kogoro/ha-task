@@ -10,11 +10,21 @@ from custom_components.task.const import DOMAIN
 from .common import setup_entry, status_sensor, task_subentry
 
 
-async def test_area_flow_stores_warn_days(hass: HomeAssistant) -> None:
-    """The area entry keeps the warn days, defaulting to 7."""
+async def _start_area_flow(hass: HomeAssistant):
+    """Open the add flow and choose "Area" from the menu."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": SOURCE_USER}
     )
+    assert result["type"] is FlowResultType.MENU
+    assert result["menu_options"] == ["area", "household"]
+    return await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "area"}
+    )
+
+
+async def test_area_flow_stores_warn_days(hass: HomeAssistant) -> None:
+    """The area entry keeps the warn days, defaulting to 7."""
+    result = await _start_area_flow(hass)
     assert result["type"] is FlowResultType.FORM
 
     result = await hass.config_entries.flow.async_configure(
@@ -28,9 +38,7 @@ async def test_area_flow_stores_warn_days(hass: HomeAssistant) -> None:
 
 async def test_area_flow_custom_warn_days(hass: HomeAssistant) -> None:
     """A chosen value is stored as an integer."""
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": SOURCE_USER}
-    )
+    result = await _start_area_flow(hass)
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], {"area_id": "kitchen", "warn_days": 3.0}
     )

@@ -2,19 +2,11 @@
   "config": {
     "step": {
       "user": {
-        "title": "Bereich hinzufügen",
-        "description": "Wählen Sie den Bereich Ihres Zuhauses, für den Sie wiederkehrende Aufgaben verwalten möchten. Jeder Bereich erhält einen eigenen Satz an Aufgaben.",
-        "data": {
-          "area_id": "Bereich",
-          "calendar_name": "Kalendername",
-          "unified_calendar": "Gemeinsamen Kalender verwenden",
-          "warn_days": "Warntage"
-        },
-        "data_description": {
-          "area_id": "Der Bereich, in dem Aufgaben verfolgt werden.",
-          "calendar_name": "Eigener Name für die Kalender-Entität. Leer lassen, um den Bereichsnamen zu verwenden.",
-          "unified_calendar": "Aufgaben dieses Bereichs in einem einzigen gemeinsamen Kalender anzeigen, statt in einem separaten.",
-          "warn_days": "Aufgaben gelten so viele Tage vor der Fälligkeit als \"bald fällig\". Einzelne Aufgaben können das überschreiben."
+        "title": "Zu Task hinzufügen",
+        "description": "Einen Bereich hinzufügen, um dessen Aufgaben zu verwalten, oder die Haushaltsübersicht mit Summen und einem Kalender aller Aufgaben.",
+        "menu_options": {
+          "area": "Bereich",
+          "household": "Haushaltsübersicht"
         }
       },
       "reconfigure": {
@@ -23,14 +15,50 @@
         "data": {
           "area_id": "Bereich",
           "calendar_name": "Kalendername",
-          "unified_calendar": "Gemeinsamen Kalender verwenden",
+          "unified_calendar": "Eigenen Kalender dieses Bereichs ausblenden",
           "warn_days": "Warntage"
         },
         "data_description": {
           "area_id": "Wählen Sie einen anderen Bereich für diese Aufgabengruppe.",
           "calendar_name": "Eigener Name für die Kalender-Entität. Leer lassen, um den Bereichsnamen zu verwenden.",
-          "unified_calendar": "Aufgaben dieses Bereichs in einem einzigen gemeinsamen Kalender anzeigen, statt in einem separaten.",
+          "unified_calendar": "Die Aufgaben dieses Bereichs nur im Haushaltskalender zeigen statt in einem eigenen. Benötigt eine Haushaltsübersicht.",
           "warn_days": "Aufgaben gelten so viele Tage vor der Fälligkeit als \"bald fällig\". Einzelne Aufgaben können das überschreiben."
+        }
+      },
+      "area": {
+        "title": "Bereich hinzufügen",
+        "description": "Wählen Sie den Bereich Ihres Zuhauses, für den Sie wiederkehrende Aufgaben verwalten möchten. Jeder Bereich erhält einen eigenen Satz an Aufgaben.",
+        "data": {
+          "area_id": "Bereich",
+          "calendar_name": "Kalendername",
+          "unified_calendar": "Eigenen Kalender dieses Bereichs ausblenden",
+          "warn_days": "Warntage"
+        },
+        "data_description": {
+          "area_id": "Der Bereich, in dem Aufgaben verfolgt werden.",
+          "calendar_name": "Eigener Name für die Kalender-Entität. Leer lassen, um den Bereichsnamen zu verwenden.",
+          "unified_calendar": "Die Aufgaben dieses Bereichs nur im Haushaltskalender zeigen statt in einem eigenen. Benötigt eine Haushaltsübersicht.",
+          "warn_days": "Aufgaben gelten so viele Tage vor der Fälligkeit als \"bald fällig\". Einzelne Aufgaben können das überschreiben."
+        }
+      },
+      "household": {
+        "title": "Haushaltsübersicht",
+        "description": "Fügt Summen über alle Bereiche hinzu (überfällig, heute fällig, diese Woche fällig, bald fällig) und einen Kalender mit den Aufgaben aller Bereiche. Es kann nur eine geben.",
+        "data": {
+          "calendar_name": "Kalendername"
+        },
+        "data_description": {
+          "calendar_name": "Name des Kalenders mit allen Aufgaben."
+        }
+      },
+      "reconfigure_household": {
+        "title": "Haushaltsübersicht",
+        "description": "Fügt Summen über alle Bereiche hinzu (überfällig, heute fällig, diese Woche fällig, bald fällig) und einen Kalender mit den Aufgaben aller Bereiche. Es kann nur eine geben.",
+        "data": {
+          "calendar_name": "Kalendername"
+        },
+        "data_description": {
+          "calendar_name": "Name des Kalenders mit allen Aufgaben."
         }
       }
     },

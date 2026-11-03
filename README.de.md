@@ -59,7 +59,7 @@ Benötigt Home Assistant 2025.4 oder neuer.
 ## Schnellstart
 
 1. Task über HACS installieren und Home Assistant neu starten.
-2. **Einstellungen** → **Geräte & Dienste** → **Integration hinzufügen**, nach **Task** suchen und einen Bereich wählen.
+2. **Einstellungen** → **Geräte & Dienste** → **Integration hinzufügen**, nach **Task** suchen, **Bereich** wählen und den Bereich auswählen.
 3. Beim neuen Eintrag **Aufgabe hinzufügen** wählen (Name und Intervall) — oder **Aufgaben aus dem Katalog importieren**.
 4. Die Karte zum Dashboard hinzufügen: **Dashboard bearbeiten** → **Karte hinzufügen** → **Task**, oder in YAML:
 
@@ -77,6 +77,17 @@ Alles läuft über die Oberfläche, YAML ist nicht nötig.
 - **Bereich:** Jeder Bereich hat seinen eigenen Eintrag. Dort stellst du die **Warntage** ein (Standard 7). Aufgaben zählen so viele Tage vor der Fälligkeit als „bald fällig“.
 - **Aufgabe:** Name, Intervall (1–365 Tage), Beschreibung, Symbol, optional **Warntage** (überschreibt den Wert des Bereichs, leer lassen für den Bereichswert) und Zuständige mit Rotation.
 - **Wartung:** wie eine Aufgabe, zusätzlich mit Gerät und Intervall bis 730 Tage.
+
+### Haushaltsübersicht (optional)
+
+Über dasselbe Menü lässt sich die **Haushaltsübersicht** hinzufügen, ein Ort für das ganze Zuhause. Es kann nur eine geben.
+
+- **Summen über alle Bereiche:** überfällig, heute fällig, diese Woche fällig und bald fällig. In den Attributen stehen die Aufgaben als „Bereich: Aufgabe“. Die Werte sind immer die Summe der Bereiche.
+- **Ein Kalender mit den Aufgaben aller Bereiche** (standardmäßig „All Tasks“, umbenennbar über „Neu konfigurieren“). Er hängt nicht mehr an einem einzelnen Bereich und bleibt bestehen, wenn du einen Bereich entfernst oder neu lädst.
+
+Sobald es eine Haushaltsübersicht gibt, bietet jeder Bereich **Eigenen Kalender dieses Bereichs ausblenden**: Die Aufgaben erscheinen dann nur im Haushaltskalender. Entfernst du die Haushaltsübersicht, bekommen diese Bereiche ihren eigenen Kalender zurück.
+
+Beim Update von einer Version, in der ein Bereich den vereinheitlichten Kalender nutzte, wird die Haushaltsübersicht automatisch angelegt und übernimmt Name, Entity-ID und Verlauf des Kalenders.
 
 ### Entities
 

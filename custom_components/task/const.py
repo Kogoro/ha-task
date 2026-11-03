@@ -15,6 +15,15 @@ CONF_DESCRIPTION = "description"
 CONF_ICON = "icon"
 CONF_UNIFIED_CALENDAR = "unified_calendar"
 CONF_WARN_DAYS = "warn_days"
+CONF_ENTRY_TYPE = "entry_type"
+
+ENTRY_TYPE_AREA = "area"
+ENTRY_TYPE_HOUSEHOLD = "household"
+HOUSEHOLD_UNIQUE_ID = "household"
+DEFAULT_HOUSEHOLD_CALENDAR_NAME = "All Tasks"
+UNIFIED_CALENDAR_UNIQUE_ID = f"{DOMAIN}_unified_calendar"
+
+SIGNAL_AREAS_CHANGED = f"{DOMAIN}_areas_changed"
 
 DEFAULT_WARN_DAYS = 7
 

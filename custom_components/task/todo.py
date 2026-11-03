@@ -23,6 +23,7 @@ from .const import (
     RotationMode,
 )
 from .coordinator import TaskConfigEntry, TaskCoordinator
+from .household import is_household
 
 
 async def async_setup_entry(
@@ -31,6 +32,8 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Task todo entity (one per area/config entry)."""
+    if is_household(entry):
+        return
     coordinator = entry.runtime_data
     async_add_entities([TaskTodoEntity(coordinator)])
 

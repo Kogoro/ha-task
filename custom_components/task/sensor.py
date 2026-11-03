@@ -31,7 +31,8 @@ from .coordinator import (
     TaskCoordinatorData,
     TaskData,
 )
-from .device import area_device_info, task_device_info
+from .device import area_device_info, household_device_info, task_device_info
+from .household import HouseholdCoordinator, is_household
 
 PARALLEL_UPDATES = 0
 
@@ -77,6 +78,13 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Task sensor entities."""
+    if is_household(entry):
+        async_add_entities(
+            HouseholdSummarySensor(entry.runtime_data, description)
+            for description in AREA_SENSORS
+        )
+        return
+
     coordinator = entry.runtime_data
 
     for subentry_id in (*coordinator.data.tasks, *coordinator.data.maintenance):
@@ -135,6 +143,54 @@ class AreaSummarySensor(CoordinatorEntity[TaskCoordinator], SensorEntity):
                 item.name: item.current_assignee
                 for item in matches
                 if item.current_assignee
+            },
+        }
+
+
+class HouseholdSummarySensor(CoordinatorEntity[HouseholdCoordinator], SensorEntity):
+    """Number of tasks across all areas that match a condition."""
+
+    entity_description: AreaSensorDescription
+    _attr_has_entity_name = True
+    _attr_native_unit_of_measurement = "tasks"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(
+        self, coordinator: HouseholdCoordinator, description: AreaSensorDescription
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self.entity_description = description
+        entry_id = coordinator.config_entry.entry_id
+        self._attr_unique_id = f"{entry_id}_{description.key}"
+        self._attr_device_info = household_device_info(entry_id)
+
+    @property
+    def _matches(self):
+        """Return the items that match the sensor's condition."""
+        if self.coordinator.data is None:
+            return []
+        return [
+            entry
+            for entry in self.coordinator.data.items
+            if self.entity_description.match_fn(entry.item)
+        ]
+
+    @property
+    def native_value(self) -> int:
+        """Return the number of matching items."""
+        return len(self._matches)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the matching items as "Area: task" and who is responsible."""
+        matches = self._matches
+        return {
+            "tasks": [entry.label for entry in matches],
+            "assignees": {
+                entry.label: entry.item.current_assignee
+                for entry in matches
+                if entry.item.current_assignee
             },
         }
 
