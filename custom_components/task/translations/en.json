@@ -462,6 +462,38 @@
           "description": "The person who is back."
         }
       }
+    },
+    "export_config": {
+      "name": "Export configuration",
+      "description": "Return all areas, tasks and maintenance items as a response, so they can be backed up or moved to another instance. History is not included unless asked for. Optionally also write them to a .json or .yaml file in the configuration directory.",
+      "fields": {
+        "include_history": {
+          "name": "Include history",
+          "description": "Also export the completion history of every task."
+        },
+        "filename": {
+          "name": "File name",
+          "description": "Write the export to this file in the task_exports folder of the configuration directory (.json, .yaml or .yml)."
+        }
+      }
+    },
+    "import_config": {
+      "name": "Import configuration",
+      "description": "Create the areas, tasks and maintenance items of an export. Everything is checked first and nothing is changed if anything is wrong. Tasks that already exist in an area (same type and name) are skipped; existing settings are kept. Areas must exist in Home Assistant.",
+      "fields": {
+        "data": {
+          "name": "Data",
+          "description": "The export, as returned by Export configuration."
+        },
+        "filename": {
+          "name": "File name",
+          "description": "Read the export from this file in the task_exports folder of the configuration directory (.json, .yaml or .yml)."
+        },
+        "dry_run": {
+          "name": "Dry run",
+          "description": "Only check and report what would be created."
+        }
+      }
     }
   },
   "exceptions": {
@@ -479,6 +511,15 @@
     },
     "away_already_over": {
       "message": "The end date is in the past, so the person would never be away."
+    },
+    "import_invalid": {
+      "message": "The import was not applied because of these problems:\n{errors}"
+    },
+    "bad_filename": {
+      "message": "The file name must be a plain name ending in .json, .yaml or .yml (no folders). Files are in the task_exports folder of your configuration directory."
+    },
+    "cannot_read_file": {
+      "message": "The file could not be read: {error}"
     }
   },
   "selector": {

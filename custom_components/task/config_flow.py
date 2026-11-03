@@ -130,7 +130,15 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_import(
         self, import_data: dict[str, Any]
     ) -> ConfigFlowResult:
-        """Create the household entry for installs that used the unified calendar."""
+        """Create the household entry (upgrade) or an area entry (config import)."""
+        if area_id := import_data.get(CONF_AREA_ID):
+            await self.async_set_unique_id(area_id)
+            self._abort_if_unique_id_configured()
+            area_entry = ar.async_get(self.hass).async_get_area(area_id)
+            return self.async_create_entry(
+                title=area_entry.name if area_entry else area_id,
+                data=dict(import_data),
+            )
         await self.async_set_unique_id(HOUSEHOLD_UNIQUE_ID)
         self._abort_if_unique_id_configured()
         return self.async_create_entry(title="Household", data=_household_data(import_data))

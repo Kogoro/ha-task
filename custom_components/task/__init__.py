@@ -34,7 +34,9 @@ from .const import (
     DOMAIN,
     SERVICE_CLEAR_AWAY,
     SERVICE_COMPLETE_TASK,
+    SERVICE_EXPORT_CONFIG,
     SERVICE_GET_HISTORY,
+    SERVICE_IMPORT_CONFIG,
     SERVICE_POSTPONE_TASK,
     SERVICE_RESET_TASK,
     SERVICE_SET_AWAY,
@@ -45,6 +47,7 @@ from .const import (
 from .coordinator import TaskConfigEntry, TaskCoordinator
 from .history import cycle_days, cycle_stats
 from .household import HouseholdCoordinator, household_entry, is_household
+from .portability import async_export, async_import, read_export_file, write_export_file
 from .store import TaskStore
 
 FRONTEND_SCRIPT_PATH = f"/{DOMAIN}/task-card.js"
@@ -88,6 +91,24 @@ SERVICE_SET_AWAY_SCHEMA = vol.Schema(
         vol.Optional("start"): cv.date,
         vol.Optional("end"): cv.date,
     }
+)
+
+SERVICE_EXPORT_SCHEMA = vol.Schema(
+    {
+        vol.Optional("include_history", default=False): cv.boolean,
+        vol.Optional("filename"): cv.string,
+    }
+)
+
+SERVICE_IMPORT_SCHEMA = vol.All(
+    vol.Schema(
+        {
+            vol.Exclusive("data", "source"): dict,
+            vol.Exclusive("filename", "source"): cv.string,
+            vol.Optional("dry_run", default=False): cv.boolean,
+        }
+    ),
+    cv.has_at_least_one_key("data", "filename"),
 )
 
 SERVICE_CLEAR_AWAY_SCHEMA = vol.Schema({vol.Required("person"): cv.entity_domain("person")})
@@ -266,6 +287,39 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
         store.clear_away(call.data["person"])
         await _async_refresh_coordinators(hass)
 
+    async def handle_export_config(call: ServiceCall) -> ServiceResponse:
+        """Export all areas, tasks and maintenance items."""
+        data = await async_export(hass, call.data["include_history"])
+        if filename := call.data.get("filename"):
+            path = await hass.async_add_executor_job(
+                write_export_file, hass, filename, data
+            )
+            return {"file": path, **data}
+        return data
+
+    async def handle_import_config(call: ServiceCall) -> ServiceResponse:
+        """Import an export from data or a file; nothing changes if it is invalid."""
+        raw = call.data.get("data")
+        if raw is None:
+            raw = await hass.async_add_executor_job(
+                read_export_file, hass, call.data["filename"]
+            )
+        return await async_import(hass, raw, call.data["dry_run"])
+
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_EXPORT_CONFIG,
+        handle_export_config,
+        schema=SERVICE_EXPORT_SCHEMA,
+        supports_response=SupportsResponse.ONLY,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_IMPORT_CONFIG,
+        handle_import_config,
+        schema=SERVICE_IMPORT_SCHEMA,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
     hass.services.async_register(
         DOMAIN, SERVICE_SET_AWAY, handle_set_away, schema=SERVICE_SET_AWAY_SCHEMA
     )

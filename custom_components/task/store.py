@@ -212,6 +212,19 @@ class TaskStore:
         return removed
 
     @callback
+    def import_completions(
+        self, subentry_id: str, completions: list[CompletionEntry]
+    ) -> None:
+        """Restore a task's completions, e.g. from an export (no undo step)."""
+        history = self.get_history(subentry_id)
+        history.completions = sorted(completions, key=lambda entry: entry.completed_at)
+        history.last_completed = (
+            history.completions[-1].completed_at if history.completions else None
+        )
+        history.undo = None
+        self._schedule_save()
+
+    @callback
     def postpone(self, subentry_id: str, until: datetime.date) -> None:
         """Push the due date of a task back without recording a completion."""
         self.get_history(subentry_id).postponed_until = until

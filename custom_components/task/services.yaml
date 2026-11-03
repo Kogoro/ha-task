@@ -75,6 +75,36 @@ clear_away:
         entity:
           domain: person
 
+export_config:
+  fields:
+    include_history:
+      required: false
+      default: false
+      selector:
+        boolean:
+    filename:
+      required: false
+      example: task_export.json
+      selector:
+        text:
+
+import_config:
+  fields:
+    data:
+      required: false
+      selector:
+        object:
+    filename:
+      required: false
+      example: task_export.json
+      selector:
+        text:
+    dry_run:
+      required: false
+      default: false
+      selector:
+        boolean:
+
 reset_task:
   fields:
     entity_id:

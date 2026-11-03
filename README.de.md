@@ -130,6 +130,22 @@ Pro Bereich (am Gerät „<Bereich> Tasks“; die Entity-IDs entstehen aus Berei
 | `task.clear_away` | Markiert eine Person wieder als anwesend |
 | `task.reset_task` | Verlauf und Rotation einer Aufgabe zurücksetzen |
 
+### Sichern und Umziehen
+
+`task.export_config` liefert alle Bereiche, deren Einstellungen, Aufgaben und Wartungen als Antwort (den Verlauf nur mit `include_history: true`), die **Entwicklerwerkzeuge → Aktionen** als YAML anzeigen. Mit `filename` wird zusätzlich eine `.json`- oder `.yaml`-Datei in den Ordner `task_exports` im Konfigurationsverzeichnis geschrieben (nur ein einfacher Dateiname; Ordner und andere Dateitypen werden abgelehnt, ein Service-Aufruf kann also keine anderen Dateien berühren).
+
+`task.import_config` legt an, was ein Export beschreibt, aus `data` oder aus einer `filename` in diesem Ordner:
+
+- **Alles wird vorher geprüft.** Bei einem Fehler wird nichts geändert, und die Probleme werden mit ihrer Stelle aufgelistet (z. B. `areas[0].tasks[2].interval_value`).
+- **Duplikate werden übersprungen:** Eine Aufgabe oder Wartung, die es im Bereich schon gibt (gleicher Typ und Name, Groß-/Kleinschreibung egal), wird nicht noch einmal angelegt. Einstellungen eines bestehenden Bereichs bleiben unverändert.
+- **Die Bereiche müssen in Home Assistant existieren** (zuerst per ID, dann per Name). Der Task-Eintrag des Bereichs wird bei Bedarf angelegt.
+- Wartungen finden ihr **Gerät** per ID, dann per Name.
+- `dry_run: true` meldet nur, was angelegt würde.
+- Die **Haushaltsübersicht** wird angelegt, wenn der Export eine enthält und es noch keine gibt.
+- Ist der Verlauf im Export enthalten, wird er wiederhergestellt.
+
+Die Services gibt es, sobald die Integration auf der Instanz eingerichtet ist. Lege also zuerst die Haushaltsübersicht (oder einen Bereich) an und importiere dann. Zuständige bleiben als Personen-Entity-IDs erhalten und funktionieren nur, wenn es dieselben Personen gibt.
+
 ### Ereignisse
 
 | Ereignis | Wird ausgelöst, wenn |

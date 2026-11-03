@@ -60,6 +60,12 @@
     },
     "clear_away": {
       "service": "mdi:home-account"
+    },
+    "export_config": {
+      "service": "mdi:export"
+    },
+    "import_config": {
+      "service": "mdi:import"
     }
   }
 }
