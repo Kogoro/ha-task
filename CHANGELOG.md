@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0-beta.1 (pre-release)
 
 ### Added
 - `task.complete_task` accepts `completed_at` to record a past completion.
