@@ -45,6 +45,8 @@ from .const import (
     CONF_INTERVAL_DAYS,
     CONF_ROTATION_MODE,
     CONF_UNIFIED_CALENDAR,
+    CONF_WARN_DAYS,
+    DEFAULT_WARN_DAYS,
     DOMAIN,
     SUBENTRY_TYPE_IMPORT,
     SUBENTRY_TYPE_MAINTENANCE,
@@ -96,6 +98,9 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
                 data[CONF_UNIFIED_CALENDAR] = user_input.get(
                     CONF_UNIFIED_CALENDAR, False
                 )
+                data[CONF_WARN_DAYS] = int(
+                    user_input.get(CONF_WARN_DAYS, DEFAULT_WARN_DAYS)
+                )
 
                 return self.async_create_entry(
                     title=title,
@@ -113,6 +118,9 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
                     vol.Optional(
                         CONF_UNIFIED_CALENDAR, default=False
                     ): BooleanSelector(),
+                    vol.Optional(
+                        CONF_WARN_DAYS, default=DEFAULT_WARN_DAYS
+                    ): _warn_days_selector(),
                 }
             ),
             errors=errors,
@@ -134,6 +142,9 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
                 data[CONF_CALENDAR_NAME] = calendar_name.strip()
             data[CONF_UNIFIED_CALENDAR] = user_input.get(
                 CONF_UNIFIED_CALENDAR, False
+            )
+            data[CONF_WARN_DAYS] = int(
+                user_input.get(CONF_WARN_DAYS, DEFAULT_WARN_DAYS)
             )
 
             return self.async_update_reload_and_abort(
@@ -163,9 +174,49 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
                         CONF_UNIFIED_CALENDAR,
                         default=entry.data.get(CONF_UNIFIED_CALENDAR, False),
                     ): BooleanSelector(),
+                    vol.Optional(
+                        CONF_WARN_DAYS,
+                        default=entry.data.get(CONF_WARN_DAYS, DEFAULT_WARN_DAYS),
+                    ): _warn_days_selector(),
                 }
             ),
         )
+
+
+def _warn_days_selector() -> NumberSelector:
+    """Return the selector for a warning window in days."""
+    return NumberSelector(
+        NumberSelectorConfig(
+            min=0,
+            max=365,
+            step=1,
+            mode=NumberSelectorMode.BOX,
+            unit_of_measurement="days",
+        )
+    )
+
+
+def _add_warn_days(schema: dict, defaults: dict[str, Any]) -> None:
+    """Add the optional per-item warning window that overrides the area value.
+
+    A suggested value is used instead of a default so the field can be cleared
+    to fall back to the area value again.
+    """
+    warn_days = defaults.get(CONF_WARN_DAYS)
+    schema[
+        vol.Optional(
+            CONF_WARN_DAYS,
+            description=(
+                {"suggested_value": warn_days} if warn_days is not None else None
+            ),
+        )
+    ] = _warn_days_selector()
+
+
+def _warn_days_data(data: dict[str, Any]) -> dict[str, Any]:
+    """Return the warning window for the subentry data, if one is set."""
+    warn_days = data.get(CONF_WARN_DAYS)
+    return {CONF_WARN_DAYS: int(warn_days)} if warn_days is not None else {}
 
 
 def _build_task_schema(
@@ -208,6 +259,8 @@ def _build_task_schema(
         schema[vol.Optional(CONF_ICON, default=icon)] = IconSelector()
     else:
         schema[vol.Optional(CONF_ICON)] = IconSelector()
+
+    _add_warn_days(schema, d)
 
     schema[vol.Required(CONF_UNASSIGNED, default=not has_assignees)] = (
         BooleanSelector()
@@ -276,6 +329,7 @@ class TaskSubentryFlow(ConfigSubentryFlow):
             title=self._data["name"],
             data={
                 CONF_INTERVAL_DAYS: int(self._data[CONF_INTERVAL_DAYS]),
+                **_warn_days_data(self._data),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
                 CONF_ROTATION_MODE: self._data.get(
                     CONF_ROTATION_MODE, RotationMode.ROUND_ROBIN
@@ -352,6 +406,7 @@ class TaskSubentryFlow(ConfigSubentryFlow):
             title=new_title,
             data={
                 CONF_INTERVAL_DAYS: int(self._data[CONF_INTERVAL_DAYS]),
+                **_warn_days_data(self._data),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
                 CONF_ROTATION_MODE: self._data.get(
                     CONF_ROTATION_MODE, RotationMode.ROUND_ROBIN
@@ -408,6 +463,8 @@ def _build_maintenance_schema(
         schema[vol.Optional(CONF_ICON, default=icon)] = IconSelector()
     else:
         schema[vol.Optional(CONF_ICON)] = IconSelector()
+
+    _add_warn_days(schema, d)
 
     schema[vol.Required(CONF_UNASSIGNED, default=not has_assignees)] = (
         BooleanSelector()
@@ -514,6 +571,7 @@ class MaintenanceSubentryFlow(ConfigSubentryFlow):
             data={
                 CONF_DEVICE_ID: self._data[CONF_DEVICE_ID],
                 CONF_INTERVAL_DAYS: int(self._data[CONF_INTERVAL_DAYS]),
+                **_warn_days_data(self._data),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
                 CONF_ROTATION_MODE: self._data.get(
                     CONF_ROTATION_MODE, RotationMode.ROUND_ROBIN
@@ -596,6 +654,7 @@ class MaintenanceSubentryFlow(ConfigSubentryFlow):
             data={
                 CONF_DEVICE_ID: new_device_id,
                 CONF_INTERVAL_DAYS: int(self._data[CONF_INTERVAL_DAYS]),
+                **_warn_days_data(self._data),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
                 CONF_ROTATION_MODE: self._data.get(
                     CONF_ROTATION_MODE, RotationMode.ROUND_ROBIN

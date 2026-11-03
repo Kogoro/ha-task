@@ -14,6 +14,9 @@ CONF_INTERVAL_DAYS = "interval_days"
 CONF_DESCRIPTION = "description"
 CONF_ICON = "icon"
 CONF_UNIFIED_CALENDAR = "unified_calendar"
+CONF_WARN_DAYS = "warn_days"
+
+DEFAULT_WARN_DAYS = 7
 
 SUBENTRY_TYPE_TASK = "task"
 SUBENTRY_TYPE_MAINTENANCE = "maintenance"
@@ -28,6 +31,14 @@ class RotationMode(StrEnum):
 
     ROUND_ROBIN = "round_robin"
     RANDOM = "random"
+
+
+class TaskStatus(StrEnum):
+    """Status of a task or maintenance item."""
+
+    OK = "ok"
+    DUE_SOON = "due_soon"
+    OVERDUE = "overdue"
 
 
 ATTR_ASSIGNEE = "assignee"

@@ -15,7 +15,7 @@ def task_device_info(coordinator: TaskCoordinator, subentry_id: str) -> DeviceIn
     device, linked to the appliance via ``via_device_id``.
     """
     entry_id = coordinator.config_entry.entry_id
-    item = coordinator._find_item(subentry_id)
+    item = coordinator.find_item(subentry_id)
     task_name = item.name if item else "Task"
     if item and item.device_id:
         device = dr.async_get(coordinator.hass).async_get(item.device_id)
@@ -35,4 +35,15 @@ def task_device_info(coordinator: TaskCoordinator, subentry_id: str) -> DeviceIn
         suggested_area=coordinator.data.area_name,
         manufacturer="Task",
         model="Household Task",
+    )
+
+
+def area_device_info(coordinator: TaskCoordinator) -> DeviceInfo:
+    """Return the device info of the area itself (not of a single task)."""
+    return DeviceInfo(
+        identifiers={(DOMAIN, coordinator.config_entry.entry_id)},
+        name=f"{coordinator.data.area_name} Tasks",
+        suggested_area=coordinator.data.area_name,
+        manufacturer="Task",
+        model="Task Manager",
     )

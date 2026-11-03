@@ -7,12 +7,14 @@
         "data": {
           "area_id": "Bereich",
           "calendar_name": "Kalendername",
-          "unified_calendar": "Gemeinsamen Kalender verwenden"
+          "unified_calendar": "Gemeinsamen Kalender verwenden",
+          "warn_days": "Warntage"
         },
         "data_description": {
           "area_id": "Der Bereich, in dem Aufgaben verfolgt werden.",
           "calendar_name": "Eigener Name für die Kalender-Entität. Leer lassen, um den Bereichsnamen zu verwenden.",
-          "unified_calendar": "Aufgaben dieses Bereichs in einem einzigen gemeinsamen Kalender anzeigen, statt in einem separaten."
+          "unified_calendar": "Aufgaben dieses Bereichs in einem einzigen gemeinsamen Kalender anzeigen, statt in einem separaten.",
+          "warn_days": "Aufgaben gelten so viele Tage vor der Fälligkeit als \"bald fällig\". Einzelne Aufgaben können das überschreiben."
         }
       },
       "reconfigure": {
@@ -21,12 +23,14 @@
         "data": {
           "area_id": "Bereich",
           "calendar_name": "Kalendername",
-          "unified_calendar": "Gemeinsamen Kalender verwenden"
+          "unified_calendar": "Gemeinsamen Kalender verwenden",
+          "warn_days": "Warntage"
         },
         "data_description": {
           "area_id": "Wählen Sie einen anderen Bereich für diese Aufgabengruppe.",
           "calendar_name": "Eigener Name für die Kalender-Entität. Leer lassen, um den Bereichsnamen zu verwenden.",
-          "unified_calendar": "Aufgaben dieses Bereichs in einem einzigen gemeinsamen Kalender anzeigen, statt in einem separaten."
+          "unified_calendar": "Aufgaben dieses Bereichs in einem einzigen gemeinsamen Kalender anzeigen, statt in einem separaten.",
+          "warn_days": "Aufgaben gelten so viele Tage vor der Fälligkeit als \"bald fällig\". Einzelne Aufgaben können das überschreiben."
         }
       }
     },
@@ -53,14 +57,16 @@
             "interval_days": "Wiederholung alle (Tage)",
             "description": "Beschreibung",
             "icon": "Symbol",
-            "unassigned": "Nicht zugewiesen lassen"
+            "unassigned": "Nicht zugewiesen lassen",
+            "warn_days": "Warntage (optional)"
           },
           "data_description": {
             "name": "Ein kurzer, beschreibender Name wie \"Wohnzimmer saugen\" oder \"Pflanzen gießen\".",
             "interval_days": "Wie viele Tage zwischen jeder Wiederholung dieser Aufgabe.",
             "description": "Optionale Hinweise oder Anweisungen für die ausführende Person.",
             "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Aufgabe.",
-            "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen."
+            "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen.",
+            "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden."
           }
         },
         "assignees": {
@@ -83,14 +89,16 @@
             "interval_days": "Wiederholung alle (Tage)",
             "description": "Beschreibung",
             "icon": "Symbol",
-            "unassigned": "Nicht zugewiesen lassen"
+            "unassigned": "Nicht zugewiesen lassen",
+            "warn_days": "Warntage (optional)"
           },
           "data_description": {
             "name": "Ein kurzer, beschreibender Name wie \"Wohnzimmer saugen\" oder \"Pflanzen gießen\".",
             "interval_days": "Wie viele Tage zwischen jeder Wiederholung dieser Aufgabe.",
             "description": "Optionale Hinweise oder Anweisungen für die ausführende Person.",
             "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Aufgabe.",
-            "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen."
+            "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen.",
+            "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden."
           }
         },
         "reconfigure_assignees": {
@@ -181,7 +189,8 @@
             "interval_days": "Wiederholung alle (Tage)",
             "description": "Beschreibung",
             "icon": "Symbol",
-            "unassigned": "Nicht zugewiesen lassen"
+            "unassigned": "Nicht zugewiesen lassen",
+            "warn_days": "Warntage (optional)"
           },
           "data_description": {
             "name": "Ein kurzer Name wie \"Filter wechseln\" oder \"Entkalken\".",
@@ -189,7 +198,8 @@
             "interval_days": "Wie viele Tage zwischen jeder Wartung.",
             "description": "Optionale Hinweise oder Wartungsanweisungen.",
             "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Wartungsaufgabe.",
-            "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen."
+            "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen.",
+            "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden."
           }
         },
         "assignees": {
@@ -213,7 +223,8 @@
             "interval_days": "Wiederholung alle (Tage)",
             "description": "Beschreibung",
             "icon": "Symbol",
-            "unassigned": "Nicht zugewiesen lassen"
+            "unassigned": "Nicht zugewiesen lassen",
+            "warn_days": "Warntage (optional)"
           },
           "data_description": {
             "name": "Ein kurzer Name wie \"Filter wechseln\" oder \"Entkalken\".",
@@ -221,7 +232,8 @@
             "interval_days": "Wie viele Tage zwischen jeder Wartung.",
             "description": "Optionale Hinweise oder Wartungsanweisungen.",
             "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Wartungsaufgabe.",
-            "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen."
+            "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen.",
+            "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden."
           }
         },
         "reconfigure_assignees": {
@@ -254,6 +266,28 @@
       },
       "area_overdue": {
         "name": "Aufgaben überfällig"
+      }
+    },
+    "sensor": {
+      "overdue_count": {
+        "name": "Anzahl überfällig"
+      },
+      "due_today": {
+        "name": "Heute fällig"
+      },
+      "due_this_week": {
+        "name": "Diese Woche fällig"
+      },
+      "due_soon": {
+        "name": "Bald fällig"
+      },
+      "status": {
+        "name": "Status",
+        "state": {
+          "ok": "In Ordnung",
+          "due_soon": "Bald fällig",
+          "overdue": "Überfällig"
+        }
       }
     }
   },

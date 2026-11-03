@@ -58,7 +58,7 @@ class TaskCompleteButton(CoordinatorEntity[TaskCoordinator], ButtonEntity):
         """Get current task data."""
         if self.coordinator.data is None:
             return None
-        return self.coordinator._find_item(self.subentry_id)
+        return self.coordinator.find_item(self.subentry_id)
 
     @property
     def name(self) -> str:
@@ -98,7 +98,7 @@ class TaskAssignToMeButton(CoordinatorEntity[TaskCoordinator], ButtonEntity):
         """Get current task data."""
         if self.coordinator.data is None:
             return None
-        return self.coordinator._find_item(self.subentry_id)
+        return self.coordinator.find_item(self.subentry_id)
 
     @property
     def name(self) -> str:

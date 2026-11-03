@@ -11,6 +11,26 @@
     "sensor": {
       "days_until_due": {
         "default": "mdi:clipboard-check-outline"
+      },
+      "overdue_count": {
+        "default": "mdi:alert-circle-outline"
+      },
+      "due_today": {
+        "default": "mdi:calendar-today"
+      },
+      "due_this_week": {
+        "default": "mdi:calendar-week"
+      },
+      "due_soon": {
+        "default": "mdi:calendar-alert"
+      },
+      "status": {
+        "default": "mdi:clipboard-text-clock-outline",
+        "state": {
+          "ok": "mdi:check-circle-outline",
+          "due_soon": "mdi:clock-alert-outline",
+          "overdue": "mdi:alert-circle"
+        }
       }
     },
     "button": {
