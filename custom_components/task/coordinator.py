@@ -17,10 +17,13 @@ from .const import (
     CONF_DEVICE_ID,
     CONF_INTERVAL_DAYS,
     CONF_ROTATION_MODE,
+    CONF_WARN_DAYS,
+    DEFAULT_WARN_DAYS,
     DOMAIN,
     SUBENTRY_TYPE_MAINTENANCE,
     SUBENTRY_TYPE_TASK,
     RotationMode,
+    TaskStatus,
 )
 from .store import TaskStore
 
@@ -48,6 +51,8 @@ class TaskData:
     days_until_due: int | None
     overdue: bool
     device_id: str | None = None
+    warn_days: int = DEFAULT_WARN_DAYS
+    status: TaskStatus = TaskStatus.OK
 
 
 @dataclass
@@ -58,6 +63,11 @@ class TaskCoordinatorData:
     area_name: str
     tasks: dict[str, TaskData]
     maintenance: dict[str, TaskData]
+
+    @property
+    def all_items(self) -> list[TaskData]:
+        """Return all tasks and maintenance items of the area."""
+        return [*self.tasks.values(), *self.maintenance.values()]
 
 
 class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
@@ -74,6 +84,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
         """Initialize the coordinator."""
         self.store = store
         self._previous_overdue: set[str] = set()
+        self._previous_due_soon: set[tuple[str, datetime.date | None]] = set()
         super().__init__(
             hass,
             _LOGGER,
@@ -118,6 +129,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
         data: dict,
         title: str,
         today: datetime.date,
+        area_warn_days: int,
     ) -> TaskData:
         """Compute derived state for a single subentry."""
         history = self.store.get_history(subentry_id)
@@ -144,6 +156,14 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             next_due = history.postponed_until
             days_until_due = (next_due - today).days
             overdue = days_until_due < 0
+
+        warn_days = int(data.get(CONF_WARN_DAYS) or area_warn_days)
+        if overdue:
+            status = TaskStatus.OVERDUE
+        elif days_until_due <= warn_days:
+            status = TaskStatus.DUE_SOON
+        else:
+            status = TaskStatus.OK
 
         assignees = self._resolve_assignees(dict(data))
         rotation_mode = data.get(
@@ -173,6 +193,8 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             days_until_due=days_until_due,
             overdue=overdue,
             device_id=data.get(CONF_DEVICE_ID),
+            warn_days=warn_days,
+            status=status,
         )
 
     async def _async_update_data(self) -> TaskCoordinatorData:
@@ -185,6 +207,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
         area_name = area_entry.name if area_entry else area_id
 
         today = dt_util.now().date()
+        area_warn_days = int(entry.data.get(CONF_WARN_DAYS, DEFAULT_WARN_DAYS))
         tasks: dict[str, TaskData] = {}
         maintenance: dict[str, TaskData] = {}
 
@@ -196,6 +219,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
                     dict(subentry.data),
                     subentry.title,
                     today,
+                    area_warn_days,
                 )
             elif subentry.subentry_type == SUBENTRY_TYPE_MAINTENANCE:
                 maintenance[subentry.subentry_id] = self._compute_subentry_data(
@@ -204,6 +228,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
                     dict(subentry.data),
                     subentry.title,
                     today,
+                    area_warn_days,
                 )
 
         all_items = {**tasks, **maintenance}
@@ -229,6 +254,32 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             self.hass.bus.async_fire(event_type, event_data)
         self._previous_overdue = current_overdue
 
+        due_soon = {
+            (sid, item.next_due)
+            for sid, item in all_items.items()
+            if item.status is TaskStatus.DUE_SOON
+        }
+        for sid, next_due in due_soon - self._previous_due_soon:
+            item = all_items[sid]
+            event_type = (
+                "task_due_soon"
+                if item.subentry_type == SUBENTRY_TYPE_TASK
+                else "maintenance_due_soon"
+            )
+            event_data = {
+                "subentry_id": sid,
+                "task_name": item.name,
+                "area_id": area_id,
+                "area_name": area_name,
+                "next_due": next_due.isoformat() if next_due else None,
+                "days_until_due": item.days_until_due,
+                "current_assignee": item.current_assignee,
+            }
+            if item.device_id:
+                event_data["device_id"] = item.device_id
+            self.hass.bus.async_fire(event_type, event_data)
+        self._previous_due_soon = due_soon
+
         return TaskCoordinatorData(
             area_id=area_id,
             area_name=area_name,
@@ -236,7 +287,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             maintenance=maintenance,
         )
 
-    def _find_item(self, subentry_id: str) -> TaskData | None:
+    def find_item(self, subentry_id: str) -> TaskData | None:
         """Find a task or maintenance item by subentry ID."""
         if not self.data:
             return None
@@ -251,7 +302,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
         The new date counts from the current due date, or from today if the
         task is already overdue. History and rotation stay untouched.
         """
-        item = self._find_item(subentry_id)
+        item = self.find_item(subentry_id)
         today = dt_util.now().date()
         base = max(item.next_due, today) if item and item.next_due else today
         until = base + datetime.timedelta(days=days)
@@ -265,7 +316,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
         completed_at: datetime.datetime | None = None,
     ) -> None:
         """Record completion and advance the assignee rotation."""
-        item = self._find_item(subentry_id)
+        item = self.find_item(subentry_id)
         assignees: list[str] = []
         rotation_mode = RotationMode.ROUND_ROBIN
 
@@ -310,7 +361,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
 
     def assign_to(self, subentry_id: str, person_id: str | None) -> None:
         """Override the current assignee for a task or maintenance item."""
-        item = self._find_item(subentry_id)
+        item = self.find_item(subentry_id)
         if not item or not person_id:
             return
 

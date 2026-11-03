@@ -1,8 +1,15 @@
 """Sensor platform for the Task integration."""
 
+from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+    SensorStateClass,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -16,9 +23,52 @@ from .const import (
     ATTR_NEXT_DUE,
     ATTR_OVERDUE,
     ATTR_ROTATION_MODE,
+    TaskStatus,
 )
-from .coordinator import TaskConfigEntry, TaskCoordinator, TaskData
-from .device import task_device_info
+from .coordinator import (
+    TaskConfigEntry,
+    TaskCoordinator,
+    TaskCoordinatorData,
+    TaskData,
+)
+from .device import area_device_info, task_device_info
+
+PARALLEL_UPDATES = 0
+
+
+@dataclass(frozen=True, kw_only=True)
+class AreaSensorDescription(SensorEntityDescription):
+    """Describes a summary sensor of an area."""
+
+    match_fn: Callable[[TaskData], bool]
+
+
+AREA_SENSORS: tuple[AreaSensorDescription, ...] = (
+    AreaSensorDescription(
+        key="overdue_count",
+        translation_key="overdue_count",
+        match_fn=lambda item: item.status is TaskStatus.OVERDUE,
+    ),
+    AreaSensorDescription(
+        key="due_today",
+        translation_key="due_today",
+        match_fn=lambda item: not item.overdue and item.days_until_due == 0,
+    ),
+    AreaSensorDescription(
+        key="due_this_week",
+        translation_key="due_this_week",
+        match_fn=lambda item: (
+            not item.overdue
+            and item.days_until_due is not None
+            and 0 <= item.days_until_due <= 7
+        ),
+    ),
+    AreaSensorDescription(
+        key="due_soon",
+        translation_key="due_soon",
+        match_fn=lambda item: item.status is TaskStatus.DUE_SOON,
+    ),
+)
 
 
 async def async_setup_entry(
@@ -29,17 +79,101 @@ async def async_setup_entry(
     """Set up Task sensor entities."""
     coordinator = entry.runtime_data
 
-    for subentry_id in coordinator.data.tasks:
+    for subentry_id in (*coordinator.data.tasks, *coordinator.data.maintenance):
         async_add_entities(
-            [TaskSensorEntity(coordinator, subentry_id)],
+            [
+                TaskSensorEntity(coordinator, subentry_id),
+                TaskStatusSensorEntity(coordinator, subentry_id),
+            ],
             config_subentry_id=subentry_id,
         )
 
-    for subentry_id in coordinator.data.maintenance:
-        async_add_entities(
-            [TaskSensorEntity(coordinator, subentry_id)],
-            config_subentry_id=subentry_id,
+    async_add_entities(
+        AreaSummarySensor(coordinator, description) for description in AREA_SENSORS
+    )
+
+
+class AreaSummarySensor(CoordinatorEntity[TaskCoordinator], SensorEntity):
+    """Number of tasks in an area that match a condition."""
+
+    entity_description: AreaSensorDescription
+    _attr_has_entity_name = True
+    _attr_native_unit_of_measurement = "tasks"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(
+        self, coordinator: TaskCoordinator, description: AreaSensorDescription
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self.entity_description = description
+        self._attr_unique_id = (
+            f"{coordinator.config_entry.entry_id}_{description.key}"
         )
+        self._attr_device_info = area_device_info(coordinator)
+
+    @property
+    def _matches(self) -> list[TaskData]:
+        """Return the items that match the sensor's condition."""
+        data: TaskCoordinatorData | None = self.coordinator.data
+        if data is None:
+            return []
+        return [i for i in data.all_items if self.entity_description.match_fn(i)]
+
+    @property
+    def native_value(self) -> int:
+        """Return the number of matching items."""
+        return len(self._matches)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the names of the matching items and who is responsible."""
+        matches = self._matches
+        return {
+            "tasks": [item.name for item in matches],
+            "assignees": {
+                item.name: item.current_assignee
+                for item in matches
+                if item.current_assignee
+            },
+        }
+
+
+class TaskStatusSensorEntity(CoordinatorEntity[TaskCoordinator], SensorEntity):
+    """Status of a task: ok, due soon or overdue."""
+
+    _attr_has_entity_name = True
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_translation_key = "status"
+
+    def __init__(self, coordinator: TaskCoordinator, subentry_id: str) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, context=subentry_id)
+        self._attr_options = [status.value for status in TaskStatus]
+        self.subentry_id = subentry_id
+        self._attr_unique_id = (
+            f"{coordinator.config_entry.entry_id}_{subentry_id}_status"
+        )
+        self._attr_device_info = task_device_info(coordinator, subentry_id)
+
+    @property
+    def _task_data(self) -> TaskData | None:
+        """Get current task data."""
+        if self.coordinator.data is None:
+            return None
+        return self.coordinator.find_item(self.subentry_id)
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the status."""
+        task = self._task_data
+        return task.status.value if task else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the warning window that applies to the task."""
+        task = self._task_data
+        return {"warn_days": task.warn_days} if task else {}
 
 
 class TaskSensorEntity(CoordinatorEntity[TaskCoordinator], SensorEntity):
@@ -65,7 +199,7 @@ class TaskSensorEntity(CoordinatorEntity[TaskCoordinator], SensorEntity):
         """Get current task data."""
         if self.coordinator.data is None:
             return None
-        return self.coordinator._find_item(self.subentry_id)
+        return self.coordinator.find_item(self.subentry_id)
 
     @property
     def native_value(self) -> int | None:

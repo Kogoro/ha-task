@@ -48,6 +48,7 @@ Task is configured entirely through the Home Assistant UI — no YAML needed.
 1. Go to **Settings** → **Devices & Services** → **Add Integration**.
 2. Search for **Task** and select it.
 3. Choose the area you want to manage tasks for. Each area gets its own config entry.
+4. Optionally set **Warn days** (default 7): tasks count as "due soon" this many days before they are due.
 
 ### Adding Tasks
 
@@ -58,6 +59,7 @@ Task is configured entirely through the Home Assistant UI — no YAML needed.
    - **Repeat every (days)** — interval between occurrences (1–365)
    - **Description** — optional notes or instructions
    - **Icon** — optional MDI icon
+   - **Warn days** — optional; overrides the area's warn days for this task (leave empty to use the area value)
    - **Assignees** — optionally assign people with a rotation mode (round-robin or random)
 
 ### Adding Maintenance Tasks
@@ -77,6 +79,7 @@ For each task or maintenance item:
 |--------|-------------|
 | `sensor.<name>` | Days until due (negative when overdue) |
 | `binary_sensor.<name>_overdue` | `on` when the task is past due |
+| `sensor.<name>_status` | `ok`, `due_soon` (within the warn days) or `overdue` |
 | `button.<name>_complete` | Press to record a completion |
 | `button.<name>_assign_to_me` | Press to claim the task |
 
@@ -85,6 +88,10 @@ Per area:
 | Entity | Description |
 |--------|-------------|
 | `binary_sensor.<area>_tasks_overdue` | `on` when any task in the area is overdue |
+| `sensor.<area>_tasks_overdue_count` | Number of overdue tasks; attributes `tasks` (names) and `assignees` |
+| `sensor.<area>_tasks_due_today` | Number of tasks due today |
+| `sensor.<area>_tasks_due_this_week` | Number of tasks due within the next 7 days |
+| `sensor.<area>_tasks_due_soon` | Number of tasks inside their warn days |
 | `calendar.<area>_tasks` | Calendar with all task due dates |
 | `todo.<area>_tasks` | Todo list of all tasks in the area |
 
@@ -168,6 +175,14 @@ entity: sensor.vacuum_living_room
 | `show_device_info` | boolean | `true` | Show device badge for maintenance tasks |
 
 Both cards include a built-in visual editor accessible from the Lovelace card configuration UI.
+
+### Events
+
+| Event | Fired when |
+|-------|------------|
+| `task_completed` / `maintenance_completed` | A task is completed |
+| `task_overdue` / `maintenance_overdue` | A task becomes overdue |
+| `task_due_soon` / `maintenance_due_soon` | A task enters its warn days (once per due date) |
 
 ## Automation Examples
 

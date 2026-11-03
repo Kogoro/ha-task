@@ -7,12 +7,14 @@
         "data": {
           "area_id": "Area",
           "calendar_name": "Calendar name",
-          "unified_calendar": "Use unified calendar"
+          "unified_calendar": "Use unified calendar",
+          "warn_days": "Warn days"
         },
         "data_description": {
           "area_id": "The area where tasks will be tracked.",
           "calendar_name": "Custom name for the calendar entity. Leave empty to use the area name.",
-          "unified_calendar": "Show this area's tasks in a single shared calendar instead of a separate one."
+          "unified_calendar": "Show this area's tasks in a single shared calendar instead of a separate one.",
+          "warn_days": "Tasks count as \"due soon\" this many days before they are due. Individual tasks can override this."
         }
       },
       "reconfigure": {
@@ -21,12 +23,14 @@
         "data": {
           "area_id": "Area",
           "calendar_name": "Calendar name",
-          "unified_calendar": "Use unified calendar"
+          "unified_calendar": "Use unified calendar",
+          "warn_days": "Warn days"
         },
         "data_description": {
           "area_id": "Select a different area for this task group.",
           "calendar_name": "Custom name for the calendar entity. Leave empty to use the area name.",
-          "unified_calendar": "Show this area's tasks in a single shared calendar instead of a separate one."
+          "unified_calendar": "Show this area's tasks in a single shared calendar instead of a separate one.",
+          "warn_days": "Tasks count as \"due soon\" this many days before they are due. Individual tasks can override this."
         }
       }
     },
@@ -53,14 +57,16 @@
             "interval_days": "Repeat every (days)",
             "description": "Description",
             "icon": "Icon",
-            "unassigned": "Leave unassigned"
+            "unassigned": "Leave unassigned",
+            "warn_days": "Warn days (optional)"
           },
           "data_description": {
             "name": "A short, descriptive name like \"Vacuum living room\" or \"Water plants\".",
             "interval_days": "How many days between each occurrence of this task.",
             "description": "Optional notes or instructions for whoever does the task.",
             "icon": "Choose an icon to visually represent this task.",
-            "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step."
+            "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step.",
+            "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value."
           }
         },
         "assignees": {
@@ -83,14 +89,16 @@
             "interval_days": "Repeat every (days)",
             "description": "Description",
             "icon": "Icon",
-            "unassigned": "Leave unassigned"
+            "unassigned": "Leave unassigned",
+            "warn_days": "Warn days (optional)"
           },
           "data_description": {
             "name": "A short, descriptive name like \"Vacuum living room\" or \"Water plants\".",
             "interval_days": "How many days between each occurrence of this task.",
             "description": "Optional notes or instructions for whoever does the task.",
             "icon": "Choose an icon to visually represent this task.",
-            "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step."
+            "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step.",
+            "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value."
           }
         },
         "reconfigure_assignees": {
@@ -181,7 +189,8 @@
             "interval_days": "Repeat every (days)",
             "description": "Description",
             "icon": "Icon",
-            "unassigned": "Leave unassigned"
+            "unassigned": "Leave unassigned",
+            "warn_days": "Warn days (optional)"
           },
           "data_description": {
             "name": "A short name like \"Replace filter\" or \"Descale\".",
@@ -189,7 +198,8 @@
             "interval_days": "How many days between each maintenance occurrence.",
             "description": "Optional notes or maintenance instructions.",
             "icon": "Choose an icon to visually represent this maintenance task.",
-            "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step."
+            "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step.",
+            "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value."
           }
         },
         "assignees": {
@@ -213,7 +223,8 @@
             "interval_days": "Repeat every (days)",
             "description": "Description",
             "icon": "Icon",
-            "unassigned": "Leave unassigned"
+            "unassigned": "Leave unassigned",
+            "warn_days": "Warn days (optional)"
           },
           "data_description": {
             "name": "A short name like \"Replace filter\" or \"Descale\".",
@@ -221,7 +232,8 @@
             "interval_days": "How many days between each maintenance occurrence.",
             "description": "Optional notes or maintenance instructions.",
             "icon": "Choose an icon to visually represent this maintenance task.",
-            "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step."
+            "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step.",
+            "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value."
           }
         },
         "reconfigure_assignees": {
@@ -254,6 +266,28 @@
       },
       "area_overdue": {
         "name": "Tasks overdue"
+      }
+    },
+    "sensor": {
+      "overdue_count": {
+        "name": "Overdue count"
+      },
+      "due_today": {
+        "name": "Due today"
+      },
+      "due_this_week": {
+        "name": "Due this week"
+      },
+      "due_soon": {
+        "name": "Due soon"
+      },
+      "status": {
+        "name": "Status",
+        "state": {
+          "ok": "OK",
+          "due_soon": "Due soon",
+          "overdue": "Overdue"
+        }
       }
     }
   },

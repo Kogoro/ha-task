@@ -113,7 +113,7 @@ class TaskTodoEntity(CoordinatorEntity[TaskCoordinator], TodoListEntity):
             return
 
         if item.status == TodoItemStatus.COMPLETED:
-            task = self.coordinator._find_item(item.uid)
+            task = self.coordinator.find_item(item.uid)
             completed_by = task.current_assignee if task else None
             self.coordinator.complete_task(item.uid, completed_by=completed_by)
             await self.coordinator.async_request_refresh()

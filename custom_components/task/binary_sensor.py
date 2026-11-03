@@ -62,7 +62,7 @@ class TaskOverdueBinarySensor(CoordinatorEntity[TaskCoordinator], BinarySensorEn
         """Get current task data."""
         if self.coordinator.data is None:
             return None
-        return self.coordinator._find_item(self.subentry_id)
+        return self.coordinator.find_item(self.subentry_id)
 
     @property
     def is_on(self) -> bool | None:
