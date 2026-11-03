@@ -82,21 +82,25 @@
           "description": "Set up a new recurring household task. Choose how often it should repeat.",
           "data": {
             "name": "Task name",
-            "interval_days": "Repeat every (days)",
             "description": "Description",
             "icon": "Icon",
             "unassigned": "Leave unassigned",
             "warn_days": "Warn days (optional)",
-            "points": "Effort (points)"
+            "points": "Effort (points)",
+            "interval_value": "Repeat every",
+            "interval_unit": "Unit",
+            "active_months": "Active months (optional)"
           },
           "data_description": {
             "name": "A short, descriptive name like \"Vacuum living room\" or \"Water plants\".",
-            "interval_days": "How many days between each occurrence of this task.",
             "description": "Optional notes or instructions for whoever does the task.",
             "icon": "Choose an icon to visually represent this task.",
             "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step.",
             "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value.",
-            "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal."
+            "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal.",
+            "interval_value": "How often this task repeats, in the unit below.",
+            "interval_unit": "Days, weeks, or calendar months. Months keep the day of the month (31 January + 1 month is 28 February).",
+            "active_months": "Only due in these months, e.g. March to May for window cleaning. Outside them the task is neither due nor overdue and comes back at the start of the next active month. Leave empty for all year."
           }
         },
         "assignees": {
@@ -116,21 +120,25 @@
           "description": "Update the settings for this task.",
           "data": {
             "name": "Task name",
-            "interval_days": "Repeat every (days)",
             "description": "Description",
             "icon": "Icon",
             "unassigned": "Leave unassigned",
             "warn_days": "Warn days (optional)",
-            "points": "Effort (points)"
+            "points": "Effort (points)",
+            "interval_value": "Repeat every",
+            "interval_unit": "Unit",
+            "active_months": "Active months (optional)"
           },
           "data_description": {
             "name": "A short, descriptive name like \"Vacuum living room\" or \"Water plants\".",
-            "interval_days": "How many days between each occurrence of this task.",
             "description": "Optional notes or instructions for whoever does the task.",
             "icon": "Choose an icon to visually represent this task.",
             "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step.",
             "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value.",
-            "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal."
+            "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal.",
+            "interval_value": "How often this task repeats, in the unit below.",
+            "interval_unit": "Days, weeks, or calendar months. Months keep the day of the month (31 January + 1 month is 28 February).",
+            "active_months": "Only due in these months, e.g. March to May for window cleaning. Outside them the task is neither due nor overdue and comes back at the start of the next active month. Leave empty for all year."
           }
         },
         "reconfigure_assignees": {
@@ -218,22 +226,26 @@
           "data": {
             "name": "Task name",
             "device_id": "Device",
-            "interval_days": "Repeat every (days)",
             "description": "Description",
             "icon": "Icon",
             "unassigned": "Leave unassigned",
             "warn_days": "Warn days (optional)",
-            "points": "Effort (points)"
+            "points": "Effort (points)",
+            "interval_value": "Repeat every",
+            "interval_unit": "Unit",
+            "active_months": "Active months (optional)"
           },
           "data_description": {
             "name": "A short name like \"Replace filter\" or \"Descale\".",
             "device_id": "The device this maintenance task applies to.",
-            "interval_days": "How many days between each maintenance occurrence.",
             "description": "Optional notes or maintenance instructions.",
             "icon": "Choose an icon to visually represent this maintenance task.",
             "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step.",
             "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value.",
-            "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal."
+            "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal.",
+            "interval_value": "How often this task repeats, in the unit below.",
+            "interval_unit": "Days, weeks, or calendar months. Months keep the day of the month (31 January + 1 month is 28 February).",
+            "active_months": "Only due in these months, e.g. March to May for window cleaning. Outside them the task is neither due nor overdue and comes back at the start of the next active month. Leave empty for all year."
           }
         },
         "assignees": {
@@ -254,22 +266,26 @@
           "data": {
             "name": "Task name",
             "device_id": "Device",
-            "interval_days": "Repeat every (days)",
             "description": "Description",
             "icon": "Icon",
             "unassigned": "Leave unassigned",
             "warn_days": "Warn days (optional)",
-            "points": "Effort (points)"
+            "points": "Effort (points)",
+            "interval_value": "Repeat every",
+            "interval_unit": "Unit",
+            "active_months": "Active months (optional)"
           },
           "data_description": {
             "name": "A short name like \"Replace filter\" or \"Descale\".",
             "device_id": "The device this maintenance task applies to.",
-            "interval_days": "How many days between each maintenance occurrence.",
             "description": "Optional notes or maintenance instructions.",
             "icon": "Choose an icon to visually represent this maintenance task.",
             "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step.",
             "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value.",
-            "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal."
+            "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal.",
+            "interval_value": "How often this task repeats, in the unit below.",
+            "interval_unit": "Days, weeks, or calendar months. Months keep the day of the month (31 January + 1 month is 28 February).",
+            "active_months": "Only due in these months, e.g. March to May for window cleaning. Outside them the task is neither due nor overdue and comes back at the start of the next active month. Leave empty for all year."
           }
         },
         "reconfigure_assignees": {
@@ -434,6 +450,31 @@
     },
     "away_already_over": {
       "message": "The end date is in the past, so the person would never be away."
+    }
+  },
+  "selector": {
+    "interval_unit": {
+      "options": {
+        "days": "Days",
+        "weeks": "Weeks",
+        "months": "Months"
+      }
+    },
+    "month": {
+      "options": {
+        "1": "January",
+        "2": "February",
+        "3": "March",
+        "4": "April",
+        "5": "May",
+        "6": "June",
+        "7": "July",
+        "8": "August",
+        "9": "September",
+        "10": "October",
+        "11": "November",
+        "12": "December"
+      }
     }
   }
 }

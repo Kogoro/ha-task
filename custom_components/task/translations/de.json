@@ -82,21 +82,25 @@
           "description": "Richten Sie eine neue wiederkehrende Haushaltsaufgabe ein. Wählen Sie, wie oft sie sich wiederholen soll.",
           "data": {
             "name": "Aufgabenname",
-            "interval_days": "Wiederholung alle (Tage)",
             "description": "Beschreibung",
             "icon": "Symbol",
             "unassigned": "Nicht zugewiesen lassen",
             "warn_days": "Warntage (optional)",
-            "points": "Aufwand (Punkte)"
+            "points": "Aufwand (Punkte)",
+            "interval_value": "Wiederholung alle",
+            "interval_unit": "Einheit",
+            "active_months": "Aktive Monate (optional)"
           },
           "data_description": {
             "name": "Ein kurzer, beschreibender Name wie \"Wohnzimmer saugen\" oder \"Pflanzen gießen\".",
-            "interval_days": "Wie viele Tage zwischen jeder Wiederholung dieser Aufgabe.",
             "description": "Optionale Hinweise oder Anweisungen für die ausführende Person.",
             "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Aufgabe.",
             "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen.",
             "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden.",
-            "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind."
+            "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind.",
+            "interval_value": "Wie oft sich die Aufgabe wiederholt, in der Einheit darunter.",
+            "interval_unit": "Tage, Wochen oder Kalendermonate. Monate behalten den Tag im Monat (31. Januar + 1 Monat ist der 28. Februar).",
+            "active_months": "Nur in diesen Monaten fällig, z. B. März bis Mai für das Fensterputzen. Außerhalb davon ist die Aufgabe weder fällig noch überfällig und kommt zum Beginn des nächsten aktiven Monats wieder. Leer lassen für das ganze Jahr."
           }
         },
         "assignees": {
@@ -116,21 +120,25 @@
           "description": "Aktualisieren Sie die Einstellungen für diese Aufgabe.",
           "data": {
             "name": "Aufgabenname",
-            "interval_days": "Wiederholung alle (Tage)",
             "description": "Beschreibung",
             "icon": "Symbol",
             "unassigned": "Nicht zugewiesen lassen",
             "warn_days": "Warntage (optional)",
-            "points": "Aufwand (Punkte)"
+            "points": "Aufwand (Punkte)",
+            "interval_value": "Wiederholung alle",
+            "interval_unit": "Einheit",
+            "active_months": "Aktive Monate (optional)"
           },
           "data_description": {
             "name": "Ein kurzer, beschreibender Name wie \"Wohnzimmer saugen\" oder \"Pflanzen gießen\".",
-            "interval_days": "Wie viele Tage zwischen jeder Wiederholung dieser Aufgabe.",
             "description": "Optionale Hinweise oder Anweisungen für die ausführende Person.",
             "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Aufgabe.",
             "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen.",
             "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden.",
-            "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind."
+            "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind.",
+            "interval_value": "Wie oft sich die Aufgabe wiederholt, in der Einheit darunter.",
+            "interval_unit": "Tage, Wochen oder Kalendermonate. Monate behalten den Tag im Monat (31. Januar + 1 Monat ist der 28. Februar).",
+            "active_months": "Nur in diesen Monaten fällig, z. B. März bis Mai für das Fensterputzen. Außerhalb davon ist die Aufgabe weder fällig noch überfällig und kommt zum Beginn des nächsten aktiven Monats wieder. Leer lassen für das ganze Jahr."
           }
         },
         "reconfigure_assignees": {
@@ -218,22 +226,26 @@
           "data": {
             "name": "Aufgabenname",
             "device_id": "Gerät",
-            "interval_days": "Wiederholung alle (Tage)",
             "description": "Beschreibung",
             "icon": "Symbol",
             "unassigned": "Nicht zugewiesen lassen",
             "warn_days": "Warntage (optional)",
-            "points": "Aufwand (Punkte)"
+            "points": "Aufwand (Punkte)",
+            "interval_value": "Wiederholung alle",
+            "interval_unit": "Einheit",
+            "active_months": "Aktive Monate (optional)"
           },
           "data_description": {
             "name": "Ein kurzer Name wie \"Filter wechseln\" oder \"Entkalken\".",
             "device_id": "Das Gerät, für das diese Wartungsaufgabe gilt.",
-            "interval_days": "Wie viele Tage zwischen jeder Wartung.",
             "description": "Optionale Hinweise oder Wartungsanweisungen.",
             "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Wartungsaufgabe.",
             "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen.",
             "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden.",
-            "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind."
+            "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind.",
+            "interval_value": "Wie oft sich die Aufgabe wiederholt, in der Einheit darunter.",
+            "interval_unit": "Tage, Wochen oder Kalendermonate. Monate behalten den Tag im Monat (31. Januar + 1 Monat ist der 28. Februar).",
+            "active_months": "Nur in diesen Monaten fällig, z. B. März bis Mai für das Fensterputzen. Außerhalb davon ist die Aufgabe weder fällig noch überfällig und kommt zum Beginn des nächsten aktiven Monats wieder. Leer lassen für das ganze Jahr."
           }
         },
         "assignees": {
@@ -254,22 +266,26 @@
           "data": {
             "name": "Aufgabenname",
             "device_id": "Gerät",
-            "interval_days": "Wiederholung alle (Tage)",
             "description": "Beschreibung",
             "icon": "Symbol",
             "unassigned": "Nicht zugewiesen lassen",
             "warn_days": "Warntage (optional)",
-            "points": "Aufwand (Punkte)"
+            "points": "Aufwand (Punkte)",
+            "interval_value": "Wiederholung alle",
+            "interval_unit": "Einheit",
+            "active_months": "Aktive Monate (optional)"
           },
           "data_description": {
             "name": "Ein kurzer Name wie \"Filter wechseln\" oder \"Entkalken\".",
             "device_id": "Das Gerät, für das diese Wartungsaufgabe gilt.",
-            "interval_days": "Wie viele Tage zwischen jeder Wartung.",
             "description": "Optionale Hinweise oder Wartungsanweisungen.",
             "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Wartungsaufgabe.",
             "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen.",
             "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden.",
-            "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind."
+            "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind.",
+            "interval_value": "Wie oft sich die Aufgabe wiederholt, in der Einheit darunter.",
+            "interval_unit": "Tage, Wochen oder Kalendermonate. Monate behalten den Tag im Monat (31. Januar + 1 Monat ist der 28. Februar).",
+            "active_months": "Nur in diesen Monaten fällig, z. B. März bis Mai für das Fensterputzen. Außerhalb davon ist die Aufgabe weder fällig noch überfällig und kommt zum Beginn des nächsten aktiven Monats wieder. Leer lassen für das ganze Jahr."
           }
         },
         "reconfigure_assignees": {
@@ -434,6 +450,31 @@
     },
     "away_already_over": {
       "message": "Das Enddatum liegt in der Vergangenheit, die Person wäre also nie abwesend."
+    }
+  },
+  "selector": {
+    "interval_unit": {
+      "options": {
+        "days": "Tage",
+        "weeks": "Wochen",
+        "months": "Monate"
+      }
+    },
+    "month": {
+      "options": {
+        "1": "Januar",
+        "2": "Februar",
+        "3": "März",
+        "4": "April",
+        "5": "Mai",
+        "6": "Juni",
+        "7": "Juli",
+        "8": "August",
+        "9": "September",
+        "10": "Oktober",
+        "11": "November",
+        "12": "Dezember"
+      }
     }
   }
 }

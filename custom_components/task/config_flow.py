@@ -35,6 +35,7 @@ from homeassistant.helpers.selector import (
 )
 
 from .const import (
+    CONF_ACTIVE_MONTHS,
     CONF_AREA_ID,
     CONF_ASSIGNEE,
     CONF_ASSIGNEES,
@@ -44,6 +45,8 @@ from .const import (
     CONF_ENTRY_TYPE,
     CONF_ICON,
     CONF_INTERVAL_DAYS,
+    CONF_INTERVAL_UNIT,
+    CONF_INTERVAL_VALUE,
     CONF_POINTS,
     CONF_ROTATION_MODE,
     CONF_UNIFIED_CALENDAR,
@@ -60,6 +63,7 @@ from .const import (
     RotationMode,
 )
 from .household import household_entry, is_household
+from .schedule import INTERVAL_UNITS, nominal_days
 
 
 class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -301,6 +305,57 @@ def _add_warn_days(schema: dict, defaults: dict[str, Any]) -> None:
     ] = _warn_days_selector()
 
 
+def _interval_unit_selector() -> SelectSelector:
+    """Return the selector for the unit of an interval."""
+    return SelectSelector(
+        SelectSelectorConfig(
+            options=list(INTERVAL_UNITS),
+            translation_key="interval_unit",
+            mode=SelectSelectorMode.DROPDOWN,
+        )
+    )
+
+
+def _add_active_months(schema: dict, defaults: dict[str, Any]) -> None:
+    """Add the optional months in which the task is active.
+
+    A suggested value is used so the field can be emptied to mean "all year".
+    """
+    months = [str(m) for m in defaults.get(CONF_ACTIVE_MONTHS) or []]
+    schema[
+        vol.Optional(
+            CONF_ACTIVE_MONTHS,
+            description={"suggested_value": months} if months else None,
+        )
+    ] = SelectSelector(
+        SelectSelectorConfig(
+            options=[str(m) for m in range(1, 13)],
+            multiple=True,
+            translation_key="month",
+            mode=SelectSelectorMode.DROPDOWN,
+        )
+    )
+
+
+def _interval_data(data: dict[str, Any]) -> dict[str, Any]:
+    """Return the interval and active months for the subentry data.
+
+    ``interval_days`` stays as the interval in days (months count as 30.44 days)
+    so everything that only knows days keeps working.
+    """
+    unit = data.get(CONF_INTERVAL_UNIT) or "days"
+    value = int(data.get(CONF_INTERVAL_VALUE) or data.get(CONF_INTERVAL_DAYS) or 7)
+    result: dict[str, Any] = {
+        CONF_INTERVAL_VALUE: value,
+        CONF_INTERVAL_UNIT: unit,
+        CONF_INTERVAL_DAYS: nominal_days(value, unit),
+    }
+    months = sorted(int(m) for m in data.get(CONF_ACTIVE_MONTHS) or [])
+    if months:
+        result[CONF_ACTIVE_MONTHS] = months
+    return result
+
+
 def _add_points(schema: dict, defaults: dict[str, Any]) -> None:
     """Add the effort of a task in points (used by the ranking and the workload rotation)."""
     schema[
@@ -333,17 +388,16 @@ def _build_task_schema(
             TextSelectorConfig(type=TextSelectorType.TEXT)
         ),
         vol.Required(
-            CONF_INTERVAL_DAYS,
-            default=d.get(CONF_INTERVAL_DAYS, 7),
+            CONF_INTERVAL_VALUE,
+            default=d.get(CONF_INTERVAL_VALUE, d.get(CONF_INTERVAL_DAYS, 7)),
         ): NumberSelector(
             NumberSelectorConfig(
-                min=1,
-                max=365,
-                step=1,
-                mode=NumberSelectorMode.BOX,
-                unit_of_measurement="days",
+                min=1, max=365, step=1, mode=NumberSelectorMode.BOX
             )
         ),
+        vol.Required(
+            CONF_INTERVAL_UNIT, default=d.get(CONF_INTERVAL_UNIT, "days")
+        ): _interval_unit_selector(),
     }
 
     desc = d.get(CONF_DESCRIPTION)
@@ -362,6 +416,7 @@ def _build_task_schema(
     else:
         schema[vol.Optional(CONF_ICON)] = IconSelector()
 
+    _add_active_months(schema, d)
     _add_warn_days(schema, d)
     _add_points(schema, d)
 
@@ -431,7 +486,7 @@ class TaskSubentryFlow(ConfigSubentryFlow):
         return self.async_create_entry(
             title=self._data["name"],
             data={
-                CONF_INTERVAL_DAYS: int(self._data[CONF_INTERVAL_DAYS]),
+                **_interval_data(self._data),
                 **_warn_days_data(self._data),
                 **_points_data(self._data),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
@@ -509,7 +564,7 @@ class TaskSubentryFlow(ConfigSubentryFlow):
             subentry,
             title=new_title,
             data={
-                CONF_INTERVAL_DAYS: int(self._data[CONF_INTERVAL_DAYS]),
+                **_interval_data(self._data),
                 **_warn_days_data(self._data),
                 **_points_data(self._data),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
@@ -540,17 +595,16 @@ def _build_maintenance_schema(
             CONF_DEVICE_ID, default=d.get(CONF_DEVICE_ID)
         ): DeviceSelector(DeviceSelectorConfig()),
         vol.Required(
-            CONF_INTERVAL_DAYS,
-            default=d.get(CONF_INTERVAL_DAYS, 30),
+            CONF_INTERVAL_VALUE,
+            default=d.get(CONF_INTERVAL_VALUE, d.get(CONF_INTERVAL_DAYS, 30)),
         ): NumberSelector(
             NumberSelectorConfig(
-                min=1,
-                max=730,
-                step=1,
-                mode=NumberSelectorMode.BOX,
-                unit_of_measurement="days",
+                min=1, max=730, step=1, mode=NumberSelectorMode.BOX
             )
         ),
+        vol.Required(
+            CONF_INTERVAL_UNIT, default=d.get(CONF_INTERVAL_UNIT, "days")
+        ): _interval_unit_selector(),
     }
 
     desc = d.get(CONF_DESCRIPTION)
@@ -569,6 +623,7 @@ def _build_maintenance_schema(
     else:
         schema[vol.Optional(CONF_ICON)] = IconSelector()
 
+    _add_active_months(schema, d)
     _add_warn_days(schema, d)
     _add_points(schema, d)
 
@@ -677,7 +732,7 @@ class MaintenanceSubentryFlow(ConfigSubentryFlow):
             title=self._data["name"],
             data={
                 CONF_DEVICE_ID: self._data[CONF_DEVICE_ID],
-                CONF_INTERVAL_DAYS: int(self._data[CONF_INTERVAL_DAYS]),
+                **_interval_data(self._data),
                 **_warn_days_data(self._data),
                 **_points_data(self._data),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
@@ -761,7 +816,7 @@ class MaintenanceSubentryFlow(ConfigSubentryFlow):
             title=self._data.get("name", subentry.title),
             data={
                 CONF_DEVICE_ID: new_device_id,
-                CONF_INTERVAL_DAYS: int(self._data[CONF_INTERVAL_DAYS]),
+                **_interval_data(self._data),
                 **_warn_days_data(self._data),
                 **_points_data(self._data),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),

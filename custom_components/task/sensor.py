@@ -305,6 +305,10 @@ class TaskSensorEntity(CoordinatorEntity[TaskCoordinator], SensorEntity):
             ATTR_ASSIGNEES: task.assignees,
             ATTR_ROTATION_MODE: task.rotation_mode,
             ATTR_INTERVAL_DAYS: task.interval_days,
+            "interval_value": task.interval_value,
+            "interval_unit": task.interval_unit,
+            "active_months": task.active_months,
+            "in_season": task.in_season,
             ATTR_LAST_COMPLETED: (
                 task.last_completed.isoformat() if task.last_completed else None
             ),

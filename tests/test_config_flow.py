@@ -53,7 +53,7 @@ async def _add_task(hass: HomeAssistant, entry: MockConfigEntry, **user_input):
     assert result["type"] is FlowResultType.FORM
     return await hass.config_entries.subentries.async_configure(
         result["flow_id"],
-        {"name": "Vacuum", "interval_days": 7, "unassigned": True, **user_input},
+        {"name": "Vacuum", "interval_value": 7, "unassigned": True, **user_input},
     )
 
 
@@ -85,7 +85,7 @@ async def _reconfigure_task(hass: HomeAssistant, entry: MockConfigEntry, **user_
     assert result["type"] is FlowResultType.FORM
     return await hass.config_entries.subentries.async_configure(
         result["flow_id"],
-        {"name": "Vacuum", "interval_days": 7, "unassigned": True, **user_input},
+        {"name": "Vacuum", "interval_value": 7, "unassigned": True, **user_input},
     )
 
 
@@ -140,7 +140,7 @@ async def test_workload_rotation_can_be_chosen(hass: HomeAssistant) -> None:
     )
     result = await hass.config_entries.subentries.async_configure(
         result["flow_id"],
-        {"name": "Vacuum", "interval_days": 7, "unassigned": False},
+        {"name": "Vacuum", "interval_value": 7, "unassigned": False},
     )
     assert result["step_id"] == "assignees"
     schema = {str(key): key for key in result["data_schema"].schema}
@@ -148,3 +148,44 @@ async def test_workload_rotation_can_be_chosen(hass: HomeAssistant) -> None:
     values = [option["value"] for option in selector.config["options"]]
 
     assert values == ["round_robin", "random", "workload"]
+
+
+async def test_task_with_a_month_interval_and_active_months(hass: HomeAssistant) -> None:
+    """The interval keeps its unit, active months are stored sorted as numbers."""
+    entry = await setup_entry(hass, [])
+
+    result = await _add_task(
+        hass,
+        entry,
+        interval_value=3.0,
+        interval_unit="months",
+        active_months=["5", "3", "4"],
+    )
+
+    assert result["data"]["interval_value"] == 3
+    assert result["data"]["interval_unit"] == "months"
+    assert result["data"]["interval_days"] == 91, "kept in days for everything that only knows days"
+    assert result["data"]["active_months"] == [3, 4, 5]
+
+
+async def test_task_without_active_months_stores_none(hass: HomeAssistant) -> None:
+    """Leaving the months empty means all year."""
+    entry = await setup_entry(hass, [])
+
+    result = await _add_task(hass, entry, interval_value=2.0, interval_unit="weeks")
+
+    assert result["data"]["interval_days"] == 14
+    assert "active_months" not in result["data"]
+
+
+async def test_reconfigure_can_clear_the_active_months(hass: HomeAssistant) -> None:
+    """Emptying the field makes the task active all year again."""
+    entry = await setup_entry(
+        hass, [task_subentry("t1", "Vacuum", active_months=[3, 4], interval_unit="days")]
+    )
+
+    result = await _reconfigure_task(hass, entry)
+    await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.ABORT
+    assert "active_months" not in entry.subentries["t1"].data

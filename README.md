@@ -97,12 +97,24 @@ Upgrading from a version where an area used the unified calendar: the household 
 2. Click **Add task** to create a recurring household task.
 3. Provide:
    - **Task name** — e.g., "Vacuum living room" or "Water plants"
-   - **Repeat every (days)** — interval between occurrences (1–365)
+   - **Repeat every** — interval between occurrences (1–365) in **days, weeks or calendar months**. Months keep the day of the month (31 January + 1 month is 28 February)
+   - **Active months** — optional; the task is only due in these months, e.g. March to May for window cleaning (see below)
    - **Description** — optional notes or instructions
    - **Icon** — optional MDI icon
    - **Warn days** — optional; overrides the area's warn days for this task (leave empty to use the area value)
    - **Effort (points)** — how much work the task is (default 1). The ranking card counts points instead of completions, and the workload rotation uses them
    - **Assignees** — optionally assign people with a rotation mode: round-robin, random, or **least workload**
+
+#### Seasonal tasks (active months)
+
+Pick the months a task applies to. Outside them the task is **neither due nor overdue**, does not count in the totals and has no calendar events; it comes back on the first day of the next active month.
+
+- Done on 25 September with active months April–September and a weekly interval: the next due date is 1 April of the next year, not 2 October.
+- A task that was never completed and is not in season is due when the season starts, not immediately.
+- If the due date is missed and the season ends, the task simply waits for the next season instead of showing as overdue.
+- A postponement into the off-season moves to the start of the next season.
+
+The task sensor has the attributes `interval_value`, `interval_unit`, `active_months` and `in_season`, and the cards show "out of season". Existing tasks keep their days interval and behave exactly as before.
 
 #### Rotation modes
 
@@ -116,7 +128,8 @@ Upgrading from a version where an area used the unified calendar: the household 
 2. Provide:
    - **Task name** — e.g., "Replace filter" or "Descale"
    - **Device** — the device this maintenance applies to
-   - **Repeat every (days)** — interval between occurrences (1–730)
+   - **Repeat every** — interval between occurrences (1–730) in days, weeks or months
+   - **Active months** — optional, as for tasks
    - **Description**, **Icon**, and **Assignees** — same as regular tasks
 
 ### Entities Created

@@ -11,11 +11,14 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util import dt as dt_util
 
 from .const import (
+    CONF_ACTIVE_MONTHS,
     CONF_AREA_ID,
     CONF_ASSIGNEE,
     CONF_ASSIGNEES,
     CONF_DEVICE_ID,
     CONF_INTERVAL_DAYS,
+    CONF_INTERVAL_UNIT,
+    CONF_INTERVAL_VALUE,
     CONF_POINTS,
     CONF_ROTATION_MODE,
     CONF_WARN_DAYS,
@@ -28,6 +31,7 @@ from .const import (
     RotationMode,
     TaskStatus,
 )
+from .schedule import due_date, in_season, nominal_days
 from .store import CompletionEntry, TaskStore
 
 _LOGGER = logging.getLogger(__name__)
@@ -58,6 +62,10 @@ class TaskData:
     status: TaskStatus = TaskStatus.OK
     away_assignees: list[str] = field(default_factory=list)
     points: int = DEFAULT_POINTS
+    interval_value: int = 7
+    interval_unit: str = "days"
+    active_months: list[int] = field(default_factory=list)
+    in_season: bool = True
 
 
 @dataclass
@@ -185,28 +193,30 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
         """Compute derived state for a single subentry."""
         history = self.store.get_history(subentry_id)
         default_interval = 7 if subentry_type == SUBENTRY_TYPE_TASK else 30
-        interval_days = data.get(CONF_INTERVAL_DAYS, default_interval)
+        interval_unit = data.get(CONF_INTERVAL_UNIT) or "days"
+        interval_value = int(
+            data.get(CONF_INTERVAL_VALUE)
+            or data.get(CONF_INTERVAL_DAYS, default_interval)
+        )
+        interval_days = int(
+            data.get(CONF_INTERVAL_DAYS) or nominal_days(interval_value, interval_unit)
+        )
+        active_months = sorted(int(m) for m in data.get(CONF_ACTIVE_MONTHS) or [])
         last_completed = history.last_completed
 
-        next_due: datetime.date | None = None
-        days_until_due: int | None = None
-        overdue = False
-
-        if last_completed:
-            next_due = (
-                last_completed + datetime.timedelta(days=interval_days)
-            ).date()
-            days_until_due = (next_due - today).days
-            overdue = days_until_due < 0
-        else:
-            days_until_due = 0
+        next_due = due_date(
+            last_completed.date() if last_completed else None,
+            interval_value,
+            interval_unit,
+            active_months,
+            today,
+            history.postponed_until,
+        )
+        days_until_due = (next_due - today).days
+        overdue = days_until_due < 0
+        if last_completed is None and days_until_due == 0:
+            # A task that was never completed is due immediately.
             overdue = True
-            next_due = today
-
-        if history.postponed_until and history.postponed_until > next_due:
-            next_due = history.postponed_until
-            days_until_due = (next_due - today).days
-            overdue = days_until_due < 0
 
         warn_days = int(data.get(CONF_WARN_DAYS) or area_warn_days)
         if overdue:
@@ -248,6 +258,10 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             status=status,
             away_assignees=[a for a in assignees if a in away],
             points=int(data.get(CONF_POINTS) or DEFAULT_POINTS),
+            interval_value=interval_value,
+            interval_unit=interval_unit,
+            active_months=active_months,
+            in_season=in_season(today, active_months),
         )
 
     async def _async_update_data(self) -> TaskCoordinatorData:
@@ -411,8 +425,16 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             if assignees
             else None
         )
-        interval_days = item.interval_days if item else 7
-        next_due = (now + datetime.timedelta(days=interval_days)).date()
+        if item:
+            next_due = due_date(
+                now.date(),
+                item.interval_value,
+                item.interval_unit,
+                item.active_months,
+                dt_util.now().date(),
+            )
+        else:
+            next_due = (now + datetime.timedelta(days=7)).date()
 
         event_type = (
             "task_completed"
