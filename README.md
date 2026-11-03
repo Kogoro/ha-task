@@ -1,11 +1,19 @@
 # Task — Household Task Management for Home Assistant
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Kogoro/ha-task/main/custom_components/task/brand/logo@2x.png" alt="Task" height="96">
+</p>
+
 [![HACS][hacs-badge]][hacs-url]
+[![Release][release-badge]][release-url]
+[![Validate][validate-badge]][validate-url]
 [![License][license-badge]][license-url]
 
-A custom Home Assistant integration for managing recurring household tasks and device maintenance schedules. Organize tasks by area, assign them to household members with automatic rotation, track completion history, and get notified when tasks are overdue.
+🇩🇪 [Deutsche Version](README.de.md)
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.][hacs-my-badge]][hacs-my-url]
+A Home Assistant integration for managing recurring household tasks and device maintenance schedules. Organize tasks by area, assign them to household members with automatic rotation, track completion history, and get notified before tasks are due and when they are overdue.
+
+[![Open your Home Assistant instance and show the Task repository inside the Home Assistant Community Store.][hacs-my-badge]][hacs-my-url]
 
 ## Features
 
@@ -13,31 +21,53 @@ A custom Home Assistant integration for managing recurring household tasks and d
 - **Device maintenance** — Link maintenance tasks to specific devices (filter changes, cleaning, descaling) with intervals up to 730 days.
 - **Assignee rotation** — Assign multiple household members and rotate responsibility using round-robin or random mode.
 - **"Assign to me" button** — Any user can claim an unassigned task directly from the UI.
-- **Overdue detection** — Binary sensors indicate when individual tasks or any task in an area is overdue.
+- **Due soon and overdue** — Every task has a status (`ok`, `due_soon`, `overdue`). Warn days are set per area and can be overridden per task. Binary sensors flag overdue tasks.
+- **Summary sensors** — Per area: how many tasks are overdue, due today, due this week and due soon.
+- **Postpone** — Push a task back without counting it as done, from a service or the card.
+- **Backdated completion** — Record that something was done yesterday; the next due date counts from then.
 - **Calendar integration** — View all task due dates on a Home Assistant calendar with recurring events.
 - **Todo list** — Interact with tasks as native HA todo items; create tasks and mark them complete from the todo panel.
 - **Completion history** — Persistent per-task history tracks who completed what and when, with per-person statistics.
-- **Events** — Fires `task_completed`, `task_overdue`, `maintenance_completed`, and `maintenance_overdue` events for use in automations.
-- **Lovelace cards** — Includes `task-card` (multi-task area view) and `task-single-card` (single task view) with a built-in visual editor.
+- **Events** — Fires `task_completed`, `task_due_soon`, `task_overdue` and their `maintenance_*` counterparts for use in automations.
+- **Catalog import** — Start with 80 ready-made household tasks in English or German.
+- **Blueprints** — Notification blueprints are installed automatically.
+- **Lovelace cards** — Four cards with a built-in visual editor: `task-card` (area view), `task-single-card` (single task), `task-activity-card` (recent completions) and `task-ranking-card` (household leaderboard).
 - **Area-based organization** — Each config entry maps to a Home Assistant area; tasks and maintenance items are managed as config subentries.
 
 ## Installation
 
 ### HACS (Recommended)
 
-1. Open HACS in your Home Assistant instance.
-2. Click **Integrations** → **⋮** (three dots) → **Custom repositories**.
-3. Add `https://github.com/Kogoro/ha-task` with category **Integration**.
-4. Search for "Task" in HACS and install it.
-5. Restart Home Assistant.
+Task is available in the default HACS store.
 
-Or click the button above to add via [My Home Assistant](https://my.home-assistant.io/).
+1. Open HACS in your Home Assistant instance.
+2. Search for **Task** and open it.
+3. Click **Download**.
+4. Restart Home Assistant.
+
+Or click the button above to open it directly via [My Home Assistant](https://my.home-assistant.io/).
+
+Requires Home Assistant 2025.4 or newer.
 
 ### Manual Installation
 
 1. Download the latest release from the [Releases](https://github.com/Kogoro/ha-task/releases) page.
 2. Copy the `custom_components/task/` directory to your Home Assistant `config/custom_components/` directory.
 3. Restart Home Assistant.
+
+## Quick start
+
+1. Install Task via HACS and restart Home Assistant.
+2. Go to **Settings** → **Devices & Services** → **Add Integration**, search for **Task** and pick an area.
+3. On the new entry, click **Add task** (name and interval) — or **Import from catalog** to start with ready-made tasks.
+4. Add the card to a dashboard: **Edit dashboard** → **Add card** → **Task**, or in YAML:
+
+   ```yaml
+   type: custom:task-card
+   area: kitchen
+   ```
+
+5. Press **Complete** when a task is done. The next due date is calculated for you.
 
 ## Configuration
 
@@ -83,15 +113,15 @@ For each task or maintenance item:
 | `button.<name>_complete` | Press to record a completion |
 | `button.<name>_assign_to_me` | Press to claim the task |
 
-Per area:
+Per area (on the area's "<Area> Tasks" device; entity IDs are generated from your area and device names):
 
 | Entity | Description |
 |--------|-------------|
-| `binary_sensor.<area>_tasks_overdue` | `on` when any task in the area is overdue |
-| `sensor.<area>_tasks_overdue_count` | Number of overdue tasks; attributes `tasks` (names) and `assignees` |
-| `sensor.<area>_tasks_due_today` | Number of tasks due today |
-| `sensor.<area>_tasks_due_this_week` | Number of tasks due within the next 7 days |
-| `sensor.<area>_tasks_due_soon` | Number of tasks inside their warn days |
+| Tasks overdue (binary sensor) | `on` when any task in the area is overdue |
+| Overdue count | Number of overdue tasks; attributes `tasks` (names) and `assignees` |
+| Due today | Number of tasks due today |
+| Due this week | Number of tasks due within the next 7 days |
+| Due soon | Number of tasks inside their warn days |
 | `calendar.<area>_tasks` | Calendar with all task due dates |
 | `todo.<area>_tasks` | Todo list of all tasks in the area |
 
@@ -105,7 +135,7 @@ Per area:
 
 ## Lovelace Cards
 
-The integration includes two custom Lovelace cards that are registered automatically.
+The integration includes four custom Lovelace cards that are registered automatically.
 
 ### `task-card` — Area Task Overview
 
@@ -174,7 +204,50 @@ entity: sensor.vacuum_living_room
 | `device` | string | — | Alternative: device name or slug to auto-find sensor |
 | `show_device_info` | boolean | `true` | Show device badge for maintenance tasks |
 
-Both cards include a built-in visual editor accessible from the Lovelace card configuration UI.
+### `task-activity-card` — Recent Completions
+
+A feed of who completed what and when, grouped by day.
+
+```yaml
+type: custom:task-activity-card
+areas:
+  - kitchen
+  - bathroom
+max_items: 10
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `area` | string | — | Area ID to show (`area` or `areas` is required) |
+| `areas` | list | — | Area IDs to show |
+| `title` | string | `Recent Activity` | Card title |
+| `icon` | string | `mdi:history` | Header icon |
+| `max_items` | number | `15` | Maximum number of entries |
+| `show_task_type` | boolean | `true` | Mark maintenance items |
+
+### `task-ranking-card` — Household Leaderboard
+
+Ranks household members by completed tasks, with streaks and a progress bar. Switch between all time, month and week.
+
+```yaml
+type: custom:task-ranking-card
+areas:
+  - kitchen
+  - bathroom
+period: month
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `area` | string | — | Area ID to count (`area` or `areas` is required) |
+| `areas` | list | — | Area IDs to count |
+| `title` | string | `Task Champions` | Card title |
+| `icon` | string | `mdi:trophy` | Header icon |
+| `period` | string | `all_time` | Initial period: `all_time`, `month` or `week` |
+| `show_streak` | boolean | `true` | Show each person's streak |
+| `show_bar` | boolean | `true` | Show the progress bar |
+
+All four cards include a built-in visual editor accessible from the Lovelace card configuration UI.
 
 ### Events
 
@@ -205,13 +278,49 @@ automation:
 
 ## Screenshots
 
-*Screenshots coming soon.*
+`task-card` (left) and `task-single-card` plus `task-ranking-card` (right). Colours show what needs attention: red is overdue, orange is due soon, green is fine.
+
+![Task cards in a dashboard](https://raw.githubusercontent.com/Kogoro/ha-task/main/docs/images/dashboard.png)
+
+The same dashboard in dark mode:
+
+![Task cards in dark mode](https://raw.githubusercontent.com/Kogoro/ha-task/main/docs/images/dashboard-dark.png)
+
+A compact multi-area list next to the `task-activity-card`:
+
+![Compact task list and activity feed](https://raw.githubusercontent.com/Kogoro/ha-task/main/docs/images/overview.png)
+
+Every area has a device with summary sensors (due soon, due this week, due today, overdue):
+
+![Summary sensors of an area](https://raw.githubusercontent.com/Kogoro/ha-task/main/docs/images/area-sensors.png)
+
+All due dates show up in the Home Assistant calendar:
+
+![Calendar](https://raw.githubusercontent.com/Kogoro/ha-task/main/docs/images/calendar.png)
+
+## FAQ and troubleshooting
+
+**HACS does not show the latest version.** In HACS open Task, choose **⋮** → **Update information**. If it still shows an old version, choose **Redownload** and pick the newest release. Restart Home Assistant afterwards.
+
+**The card looks old after an update.** The card script is cached by the browser. Hard-refresh the page (Ctrl+Shift+R) or clear the app cache in the Companion App.
+
+**A new task is shown as overdue.** A task that was never completed counts as due immediately. Complete it once (or use `completed_at` to say when it was last done) and the interval starts.
+
+**What are warn days?** A task counts as "due soon" this many days before it is due. Set a default per area; a task can override it. Leave the task's field empty to use the area value.
+
+**Maintenance entities moved to another device after 0.3.1.** Since Home Assistant 2026.8 a device can belong to only one integration. Each maintenance item now has its own "Device Maintenance" device, linked to the appliance. Entity IDs did not change.
+
+**I want to report a problem.** Please [open an issue](https://github.com/Kogoro/ha-task/issues) with your Home Assistant and Task versions and the relevant log lines.
 
 ## License
 
 This project is licensed under the Apache License 2.0 — see the [LICENSE](LICENSE) file for details.
 
-[hacs-badge]: https://img.shields.io/badge/HACS-Custom-orange.svg
+[hacs-badge]: https://img.shields.io/badge/HACS-Default-41BDF5.svg
+[release-badge]: https://img.shields.io/github/v/release/Kogoro/ha-task
+[release-url]: https://github.com/Kogoro/ha-task/releases
+[validate-badge]: https://img.shields.io/github/actions/workflow/status/Kogoro/ha-task/validate.yml?branch=main&label=validate
+[validate-url]: https://github.com/Kogoro/ha-task/actions/workflows/validate.yml
 [hacs-url]: https://hacs.xyz
 [license-badge]: https://img.shields.io/github/license/Kogoro/ha-task
 [license-url]: https://github.com/Kogoro/ha-task/blob/main/LICENSE

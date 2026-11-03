@@ -193,7 +193,7 @@ async def _async_refresh_coordinators(hass: HomeAssistant) -> None:
     """Request refresh on all task coordinators."""
     for entry in hass.config_entries.async_entries(DOMAIN):
         if hasattr(entry, "runtime_data") and isinstance(entry.runtime_data, TaskCoordinator):
-            await entry.runtime_data.async_request_refresh()
+            await entry.runtime_data.async_refresh()
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: TaskConfigEntry) -> bool:
