@@ -357,11 +357,41 @@
           "description": "Number of days to postpone. Counts from the current due date, or from today if the task is overdue."
         }
       }
+    },
+    "undo_completion": {
+      "name": "Undo completion",
+      "description": "Undo the most recently recorded completion of a task. Restores who was responsible, the rotation and a postponement.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "The task sensor or button entity."
+        }
+      }
+    },
+    "get_history": {
+      "name": "Get history",
+      "description": "Return the completion history of a task, newest first, with the days between completions and how often it was done within its interval.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "The task sensor or button entity."
+        },
+        "limit": {
+          "name": "Limit",
+          "description": "Maximum number of completions to return."
+        }
+      }
     }
   },
   "exceptions": {
     "completed_at_in_future": {
       "message": "The completion time must not be in the future."
+    },
+    "nothing_to_undo": {
+      "message": "There is no completion to undo. Only the most recently recorded completion can be undone, and not after a reset."
+    },
+    "not_a_task": {
+      "message": "This is not a task entity of the Task integration."
     }
   }
 }

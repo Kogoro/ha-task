@@ -27,7 +27,7 @@ A Home Assistant integration for managing recurring household tasks and device m
 - **Backdated completion** — Record that something was done yesterday; the next due date counts from then.
 - **Calendar integration** — View all task due dates on a Home Assistant calendar with recurring events.
 - **Todo list** — Interact with tasks as native HA todo items; create tasks and mark them complete from the todo panel.
-- **Completion history** — Persistent per-task history tracks who completed what and when, with per-person statistics.
+- **Completion history** — Persistent per-task history tracks who completed what and when, with per-person statistics, the actual cycle length compared with the plan, and an undo for the last completion (service and a button in the card's history).
 - **Events** — Fires `task_completed`, `task_due_soon`, `task_overdue` and their `maintenance_*` counterparts for use in automations.
 - **Catalog import** — Start with 80 ready-made household tasks in English or German.
 - **Blueprints** — Notification blueprints are installed automatically.
@@ -144,6 +144,8 @@ The household overview adds the same four counters (on a "Household" device) for
 |---------|-------------|
 | `task.complete_task` | Mark a task as completed and advance assignee rotation. Optional `completed_at` records a past completion (the next due date counts from it) |
 | `task.postpone_task` | Push the due date back by `days` (default 1) without recording a completion; counts from the current due date, or from today if overdue |
+| `task.undo_completion` | Undo the most recently recorded completion (a mis-tap). Restores who was responsible, the rotation and a postponement. Only that one step, and not after a reset |
+| `task.get_history` | Return a task's completion history as a response (newest first, `limit` default 50): who, when, days since the previous completion, average and last cycle length and how often it was done within its interval |
 | `task.reset_task` | Reset a task's completion history and rotation state |
 
 ## Lovelace Cards
@@ -267,6 +269,7 @@ All four cards include a built-in visual editor accessible from the Lovelace car
 | Event | Fired when |
 |-------|------------|
 | `task_completed` / `maintenance_completed` | A task is completed |
+| `task_completion_undone` / `maintenance_completion_undone` | A completion is undone |
 | `task_overdue` / `maintenance_overdue` | A task becomes overdue |
 | `task_due_soon` / `maintenance_due_soon` | A task enters its warn days (once per due date) |
 

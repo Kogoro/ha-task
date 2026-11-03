@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Undo** the most recently recorded completion: `task.undo_completion` and an undo button on that entry in the card's history. It restores who was responsible, the rotation and a postponement. New event `task_completion_undone`.
+- **History and statistics:** `task.get_history` returns the history with the days between completions; the task sensor shows `average_cycle_days`, `last_cycle_days` and `on_time_percent`.
+
 ## 0.4.0-beta.2 (pre-release)
 
 ### Added

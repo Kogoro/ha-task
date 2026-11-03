@@ -27,6 +27,30 @@ postpone_task:
           mode: box
           unit_of_measurement: days
 
+undo_completion:
+  fields:
+    entity_id:
+      required: true
+      selector:
+        entity:
+          integration: task
+
+get_history:
+  fields:
+    entity_id:
+      required: true
+      selector:
+        entity:
+          integration: task
+    limit:
+      required: false
+      default: 50
+      selector:
+        number:
+          min: 1
+          max: 500
+          mode: box
+
 reset_task:
   fields:
     entity_id:

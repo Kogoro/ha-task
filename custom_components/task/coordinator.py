@@ -25,7 +25,7 @@ from .const import (
     RotationMode,
     TaskStatus,
 )
-from .store import TaskStore
+from .store import CompletionEntry, TaskStore
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -358,6 +358,31 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
         if item and item.device_id:
             event_data["device_id"] = item.device_id
         self.hass.bus.async_fire(event_type, event_data)
+
+    def undo_completion(self, subentry_id: str) -> CompletionEntry | None:
+        """Undo the most recently recorded completion, if there is one."""
+        item = self.find_item(subentry_id)
+        removed = self.store.undo_last_completion(subentry_id)
+        if removed is None:
+            return None
+
+        event_type = (
+            "task_completion_undone"
+            if not item or item.subentry_type == SUBENTRY_TYPE_TASK
+            else "maintenance_completion_undone"
+        )
+        event_data = {
+            "subentry_id": subentry_id,
+            "task_name": item.name if item else None,
+            "area_id": self.data.area_id if self.data else None,
+            "area_name": self.data.area_name if self.data else None,
+            "completed_by": removed.completed_by,
+            "completed_at": removed.completed_at.isoformat(),
+        }
+        if item and item.device_id:
+            event_data["device_id"] = item.device_id
+        self.hass.bus.async_fire(event_type, event_data)
+        return removed
 
     def assign_to(self, subentry_id: str, person_id: str | None) -> None:
         """Override the current assignee for a task or maintenance item."""
