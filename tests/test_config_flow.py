@@ -189,3 +189,76 @@ async def test_reconfigure_can_clear_the_active_months(hass: HomeAssistant) -> N
 
     assert result["type"] is FlowResultType.ABORT
     assert "active_months" not in entry.subentries["t1"].data
+
+
+async def _area_flow_result(hass: HomeAssistant, **user_input):
+    result = await _start_area_flow(hass)
+    return await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"area_id": "kitchen", **user_input}
+    )
+
+
+async def test_area_reminders_default_to_off_with_a_morning_time(
+    hass: HomeAssistant,
+) -> None:
+    """Without a target nothing is sent; the time defaults to 08:00."""
+    result = await _area_flow_result(hass)
+
+    assert "reminder_targets" not in result["data"]
+    assert "reminder_service" not in result["data"]
+    assert result["data"]["reminder_due_soon"] is True
+    assert result["data"]["reminder_overdue"] is True
+    assert result["data"]["reminder_time"] == "08:00:00"
+
+
+async def test_area_reminders_are_stored(hass: HomeAssistant) -> None:
+    """Targets, kinds and time are kept."""
+    result = await _area_flow_result(
+        hass,
+        reminder_targets=["notify.phone"],
+        reminder_service="notify.mobile_app_pixel",
+        reminder_due_soon=False,
+        reminder_time="07:30:00",
+    )
+
+    assert result["data"]["reminder_targets"] == ["notify.phone"]
+    assert result["data"]["reminder_service"] == "notify.mobile_app_pixel"
+    assert result["data"]["reminder_due_soon"] is False
+    assert result["data"]["reminder_time"] == "07:30:00"
+
+
+async def test_an_invalid_notify_service_is_rejected(hass: HomeAssistant) -> None:
+    """The service has to look like notify.<name>."""
+    result = await _area_flow_result(hass, reminder_service="light.turn_on")
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"reminder_service": "invalid_notify_service"}
+
+
+async def test_reminders_can_be_turned_off_again_by_reconfiguring(
+    hass: HomeAssistant,
+) -> None:
+    """Emptying the targets removes them."""
+    entry = await setup_entry(hass, [], reminder_targets=["notify.phone"])
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={"source": SOURCE_RECONFIGURE, "entry_id": entry.entry_id},
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"area_id": "kitchen"}
+    )
+    await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.ABORT
+    assert "reminder_targets" not in entry.data
+
+
+async def test_task_reminders_default_to_on(hass: HomeAssistant) -> None:
+    """A new task sends reminders unless turned off."""
+    entry = await setup_entry(hass, [])
+
+    on = await _add_task(hass, entry)
+    off = await _add_task(hass, entry, reminders=False)
+
+    assert on["data"]["reminders"] is True
+    assert off["data"]["reminders"] is False

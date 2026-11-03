@@ -31,6 +31,7 @@ from .const import (
     RotationMode,
     TaskStatus,
 )
+from .reminders import async_send_reminders
 from .schedule import due_date, in_season, nominal_days
 from .store import CompletionEntry, TaskStore
 
@@ -350,6 +351,10 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
                 event_data["device_id"] = item.device_id
             self.hass.bus.async_fire(event_type, event_data)
         self._previous_due_soon = due_soon
+
+        self.config_entry.async_create_task(
+            self.hass, async_send_reminders(self, all_items, area_name)
+        )
 
         return TaskCoordinatorData(
             area_id=area_id,

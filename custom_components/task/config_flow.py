@@ -1,5 +1,6 @@
 """Config flow for the Task integration."""
 
+import re
 from contextlib import suppress
 from typing import Any
 
@@ -32,6 +33,7 @@ from homeassistant.helpers.selector import (
     TextSelector,
     TextSelectorConfig,
     TextSelectorType,
+    TimeSelector,
 )
 
 from .const import (
@@ -48,11 +50,18 @@ from .const import (
     CONF_INTERVAL_UNIT,
     CONF_INTERVAL_VALUE,
     CONF_POINTS,
+    CONF_REMINDER_DUE_SOON,
+    CONF_REMINDER_OVERDUE,
+    CONF_REMINDER_SERVICE,
+    CONF_REMINDER_TARGETS,
+    CONF_REMINDER_TIME,
+    CONF_REMINDERS,
     CONF_ROTATION_MODE,
     CONF_UNIFIED_CALENDAR,
     CONF_WARN_DAYS,
     DEFAULT_HOUSEHOLD_CALENDAR_NAME,
     DEFAULT_POINTS,
+    DEFAULT_REMINDER_TIME,
     DEFAULT_WARN_DAYS,
     DOMAIN,
     ENTRY_TYPE_HOUSEHOLD,
@@ -135,6 +144,7 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             if not user_input.get(CONF_AREA_ID):
                 errors[CONF_AREA_ID] = "area_required"
+            errors.update(_reminder_errors(user_input))
 
             if not errors:
                 area_id = user_input[CONF_AREA_ID]
@@ -155,6 +165,7 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
                 data[CONF_WARN_DAYS] = int(
                     user_input.get(CONF_WARN_DAYS, DEFAULT_WARN_DAYS)
                 )
+                data.update(_reminder_data(user_input))
 
                 return self.async_create_entry(
                     title=title,
@@ -172,6 +183,7 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
         schema[vol.Optional(CONF_WARN_DAYS, default=DEFAULT_WARN_DAYS)] = (
             _warn_days_selector()
         )
+        _add_reminder_fields(schema, user_input or {})
         return self.async_show_form(
             step_id="area", data_schema=vol.Schema(schema), errors=errors
         )
@@ -183,7 +195,11 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
         if is_household(self._get_reconfigure_entry()):
             return await self.async_step_reconfigure_household(user_input)
 
+        errors: dict[str, str] = {}
         if user_input is not None:
+            errors.update(_reminder_errors(user_input))
+
+        if user_input is not None and not errors:
             area_id = user_input[CONF_AREA_ID]
             area_reg = ar.async_get(self.hass)
             area_entry = area_reg.async_get_area(area_id)
@@ -203,6 +219,7 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
             data[CONF_WARN_DAYS] = int(
                 user_input.get(CONF_WARN_DAYS, DEFAULT_WARN_DAYS)
             )
+            data.update(_reminder_data(user_input))
 
             return self.async_update_reload_and_abort(
                 self._get_reconfigure_entry(),
@@ -238,8 +255,9 @@ class TaskConfigFlow(ConfigFlow, domain=DOMAIN):
                 default=entry.data.get(CONF_WARN_DAYS, DEFAULT_WARN_DAYS),
             )
         ] = _warn_days_selector()
+        _add_reminder_fields(schema, user_input or dict(entry.data))
         return self.async_show_form(
-            step_id="reconfigure", data_schema=vol.Schema(schema)
+            step_id="reconfigure", data_schema=vol.Schema(schema), errors=errors
         )
 
     async def async_step_reconfigure_household(
@@ -303,6 +321,66 @@ def _add_warn_days(schema: dict, defaults: dict[str, Any]) -> None:
             ),
         )
     ] = _warn_days_selector()
+
+
+def _add_reminder_fields(schema: dict, defaults: dict[str, Any]) -> None:
+    """Add where and when reminders are sent for an area.
+
+    Suggested values (not defaults) are used for the targets so they can be
+    emptied again to turn reminders off.
+    """
+    targets = defaults.get(CONF_REMINDER_TARGETS) or []
+    schema[
+        vol.Optional(
+            CONF_REMINDER_TARGETS,
+            description={"suggested_value": targets} if targets else None,
+        )
+    ] = EntitySelector(EntitySelectorConfig(domain="notify", multiple=True))
+    service = defaults.get(CONF_REMINDER_SERVICE)
+    schema[
+        vol.Optional(
+            CONF_REMINDER_SERVICE,
+            description={"suggested_value": service} if service else None,
+        )
+    ] = TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT))
+    schema[
+        vol.Optional(
+            CONF_REMINDER_DUE_SOON, default=defaults.get(CONF_REMINDER_DUE_SOON, True)
+        )
+    ] = BooleanSelector()
+    schema[
+        vol.Optional(
+            CONF_REMINDER_OVERDUE, default=defaults.get(CONF_REMINDER_OVERDUE, True)
+        )
+    ] = BooleanSelector()
+    schema[
+        vol.Optional(
+            CONF_REMINDER_TIME,
+            default=defaults.get(CONF_REMINDER_TIME, DEFAULT_REMINDER_TIME),
+        )
+    ] = TimeSelector()
+
+
+def _reminder_errors(user_input: dict[str, Any]) -> dict[str, str]:
+    """Validate the reminder fields."""
+    service = (user_input.get(CONF_REMINDER_SERVICE) or "").strip()
+    if service and not re.fullmatch(r"notify\.[a-z0-9_]+", service):
+        return {CONF_REMINDER_SERVICE: "invalid_notify_service"}
+    return {}
+
+
+def _reminder_data(user_input: dict[str, Any]) -> dict[str, Any]:
+    """Return the reminder settings for the area entry."""
+    data: dict[str, Any] = {
+        CONF_REMINDER_DUE_SOON: bool(user_input.get(CONF_REMINDER_DUE_SOON, True)),
+        CONF_REMINDER_OVERDUE: bool(user_input.get(CONF_REMINDER_OVERDUE, True)),
+        CONF_REMINDER_TIME: str(user_input.get(CONF_REMINDER_TIME) or DEFAULT_REMINDER_TIME),
+    }
+    if targets := user_input.get(CONF_REMINDER_TARGETS):
+        data[CONF_REMINDER_TARGETS] = list(targets)
+    if service := (user_input.get(CONF_REMINDER_SERVICE) or "").strip():
+        data[CONF_REMINDER_SERVICE] = service
+    return data
 
 
 def _interval_unit_selector() -> SelectSelector:
@@ -419,6 +497,9 @@ def _build_task_schema(
     _add_active_months(schema, d)
     _add_warn_days(schema, d)
     _add_points(schema, d)
+    schema[vol.Optional(CONF_REMINDERS, default=d.get(CONF_REMINDERS, True))] = (
+        BooleanSelector()
+    )
 
     schema[vol.Required(CONF_UNASSIGNED, default=not has_assignees)] = (
         BooleanSelector()
@@ -489,6 +570,7 @@ class TaskSubentryFlow(ConfigSubentryFlow):
                 **_interval_data(self._data),
                 **_warn_days_data(self._data),
                 **_points_data(self._data),
+                CONF_REMINDERS: bool(self._data.get(CONF_REMINDERS, True)),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
                 CONF_ROTATION_MODE: self._data.get(
                     CONF_ROTATION_MODE, RotationMode.ROUND_ROBIN
@@ -567,6 +649,7 @@ class TaskSubentryFlow(ConfigSubentryFlow):
                 **_interval_data(self._data),
                 **_warn_days_data(self._data),
                 **_points_data(self._data),
+                CONF_REMINDERS: bool(self._data.get(CONF_REMINDERS, True)),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
                 CONF_ROTATION_MODE: self._data.get(
                     CONF_ROTATION_MODE, RotationMode.ROUND_ROBIN
@@ -626,6 +709,9 @@ def _build_maintenance_schema(
     _add_active_months(schema, d)
     _add_warn_days(schema, d)
     _add_points(schema, d)
+    schema[vol.Optional(CONF_REMINDERS, default=d.get(CONF_REMINDERS, True))] = (
+        BooleanSelector()
+    )
 
     schema[vol.Required(CONF_UNASSIGNED, default=not has_assignees)] = (
         BooleanSelector()
@@ -735,6 +821,7 @@ class MaintenanceSubentryFlow(ConfigSubentryFlow):
                 **_interval_data(self._data),
                 **_warn_days_data(self._data),
                 **_points_data(self._data),
+                CONF_REMINDERS: bool(self._data.get(CONF_REMINDERS, True)),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
                 CONF_ROTATION_MODE: self._data.get(
                     CONF_ROTATION_MODE, RotationMode.ROUND_ROBIN
@@ -819,6 +906,7 @@ class MaintenanceSubentryFlow(ConfigSubentryFlow):
                 **_interval_data(self._data),
                 **_warn_days_data(self._data),
                 **_points_data(self._data),
+                CONF_REMINDERS: bool(self._data.get(CONF_REMINDERS, True)),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
                 CONF_ROTATION_MODE: self._data.get(
                     CONF_ROTATION_MODE, RotationMode.ROUND_ROBIN

@@ -16,13 +16,23 @@
           "area_id": "Bereich",
           "calendar_name": "Kalendername",
           "unified_calendar": "Eigenen Kalender dieses Bereichs ausblenden",
-          "warn_days": "Warntage"
+          "warn_days": "Warntage",
+          "reminder_targets": "Benachrichtigungs-Entities",
+          "reminder_service": "Notify-Dienst (optional)",
+          "reminder_due_soon": "Erinnern, wenn bald fällig",
+          "reminder_overdue": "Erinnern, wenn überfällig",
+          "reminder_time": "Uhrzeit der Erinnerung"
         },
         "data_description": {
           "area_id": "Wählen Sie einen anderen Bereich für diese Aufgabengruppe.",
           "calendar_name": "Eigener Name für die Kalender-Entität. Leer lassen, um den Bereichsnamen zu verwenden.",
           "unified_calendar": "Die Aufgaben dieses Bereichs nur im Haushaltskalender zeigen statt in einem eigenen. Benötigt eine Haushaltsübersicht.",
-          "warn_days": "Aufgaben gelten so viele Tage vor der Fälligkeit als \"bald fällig\". Einzelne Aufgaben können das überschreiben."
+          "warn_days": "Aufgaben gelten so viele Tage vor der Fälligkeit als \"bald fällig\". Einzelne Aufgaben können das überschreiben.",
+          "reminder_targets": "Benachrichtigungs-Entities (notify.*), die die Erinnerungen bekommen, z. B. ein Handy oder ein Messenger. Leer lassen (und den Dienst leer lassen) für keine Erinnerungen.",
+          "reminder_service": "Alternativ ein klassischer Notify-Dienst wie notify.mobile_app_mein_handy. Beides lässt sich kombinieren.",
+          "reminder_due_soon": "Eine Erinnerung senden, wenn eine Aufgabe ihre Warntage erreicht.",
+          "reminder_overdue": "Eine Erinnerung senden, wenn eine Aufgabe überfällig wird.",
+          "reminder_time": "Erinnerungen werden bei der ersten Aktualisierung nach dieser Uhrzeit gesendet, damit nachts nichts ankommt."
         }
       },
       "area": {
@@ -32,13 +42,23 @@
           "area_id": "Bereich",
           "calendar_name": "Kalendername",
           "unified_calendar": "Eigenen Kalender dieses Bereichs ausblenden",
-          "warn_days": "Warntage"
+          "warn_days": "Warntage",
+          "reminder_targets": "Benachrichtigungs-Entities",
+          "reminder_service": "Notify-Dienst (optional)",
+          "reminder_due_soon": "Erinnern, wenn bald fällig",
+          "reminder_overdue": "Erinnern, wenn überfällig",
+          "reminder_time": "Uhrzeit der Erinnerung"
         },
         "data_description": {
           "area_id": "Der Bereich, in dem Aufgaben verfolgt werden.",
           "calendar_name": "Eigener Name für die Kalender-Entität. Leer lassen, um den Bereichsnamen zu verwenden.",
           "unified_calendar": "Die Aufgaben dieses Bereichs nur im Haushaltskalender zeigen statt in einem eigenen. Benötigt eine Haushaltsübersicht.",
-          "warn_days": "Aufgaben gelten so viele Tage vor der Fälligkeit als \"bald fällig\". Einzelne Aufgaben können das überschreiben."
+          "warn_days": "Aufgaben gelten so viele Tage vor der Fälligkeit als \"bald fällig\". Einzelne Aufgaben können das überschreiben.",
+          "reminder_targets": "Benachrichtigungs-Entities (notify.*), die die Erinnerungen bekommen, z. B. ein Handy oder ein Messenger. Leer lassen (und den Dienst leer lassen) für keine Erinnerungen.",
+          "reminder_service": "Alternativ ein klassischer Notify-Dienst wie notify.mobile_app_mein_handy. Beides lässt sich kombinieren.",
+          "reminder_due_soon": "Eine Erinnerung senden, wenn eine Aufgabe ihre Warntage erreicht.",
+          "reminder_overdue": "Eine Erinnerung senden, wenn eine Aufgabe überfällig wird.",
+          "reminder_time": "Erinnerungen werden bei der ersten Aktualisierung nach dieser Uhrzeit gesendet, damit nachts nichts ankommt."
         }
       },
       "household": {
@@ -63,7 +83,8 @@
       }
     },
     "error": {
-      "area_required": "Bitte wählen Sie einen Bereich aus."
+      "area_required": "Bitte wählen Sie einen Bereich aus.",
+      "invalid_notify_service": "Gib einen Notify-Dienst wie notify.mobile_app_mein_handy ein."
     },
     "abort": {
       "already_configured": "Für diesen Bereich ist bereits eine Aufgabenverwaltung eingerichtet."
@@ -89,7 +110,8 @@
             "points": "Aufwand (Punkte)",
             "interval_value": "Wiederholung alle",
             "interval_unit": "Einheit",
-            "active_months": "Aktive Monate (optional)"
+            "active_months": "Aktive Monate (optional)",
+            "reminders": "Erinnerungen senden"
           },
           "data_description": {
             "name": "Ein kurzer, beschreibender Name wie \"Wohnzimmer saugen\" oder \"Pflanzen gießen\".",
@@ -100,7 +122,8 @@
             "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind.",
             "interval_value": "Wie oft sich die Aufgabe wiederholt, in der Einheit darunter.",
             "interval_unit": "Tage, Wochen oder Kalendermonate. Monate behalten den Tag im Monat (31. Januar + 1 Monat ist der 28. Februar).",
-            "active_months": "Nur in diesen Monaten fällig, z. B. März bis Mai für das Fensterputzen. Außerhalb davon ist die Aufgabe weder fällig noch überfällig und kommt zum Beginn des nächsten aktiven Monats wieder. Leer lassen für das ganze Jahr."
+            "active_months": "Nur in diesen Monaten fällig, z. B. März bis Mai für das Fensterputzen. Außerhalb davon ist die Aufgabe weder fällig noch überfällig und kommt zum Beginn des nächsten aktiven Monats wieder. Leer lassen für das ganze Jahr.",
+            "reminders": "Ausschalten, um für diese Aufgabe nie zu erinnern, auch wenn ihr Bereich Erinnerungen sendet."
           }
         },
         "assignees": {
@@ -127,7 +150,8 @@
             "points": "Aufwand (Punkte)",
             "interval_value": "Wiederholung alle",
             "interval_unit": "Einheit",
-            "active_months": "Aktive Monate (optional)"
+            "active_months": "Aktive Monate (optional)",
+            "reminders": "Erinnerungen senden"
           },
           "data_description": {
             "name": "Ein kurzer, beschreibender Name wie \"Wohnzimmer saugen\" oder \"Pflanzen gießen\".",
@@ -138,7 +162,8 @@
             "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind.",
             "interval_value": "Wie oft sich die Aufgabe wiederholt, in der Einheit darunter.",
             "interval_unit": "Tage, Wochen oder Kalendermonate. Monate behalten den Tag im Monat (31. Januar + 1 Monat ist der 28. Februar).",
-            "active_months": "Nur in diesen Monaten fällig, z. B. März bis Mai für das Fensterputzen. Außerhalb davon ist die Aufgabe weder fällig noch überfällig und kommt zum Beginn des nächsten aktiven Monats wieder. Leer lassen für das ganze Jahr."
+            "active_months": "Nur in diesen Monaten fällig, z. B. März bis Mai für das Fensterputzen. Außerhalb davon ist die Aufgabe weder fällig noch überfällig und kommt zum Beginn des nächsten aktiven Monats wieder. Leer lassen für das ganze Jahr.",
+            "reminders": "Ausschalten, um für diese Aufgabe nie zu erinnern, auch wenn ihr Bereich Erinnerungen sendet."
           }
         },
         "reconfigure_assignees": {
@@ -233,7 +258,8 @@
             "points": "Aufwand (Punkte)",
             "interval_value": "Wiederholung alle",
             "interval_unit": "Einheit",
-            "active_months": "Aktive Monate (optional)"
+            "active_months": "Aktive Monate (optional)",
+            "reminders": "Erinnerungen senden"
           },
           "data_description": {
             "name": "Ein kurzer Name wie \"Filter wechseln\" oder \"Entkalken\".",
@@ -245,7 +271,8 @@
             "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind.",
             "interval_value": "Wie oft sich die Aufgabe wiederholt, in der Einheit darunter.",
             "interval_unit": "Tage, Wochen oder Kalendermonate. Monate behalten den Tag im Monat (31. Januar + 1 Monat ist der 28. Februar).",
-            "active_months": "Nur in diesen Monaten fällig, z. B. März bis Mai für das Fensterputzen. Außerhalb davon ist die Aufgabe weder fällig noch überfällig und kommt zum Beginn des nächsten aktiven Monats wieder. Leer lassen für das ganze Jahr."
+            "active_months": "Nur in diesen Monaten fällig, z. B. März bis Mai für das Fensterputzen. Außerhalb davon ist die Aufgabe weder fällig noch überfällig und kommt zum Beginn des nächsten aktiven Monats wieder. Leer lassen für das ganze Jahr.",
+            "reminders": "Ausschalten, um für diese Aufgabe nie zu erinnern, auch wenn ihr Bereich Erinnerungen sendet."
           }
         },
         "assignees": {
@@ -273,7 +300,8 @@
             "points": "Aufwand (Punkte)",
             "interval_value": "Wiederholung alle",
             "interval_unit": "Einheit",
-            "active_months": "Aktive Monate (optional)"
+            "active_months": "Aktive Monate (optional)",
+            "reminders": "Erinnerungen senden"
           },
           "data_description": {
             "name": "Ein kurzer Name wie \"Filter wechseln\" oder \"Entkalken\".",
@@ -285,7 +313,8 @@
             "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind.",
             "interval_value": "Wie oft sich die Aufgabe wiederholt, in der Einheit darunter.",
             "interval_unit": "Tage, Wochen oder Kalendermonate. Monate behalten den Tag im Monat (31. Januar + 1 Monat ist der 28. Februar).",
-            "active_months": "Nur in diesen Monaten fällig, z. B. März bis Mai für das Fensterputzen. Außerhalb davon ist die Aufgabe weder fällig noch überfällig und kommt zum Beginn des nächsten aktiven Monats wieder. Leer lassen für das ganze Jahr."
+            "active_months": "Nur in diesen Monaten fällig, z. B. März bis Mai für das Fensterputzen. Außerhalb davon ist die Aufgabe weder fällig noch überfällig und kommt zum Beginn des nächsten aktiven Monats wieder. Leer lassen für das ganze Jahr.",
+            "reminders": "Ausschalten, um für diese Aufgabe nie zu erinnern, auch wenn ihr Bereich Erinnerungen sendet."
           }
         },
         "reconfigure_assignees": {
