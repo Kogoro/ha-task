@@ -16,6 +16,11 @@ CONF_ICON = "icon"
 CONF_UNIFIED_CALENDAR = "unified_calendar"
 CONF_WARN_DAYS = "warn_days"
 CONF_ENTRY_TYPE = "entry_type"
+CONF_POINTS = "points"
+
+DEFAULT_POINTS = 1
+# Recent period over which a person's workload is summed for the workload rotation.
+WORKLOAD_WINDOW_DAYS = 30
 
 ENTRY_TYPE_AREA = "area"
 ENTRY_TYPE_HOUSEHOLD = "household"
@@ -40,6 +45,7 @@ class RotationMode(StrEnum):
 
     ROUND_ROBIN = "round_robin"
     RANDOM = "random"
+    WORKLOAD = "workload"
 
 
 class TaskStatus(StrEnum):

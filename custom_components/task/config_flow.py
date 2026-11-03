@@ -44,10 +44,12 @@ from .const import (
     CONF_ENTRY_TYPE,
     CONF_ICON,
     CONF_INTERVAL_DAYS,
+    CONF_POINTS,
     CONF_ROTATION_MODE,
     CONF_UNIFIED_CALENDAR,
     CONF_WARN_DAYS,
     DEFAULT_HOUSEHOLD_CALENDAR_NAME,
+    DEFAULT_POINTS,
     DEFAULT_WARN_DAYS,
     DOMAIN,
     ENTRY_TYPE_HOUSEHOLD,
@@ -299,6 +301,20 @@ def _add_warn_days(schema: dict, defaults: dict[str, Any]) -> None:
     ] = _warn_days_selector()
 
 
+def _add_points(schema: dict, defaults: dict[str, Any]) -> None:
+    """Add the effort of a task in points (used by the ranking and the workload rotation)."""
+    schema[
+        vol.Optional(CONF_POINTS, default=defaults.get(CONF_POINTS, DEFAULT_POINTS))
+    ] = NumberSelector(
+        NumberSelectorConfig(min=1, max=100, step=1, mode=NumberSelectorMode.BOX)
+    )
+
+
+def _points_data(data: dict[str, Any]) -> dict[str, Any]:
+    """Return the effort for the subentry data."""
+    return {CONF_POINTS: int(data.get(CONF_POINTS) or DEFAULT_POINTS)}
+
+
 def _warn_days_data(data: dict[str, Any]) -> dict[str, Any]:
     """Return the warning window for the subentry data, if one is set."""
     warn_days = data.get(CONF_WARN_DAYS)
@@ -347,6 +363,7 @@ def _build_task_schema(
         schema[vol.Optional(CONF_ICON)] = IconSelector()
 
     _add_warn_days(schema, d)
+    _add_points(schema, d)
 
     schema[vol.Required(CONF_UNASSIGNED, default=not has_assignees)] = (
         BooleanSelector()
@@ -416,6 +433,7 @@ class TaskSubentryFlow(ConfigSubentryFlow):
             data={
                 CONF_INTERVAL_DAYS: int(self._data[CONF_INTERVAL_DAYS]),
                 **_warn_days_data(self._data),
+                **_points_data(self._data),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
                 CONF_ROTATION_MODE: self._data.get(
                     CONF_ROTATION_MODE, RotationMode.ROUND_ROBIN
@@ -493,6 +511,7 @@ class TaskSubentryFlow(ConfigSubentryFlow):
             data={
                 CONF_INTERVAL_DAYS: int(self._data[CONF_INTERVAL_DAYS]),
                 **_warn_days_data(self._data),
+                **_points_data(self._data),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
                 CONF_ROTATION_MODE: self._data.get(
                     CONF_ROTATION_MODE, RotationMode.ROUND_ROBIN
@@ -551,6 +570,7 @@ def _build_maintenance_schema(
         schema[vol.Optional(CONF_ICON)] = IconSelector()
 
     _add_warn_days(schema, d)
+    _add_points(schema, d)
 
     schema[vol.Required(CONF_UNASSIGNED, default=not has_assignees)] = (
         BooleanSelector()
@@ -586,6 +606,7 @@ def _build_assignees_schema(
                     options=[
                         {"value": RotationMode.ROUND_ROBIN, "label": "Round Robin"},
                         {"value": RotationMode.RANDOM, "label": "Random"},
+                        {"value": RotationMode.WORKLOAD, "label": "Least workload"},
                     ],
                     mode=SelectSelectorMode.DROPDOWN,
                 )
@@ -658,6 +679,7 @@ class MaintenanceSubentryFlow(ConfigSubentryFlow):
                 CONF_DEVICE_ID: self._data[CONF_DEVICE_ID],
                 CONF_INTERVAL_DAYS: int(self._data[CONF_INTERVAL_DAYS]),
                 **_warn_days_data(self._data),
+                **_points_data(self._data),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
                 CONF_ROTATION_MODE: self._data.get(
                     CONF_ROTATION_MODE, RotationMode.ROUND_ROBIN
@@ -741,6 +763,7 @@ class MaintenanceSubentryFlow(ConfigSubentryFlow):
                 CONF_DEVICE_ID: new_device_id,
                 CONF_INTERVAL_DAYS: int(self._data[CONF_INTERVAL_DAYS]),
                 **_warn_days_data(self._data),
+                **_points_data(self._data),
                 CONF_ASSIGNEES: self._data.get(CONF_ASSIGNEES, []),
                 CONF_ROTATION_MODE: self._data.get(
                     CONF_ROTATION_MODE, RotationMode.ROUND_ROBIN

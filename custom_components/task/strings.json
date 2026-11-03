@@ -86,7 +86,8 @@
             "description": "Description",
             "icon": "Icon",
             "unassigned": "Leave unassigned",
-            "warn_days": "Warn days (optional)"
+            "warn_days": "Warn days (optional)",
+            "points": "Effort (points)"
           },
           "data_description": {
             "name": "A short, descriptive name like \"Vacuum living room\" or \"Water plants\".",
@@ -94,7 +95,8 @@
             "description": "Optional notes or instructions for whoever does the task.",
             "icon": "Choose an icon to visually represent this task.",
             "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step.",
-            "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value."
+            "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value.",
+            "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal."
           }
         },
         "assignees": {
@@ -118,7 +120,8 @@
             "description": "Description",
             "icon": "Icon",
             "unassigned": "Leave unassigned",
-            "warn_days": "Warn days (optional)"
+            "warn_days": "Warn days (optional)",
+            "points": "Effort (points)"
           },
           "data_description": {
             "name": "A short, descriptive name like \"Vacuum living room\" or \"Water plants\".",
@@ -126,7 +129,8 @@
             "description": "Optional notes or instructions for whoever does the task.",
             "icon": "Choose an icon to visually represent this task.",
             "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step.",
-            "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value."
+            "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value.",
+            "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal."
           }
         },
         "reconfigure_assignees": {
@@ -218,7 +222,8 @@
             "description": "Description",
             "icon": "Icon",
             "unassigned": "Leave unassigned",
-            "warn_days": "Warn days (optional)"
+            "warn_days": "Warn days (optional)",
+            "points": "Effort (points)"
           },
           "data_description": {
             "name": "A short name like \"Replace filter\" or \"Descale\".",
@@ -227,7 +232,8 @@
             "description": "Optional notes or maintenance instructions.",
             "icon": "Choose an icon to visually represent this maintenance task.",
             "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step.",
-            "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value."
+            "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value.",
+            "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal."
           }
         },
         "assignees": {
@@ -252,7 +258,8 @@
             "description": "Description",
             "icon": "Icon",
             "unassigned": "Leave unassigned",
-            "warn_days": "Warn days (optional)"
+            "warn_days": "Warn days (optional)",
+            "points": "Effort (points)"
           },
           "data_description": {
             "name": "A short name like \"Replace filter\" or \"Descale\".",
@@ -261,7 +268,8 @@
             "description": "Optional notes or maintenance instructions.",
             "icon": "Choose an icon to visually represent this maintenance task.",
             "unassigned": "Enable if no specific person is responsible. Disable to assign people in the next step.",
-            "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value."
+            "warn_days": "Overrides the area's warn days for this item. Leave empty to use the area value.",
+            "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal."
           }
         },
         "reconfigure_assignees": {

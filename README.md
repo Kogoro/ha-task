@@ -101,7 +101,14 @@ Upgrading from a version where an area used the unified calendar: the household 
    - **Description** — optional notes or instructions
    - **Icon** — optional MDI icon
    - **Warn days** — optional; overrides the area's warn days for this task (leave empty to use the area value)
-   - **Assignees** — optionally assign people with a rotation mode (round-robin or random)
+   - **Effort (points)** — how much work the task is (default 1). The ranking card counts points instead of completions, and the workload rotation uses them
+   - **Assignees** — optionally assign people with a rotation mode: round-robin, random, or **least workload**
+
+#### Rotation modes
+
+- **Round-robin:** everyone in turn.
+- **Random:** a shuffled round in which everyone gets a turn before it repeats.
+- **Least workload:** the person who completed the fewest points over the last 30 days (across all tasks) gets the task. Ties go to whoever did something longest ago. Who is next is fixed when the task is completed, so it does not change just because someone else completes another task; if that person goes away it is recalculated. People who are away are always skipped (see `task.set_away`).
 
 ### Adding Maintenance Tasks
 
@@ -263,6 +270,7 @@ period: month
 | `period` | string | `all_time` | Initial period: `all_time`, `month` or `week` |
 | `show_streak` | boolean | `true` | Show each person's streak |
 | `show_bar` | boolean | `true` | Show the progress bar |
+| `use_points` | boolean | `true` | Count the points of each completed task instead of one per completion (the same when no task has points) |
 
 All four cards include a built-in visual editor accessible from the Lovelace card configuration UI.
 

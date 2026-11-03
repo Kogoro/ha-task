@@ -230,6 +230,7 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
             {
                 "completed_at": entry.completed_at.isoformat(),
                 "completed_by": entry.completed_by,
+                "points": entry.points,
                 "days_since_previous": cycle,
             }
             for entry, cycle in zip(completions, cycles, strict=True)

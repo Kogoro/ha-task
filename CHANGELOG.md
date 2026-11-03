@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- **Effort (points)** per task and a new rotation mode, **least workload**: the person with the fewest completed points over the last 30 days gets the task; who is next is fixed when the task is completed. `task-ranking-card` counts points (option `use_points`, on by default; the same as before while no task has points). The completion event and `task.get_history` include `points`.
 - **Away:** `task.set_away` / `task.clear_away` mark a person as away, optionally with a start and end date. The rotation (round-robin and random) skips them, hands their task on at once and continues after the person who took it; they return automatically after the end date. New attribute `away_assignees` on the task sensor.
 - **Undo** the most recently recorded completion: `task.undo_completion` and an undo button on that entry in the card's history. It restores who was responsible, the rotation and a postponement. New event `task_completion_undone`.
 - **History and statistics:** `task.get_history` returns the history with the days between completions; the task sensor shows `average_cycle_days`, `last_cycle_days` and `on_time_percent`.

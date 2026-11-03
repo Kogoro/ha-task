@@ -297,6 +297,7 @@ class TaskSensorEntity(CoordinatorEntity[TaskCoordinator], SensorEntity):
                     entry.completed_at.isoformat() if entry.completed_at else None
                 ),
                 "completed_by": entry.completed_by,
+                "points": entry.points,
             })
 
         attrs = {
@@ -313,6 +314,7 @@ class TaskSensorEntity(CoordinatorEntity[TaskCoordinator], SensorEntity):
             ATTR_AREA_ID: self.coordinator.data.area_id,
             "subentry_type": task.subentry_type,
             "total_completions": len(history.completions),
+            "points": task.points,
             "away_assignees": task.away_assignees,
             "can_undo": history.undo is not None,
             "undo_completed_at": (
