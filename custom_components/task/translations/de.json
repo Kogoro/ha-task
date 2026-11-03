@@ -265,6 +265,10 @@
         "entity_id": {
           "name": "Entität",
           "description": "Die Aufgaben-Sensor- oder Button-Entität, die als erledigt markiert werden soll."
+        },
+        "completed_at": {
+          "name": "Erledigt am",
+          "description": "Wann die Aufgabe tatsächlich erledigt wurde. Standard ist jetzt. Das nächste Fälligkeitsdatum wird ab diesem Zeitpunkt berechnet. Darf nicht in der Zukunft liegen."
         }
       }
     },
@@ -277,6 +281,11 @@
           "description": "Die Aufgaben-Sensor- oder Button-Entität, die zurückgesetzt werden soll."
         }
       }
+    }
+  },
+  "exceptions": {
+    "completed_at_in_future": {
+      "message": "Der Zeitpunkt der Erledigung darf nicht in der Zukunft liegen."
     }
   }
 }

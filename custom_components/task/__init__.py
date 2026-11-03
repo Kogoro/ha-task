@@ -1,5 +1,6 @@
 """The Task integration."""
 
+import datetime
 import logging
 import shutil
 from pathlib import Path
@@ -10,8 +11,10 @@ from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
+from homeassistant.util import dt as dt_util
 
 from .const import (
     DOMAIN,
@@ -32,6 +35,7 @@ PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR, Platform.TODO, Platform.CA
 SERVICE_COMPLETE_SCHEMA = vol.Schema(
     {
         vol.Required("entity_id"): cv.entity_id,
+        vol.Optional("completed_at"): vol.Any(cv.datetime, cv.date),
     }
 )
 
@@ -74,12 +78,29 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
                     completed_by = state.entity_id
                     break
 
+        completed_at = call.data.get("completed_at")
+        if completed_at is not None:
+            if not isinstance(completed_at, datetime.datetime):
+                completed_at = datetime.datetime.combine(
+                    completed_at, datetime.time(12, 0)
+                )
+            completed_at = dt_util.as_utc(completed_at)
+            if completed_at > dt_util.utcnow():
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="completed_at_in_future",
+                )
+
         subentry_id = entity_entry.config_subentry_id
         coordinator = _find_coordinator_for_subentry(hass, subentry_id)
         if coordinator:
-            coordinator.complete_task(subentry_id, completed_by=completed_by)
+            coordinator.complete_task(
+                subentry_id, completed_by=completed_by, completed_at=completed_at
+            )
         else:
-            store.record_completion(subentry_id, completed_by=completed_by)
+            store.record_completion(
+                subentry_id, completed_by=completed_by, completed_at=completed_at
+            )
         await _async_refresh_coordinators(hass)
 
     async def handle_reset_task(call: ServiceCall) -> None:

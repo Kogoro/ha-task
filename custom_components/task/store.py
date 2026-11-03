@@ -85,15 +85,19 @@ class TaskStore:
 
     @callback
     def record_completion(
-        self, subentry_id: str, completed_by: str | None = None
+        self,
+        subentry_id: str,
+        completed_by: str | None = None,
+        completed_at: datetime.datetime | None = None,
     ) -> None:
-        """Record a task completion."""
-        now = dt_util.utcnow()
+        """Record a task completion, optionally at an earlier time."""
+        completed_at = completed_at or dt_util.utcnow()
         history = self.get_history(subentry_id)
-        history.last_completed = now
         history.completions.append(
-            CompletionEntry(completed_at=now, completed_by=completed_by)
+            CompletionEntry(completed_at=completed_at, completed_by=completed_by)
         )
+        history.completions.sort(key=lambda entry: entry.completed_at)
+        history.last_completed = history.completions[-1].completed_at
         self._schedule_save()
 
     @callback

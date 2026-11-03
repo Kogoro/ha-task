@@ -241,7 +241,10 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
         return item
 
     def complete_task(
-        self, subentry_id: str, completed_by: str | None = None
+        self,
+        subentry_id: str,
+        completed_by: str | None = None,
+        completed_at: datetime.datetime | None = None,
     ) -> None:
         """Record completion and advance the assignee rotation."""
         item = self._find_item(subentry_id)
@@ -252,8 +255,10 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             assignees = item.assignees
             rotation_mode = item.rotation_mode
 
-        now = dt_util.utcnow()
-        self.store.record_completion(subentry_id, completed_by=completed_by)
+        now = completed_at or dt_util.utcnow()
+        self.store.record_completion(
+            subentry_id, completed_by=completed_by, completed_at=now
+        )
         self.store.clear_claim(subentry_id)
         if assignees:
             self.store.advance_rotation(subentry_id, assignees, rotation_mode)

@@ -5,6 +5,10 @@ complete_task:
       selector:
         entity:
           integration: task
+    completed_at:
+      required: false
+      selector:
+        datetime:
 
 reset_task:
   fields:
