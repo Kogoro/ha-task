@@ -47,3 +47,13 @@ def area_device_info(coordinator: TaskCoordinator) -> DeviceInfo:
         manufacturer="Task",
         model="Task Manager",
     )
+
+
+def household_device_info(entry_id: str) -> DeviceInfo:
+    """Return the device info of the household entry."""
+    return DeviceInfo(
+        identifiers={(DOMAIN, entry_id)},
+        name="Household",
+        manufacturer="Task",
+        model="Task Manager",
+    )

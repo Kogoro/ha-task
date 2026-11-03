@@ -9,20 +9,31 @@ from typing import Any
 import voluptuous as vol
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import StaticPathConfig
+from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntryState
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.dispatcher import (
+    async_dispatcher_connect,
+    async_dispatcher_send,
+)
 from homeassistant.util import dt as dt_util
 
 from .const import (
+    CONF_CALENDAR_NAME,
+    CONF_UNIFIED_CALENDAR,
     DOMAIN,
     SERVICE_COMPLETE_TASK,
     SERVICE_POSTPONE_TASK,
     SERVICE_RESET_TASK,
+    SIGNAL_AREAS_CHANGED,
+    UNIFIED_CALENDAR_UNIQUE_ID,
 )
 from .coordinator import TaskConfigEntry, TaskCoordinator
+from .household import HouseholdCoordinator, household_entry, is_household
 from .store import TaskStore
 
 FRONTEND_SCRIPT_PATH = f"/{DOMAIN}/task-card.js"
@@ -153,8 +164,39 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     )
 
     await _async_install_blueprints(hass)
+    _async_migrate_unified_calendar(hass)
 
     return True
+
+
+@callback
+def _async_migrate_unified_calendar(hass: HomeAssistant) -> None:
+    """Create the household entry for installs that used the unified calendar.
+
+    The unified calendar used to be owned by the first area that opted in. It
+    now belongs to the household entry, which is created here once, taking over
+    the calendar name the owner area had set.
+    """
+    if household_entry(hass) is not None:
+        return
+    unified = [
+        entry
+        for entry in hass.config_entries.async_entries(DOMAIN)
+        if not is_household(entry) and entry.data.get(CONF_UNIFIED_CALENDAR)
+    ]
+    if not unified:
+        return
+    name = next(
+        (e.data[CONF_CALENDAR_NAME] for e in unified if e.data.get(CONF_CALENDAR_NAME)),
+        None,
+    )
+    hass.async_create_task(
+        hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": SOURCE_IMPORT},
+            data={CONF_CALENDAR_NAME: name} if name else {},
+        )
+    )
 
 
 async def _async_install_blueprints(hass: HomeAssistant) -> None:
@@ -197,7 +239,10 @@ async def _async_refresh_coordinators(hass: HomeAssistant) -> None:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: TaskConfigEntry) -> bool:
-    """Set up Task from a config entry."""
+    """Set up Task from a config entry (an area or the household)."""
+    if is_household(entry):
+        return await _async_setup_household(hass, entry)
+
     store: TaskStore = hass.data[DOMAIN]["store"]
     coordinator = TaskCoordinator(hass, entry, store)
     await coordinator.async_config_entry_first_refresh()
@@ -206,8 +251,73 @@ async def async_setup_entry(hass: HomeAssistant, entry: TaskConfigEntry) -> bool
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(_async_entry_updated))
+    async_dispatcher_send(hass, SIGNAL_AREAS_CHANGED)
 
     return True
+
+
+async def _async_setup_household(hass: HomeAssistant, entry: TaskConfigEntry) -> bool:
+    """Set up the household entry: totals and the unified calendar."""
+    coordinator = HouseholdCoordinator(hass, entry)
+    await coordinator.async_config_entry_first_refresh()
+    entry.runtime_data = coordinator
+    coordinator.async_sync_areas()
+    entry.async_on_unload(coordinator.async_stop_following)
+    entry.async_on_unload(
+        async_dispatcher_connect(hass, SIGNAL_AREAS_CHANGED, coordinator.async_sync_areas)
+    )
+
+    legacy_device_id = _async_legacy_unified_device_id(hass)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    entry.async_on_unload(entry.add_update_listener(_async_entry_updated))
+
+    _async_remove_device_if_empty(hass, legacy_device_id)
+    _async_reload_areas(hass, with_own_calendar=True)
+    return True
+
+
+@callback
+def _async_legacy_unified_device_id(hass: HomeAssistant) -> str | None:
+    """Return the device the unified calendar still sits on from before, if any."""
+    ent_reg = er.async_get(hass)
+    entity_id = ent_reg.async_get_entity_id("calendar", DOMAIN, UNIFIED_CALENDAR_UNIQUE_ID)
+    entry = ent_reg.async_get(entity_id) if entity_id else None
+    return entry.device_id if entry else None
+
+
+@callback
+def _async_remove_device_if_empty(hass: HomeAssistant, device_id: str | None) -> None:
+    """Remove the device the unified calendar used to live on, once it is empty."""
+    if device_id is None:
+        return
+    dev_reg = dr.async_get(hass)
+    if dev_reg.async_get(device_id) and not er.async_entries_for_device(
+        er.async_get(hass), device_id
+    ):
+        dev_reg.async_remove_device(device_id)
+
+
+@callback
+def _async_reload_areas(hass: HomeAssistant, *, with_own_calendar: bool) -> None:
+    """Reload loaded areas that opted out of their own calendar.
+
+    With ``with_own_calendar`` only areas that still have a calendar of their
+    own are reloaded (they must drop it now that the household calendar
+    exists); otherwise all of them are (they need their own calendar back).
+    """
+    ent_reg = er.async_get(hass)
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        if (
+            is_household(entry)
+            or not entry.data.get(CONF_UNIFIED_CALENDAR)
+            or entry.state is not ConfigEntryState.LOADED
+        ):
+            continue
+        has_calendar = ent_reg.async_get_entity_id(
+            "calendar", DOMAIN, f"{entry.entry_id}_calendar"
+        )
+        if with_own_calendar == bool(has_calendar):
+            hass.config_entries.async_schedule_reload(entry.entry_id)
 
 
 async def _async_entry_updated(
@@ -219,18 +329,13 @@ async def _async_entry_updated(
 
 async def async_unload_entry(hass: HomeAssistant, entry: TaskConfigEntry) -> bool:
     """Unload a config entry."""
-    from .calendar import (
-        UNIFIED_CALENDAR_ENTITY_KEY,
-        UNIFIED_CALENDAR_OWNER_KEY,
-        UNIFIED_COORDINATORS_KEY,
-    )
+    unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unloaded and not is_household(entry):
+        async_dispatcher_send(hass, SIGNAL_AREAS_CHANGED)
+    return unloaded
 
-    domain_data = hass.data.get(DOMAIN, {})
-    unified_coords = domain_data.get(UNIFIED_COORDINATORS_KEY, {})
-    unified_coords.pop(entry.entry_id, None)
 
-    if domain_data.get(UNIFIED_CALENDAR_OWNER_KEY) == entry.entry_id:
-        domain_data.pop(UNIFIED_CALENDAR_OWNER_KEY, None)
-        domain_data.pop(UNIFIED_CALENDAR_ENTITY_KEY, None)
-
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+async def async_remove_entry(hass: HomeAssistant, entry: TaskConfigEntry) -> None:
+    """Give areas their own calendar back when the household entry is removed."""
+    if is_household(entry):
+        _async_reload_areas(hass, with_own_calendar=False)

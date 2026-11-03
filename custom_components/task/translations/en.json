@@ -2,19 +2,11 @@
   "config": {
     "step": {
       "user": {
-        "title": "Add area",
-        "description": "Choose the area of your home you'd like to manage recurring tasks for. Each area gets its own set of tasks.",
-        "data": {
-          "area_id": "Area",
-          "calendar_name": "Calendar name",
-          "unified_calendar": "Use unified calendar",
-          "warn_days": "Warn days"
-        },
-        "data_description": {
-          "area_id": "The area where tasks will be tracked.",
-          "calendar_name": "Custom name for the calendar entity. Leave empty to use the area name.",
-          "unified_calendar": "Show this area's tasks in a single shared calendar instead of a separate one.",
-          "warn_days": "Tasks count as \"due soon\" this many days before they are due. Individual tasks can override this."
+        "title": "Add to Task",
+        "description": "Add an area to manage its tasks, or the household overview with totals and a calendar of all tasks.",
+        "menu_options": {
+          "area": "Area",
+          "household": "Household overview"
         }
       },
       "reconfigure": {
@@ -23,14 +15,50 @@
         "data": {
           "area_id": "Area",
           "calendar_name": "Calendar name",
-          "unified_calendar": "Use unified calendar",
+          "unified_calendar": "Hide this area's separate calendar",
           "warn_days": "Warn days"
         },
         "data_description": {
           "area_id": "Select a different area for this task group.",
           "calendar_name": "Custom name for the calendar entity. Leave empty to use the area name.",
-          "unified_calendar": "Show this area's tasks in a single shared calendar instead of a separate one.",
+          "unified_calendar": "Show this area's tasks only in the household calendar instead of a separate one. Needs a household overview.",
           "warn_days": "Tasks count as \"due soon\" this many days before they are due. Individual tasks can override this."
+        }
+      },
+      "area": {
+        "title": "Add area",
+        "description": "Choose the area of your home you'd like to manage recurring tasks for. Each area gets its own set of tasks.",
+        "data": {
+          "area_id": "Area",
+          "calendar_name": "Calendar name",
+          "unified_calendar": "Hide this area's separate calendar",
+          "warn_days": "Warn days"
+        },
+        "data_description": {
+          "area_id": "The area where tasks will be tracked.",
+          "calendar_name": "Custom name for the calendar entity. Leave empty to use the area name.",
+          "unified_calendar": "Show this area's tasks only in the household calendar instead of a separate one. Needs a household overview.",
+          "warn_days": "Tasks count as \"due soon\" this many days before they are due. Individual tasks can override this."
+        }
+      },
+      "household": {
+        "title": "Household overview",
+        "description": "Adds totals across all areas (overdue, due today, due this week, due soon) and one calendar with the tasks of all areas. There can be only one.",
+        "data": {
+          "calendar_name": "Calendar name"
+        },
+        "data_description": {
+          "calendar_name": "Name of the calendar with all tasks."
+        }
+      },
+      "reconfigure_household": {
+        "title": "Household overview",
+        "description": "Adds totals across all areas (overdue, due today, due this week, due soon) and one calendar with the tasks of all areas. There can be only one.",
+        "data": {
+          "calendar_name": "Calendar name"
+        },
+        "data_description": {
+          "calendar_name": "Name of the calendar with all tasks."
         }
       }
     },

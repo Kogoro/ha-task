@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Household overview:** an optional config entry with totals across all areas (overdue, due today, due this week, due soon) and the unified calendar with the tasks of all areas.
+
+### Changed
+- The unified calendar belongs to the household overview instead of the first area that used it, so it no longer disappears when that area is unloaded. Adding the integration now starts with a choice between "Area" and "Household overview". "Use unified calendar" on an area is now "Hide this area's separate calendar" and is offered once a household overview exists.
+- Upgrading: if an area used the unified calendar, the household overview is created automatically and keeps the calendar's name and entity ID.
+
 ## 0.4.0-beta.1 (pre-release)
 
 ### Added

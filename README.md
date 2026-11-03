@@ -77,8 +77,19 @@ Task is configured entirely through the Home Assistant UI — no YAML needed.
 
 1. Go to **Settings** → **Devices & Services** → **Add Integration**.
 2. Search for **Task** and select it.
-3. Choose the area you want to manage tasks for. Each area gets its own config entry.
+3. Choose **Area**, then the area you want to manage tasks for. Each area gets its own config entry.
 4. Optionally set **Warn days** (default 7): tasks count as "due soon" this many days before they are due.
+
+### Household overview (optional)
+
+Add **Household overview** from the same menu to get one place for the whole home. There can be only one.
+
+- **Totals across all areas:** overdue, due today, due this week and due soon, with the tasks as "Area: task" in the attributes. They always add up the area values.
+- **One calendar with the tasks of all areas** ("All Tasks" by default; you can rename it by reconfiguring the entry). It no longer depends on a single area, so it stays when you remove or reload any area.
+
+Once a household overview exists, an area offers **Hide this area's separate calendar**: its tasks then appear only in the household calendar. If you remove the household overview, those areas get their own calendar back.
+
+Upgrading from a version where an area used the unified calendar: the household overview is created automatically and takes over the calendar's name, entity ID and history.
 
 ### Adding Tasks
 
@@ -124,6 +135,8 @@ Per area (on the area's "<Area> Tasks" device; entity IDs are generated from you
 | Due soon | Number of tasks inside their warn days |
 | `calendar.<area>_tasks` | Calendar with all task due dates |
 | `todo.<area>_tasks` | Todo list of all tasks in the area |
+
+The household overview adds the same four counters (on a "Household" device) for the whole home, plus the unified calendar.
 
 ### Services
 
