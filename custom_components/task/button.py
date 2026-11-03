@@ -73,7 +73,7 @@ class TaskCompleteButton(CoordinatorEntity[TaskCoordinator], ButtonEntity):
     async def async_press(self) -> None:
         """Handle button press — record completion and advance rotation."""
         self.coordinator.complete_task(self.subentry_id)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_refresh()
 
 
 class TaskAssignToMeButton(CoordinatorEntity[TaskCoordinator], ButtonEntity):
@@ -120,4 +120,4 @@ class TaskAssignToMeButton(CoordinatorEntity[TaskCoordinator], ButtonEntity):
                     person_id = state.entity_id
                     break
         self.coordinator.assign_to(self.subentry_id, person_id)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_refresh()

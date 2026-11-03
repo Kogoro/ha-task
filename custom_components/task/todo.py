@@ -105,7 +105,7 @@ class TaskTodoEntity(CoordinatorEntity[TaskCoordinator], TodoListEntity):
             unique_id=None,
         )
         self.hass.config_entries.async_add_subentry(entry, subentry)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_refresh()
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """Update a todo item — record completion when checked off."""
@@ -116,4 +116,4 @@ class TaskTodoEntity(CoordinatorEntity[TaskCoordinator], TodoListEntity):
             task = self.coordinator.find_item(item.uid)
             completed_by = task.current_assignee if task else None
             self.coordinator.complete_task(item.uid, completed_by=completed_by)
-            await self.coordinator.async_request_refresh()
+            await self.coordinator.async_refresh()
