@@ -140,6 +140,11 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             overdue = True
             next_due = today
 
+        if history.postponed_until and history.postponed_until > next_due:
+            next_due = history.postponed_until
+            days_until_due = (next_due - today).days
+            overdue = days_until_due < 0
+
         assignees = self._resolve_assignees(dict(data))
         rotation_mode = data.get(
             CONF_ROTATION_MODE, RotationMode.ROUND_ROBIN
@@ -240,8 +245,24 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             item = self.data.maintenance.get(subentry_id)
         return item
 
+    def postpone_task(self, subentry_id: str, days: int) -> datetime.date:
+        """Push the due date back by the given number of days.
+
+        The new date counts from the current due date, or from today if the
+        task is already overdue. History and rotation stay untouched.
+        """
+        item = self._find_item(subentry_id)
+        today = dt_util.now().date()
+        base = max(item.next_due, today) if item and item.next_due else today
+        until = base + datetime.timedelta(days=days)
+        self.store.postpone(subentry_id, until)
+        return until
+
     def complete_task(
-        self, subentry_id: str, completed_by: str | None = None
+        self,
+        subentry_id: str,
+        completed_by: str | None = None,
+        completed_at: datetime.datetime | None = None,
     ) -> None:
         """Record completion and advance the assignee rotation."""
         item = self._find_item(subentry_id)
@@ -252,8 +273,10 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             assignees = item.assignees
             rotation_mode = item.rotation_mode
 
-        now = dt_util.utcnow()
-        self.store.record_completion(subentry_id, completed_by=completed_by)
+        now = completed_at or dt_util.utcnow()
+        self.store.record_completion(
+            subentry_id, completed_by=completed_by, completed_at=now
+        )
         self.store.clear_claim(subentry_id)
         if assignees:
             self.store.advance_rotation(subentry_id, assignees, rotation_mode)

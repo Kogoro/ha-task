@@ -286,6 +286,17 @@
       }, 1500);
     }
 
+    async _handlePostpone(entityId) {
+      try {
+        await this.hass.callService("task", "postpone_task", {
+          entity_id: entityId,
+          days: 1,
+        });
+      } catch (e) {
+        console.error("Failed to postpone task:", e);
+      }
+    }
+
     _renderAvatar(personEntityId) {
       const avatar = this._getPersonAvatar(personEntityId);
       const name = this._getPersonName(personEntityId);
@@ -403,6 +414,15 @@
               </div>
               ` : ""}
             </div>
+            <button
+              class="postpone-btn"
+              title="Postpone by 1 day"
+              aria-label="Postpone by 1 day"
+              @click=${() => this._handlePostpone(entityId)}
+              ?disabled=${isCompleting}
+            >
+              <ha-icon icon="mdi:clock-plus-outline" class="btn-icon"></ha-icon>
+            </button>
             <button
               class="complete-btn ${isCompleting ? "done" : ""}"
               @click=${() => this._handleComplete(entityId)}
@@ -983,6 +1003,41 @@
 
         /* ── Complete button ── */
 
+        .postpone-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px 8px;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          flex-shrink: 0;
+          align-self: center;
+          font-family: inherit;
+          transition: background 0.2s ease, transform 0.15s ease;
+          background: transparent;
+          color: var(--secondary-text-color);
+        }
+
+        .postpone-btn:hover:not(:disabled) {
+          background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+          color: var(--primary-color);
+        }
+
+        .postpone-btn:focus-visible {
+          outline: 2px solid var(--primary-color);
+          outline-offset: 2px;
+        }
+
+        .postpone-btn:active:not(:disabled) {
+          transform: scale(0.95);
+        }
+
+        .postpone-btn:disabled {
+          cursor: default;
+          opacity: 0.5;
+        }
+
         .complete-btn {
           display: flex;
           align-items: center;
@@ -1487,6 +1542,19 @@
       }, 1500);
     }
 
+    async _handlePostpone() {
+      const entityId = this._getTaskSensor();
+      if (!entityId) return;
+      try {
+        await this.hass.callService("task", "postpone_task", {
+          entity_id: entityId,
+          days: 1,
+        });
+      } catch (e) {
+        console.error("Failed to postpone task:", e);
+      }
+    }
+
     _toggleHistory() {
       this._expandedHistory = !this._expandedHistory;
     }
@@ -1622,6 +1690,15 @@
           </div>
 
           <div class="single-footer">
+            <button
+              class="postpone-btn single-postpone-btn"
+              title="Postpone by 1 day"
+              aria-label="Postpone by 1 day"
+              @click=${() => this._handlePostpone()}
+              ?disabled=${this._completing}
+            >
+              <ha-icon icon="mdi:clock-plus-outline" class="btn-icon"></ha-icon>
+            </button>
             <button
               class="complete-btn single-complete-btn ${this._completing ? "done" : ""}"
               @click=${() => this._handleComplete()}
@@ -1925,6 +2002,47 @@
 
         .single-footer {
           padding: 0 16px 14px;
+          display: flex;
+          gap: 8px;
+        }
+
+        .postpone-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px 8px;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          flex-shrink: 0;
+          align-self: center;
+          font-family: inherit;
+          transition: background 0.2s ease, transform 0.15s ease;
+          background: transparent;
+          color: var(--secondary-text-color);
+        }
+
+        .postpone-btn:hover:not(:disabled) {
+          background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+          color: var(--primary-color);
+        }
+
+        .postpone-btn:focus-visible {
+          outline: 2px solid var(--primary-color);
+          outline-offset: 2px;
+        }
+
+        .postpone-btn:active:not(:disabled) {
+          transform: scale(0.95);
+        }
+
+        .postpone-btn:disabled {
+          cursor: default;
+          opacity: 0.5;
+        }
+
+        .single-postpone-btn {
+          padding: 8px 12px;
         }
 
         .complete-btn {
@@ -1970,7 +2088,7 @@
         .btn-icon { --mdc-icon-size: 16px; }
 
         .single-complete-btn {
-          width: 100%;
+          flex: 1;
           justify-content: center;
           padding: 8px 16px;
           font-size: 13px;

@@ -265,6 +265,10 @@
         "entity_id": {
           "name": "Entität",
           "description": "Die Aufgaben-Sensor- oder Button-Entität, die als erledigt markiert werden soll."
+        },
+        "completed_at": {
+          "name": "Erledigt am",
+          "description": "Wann die Aufgabe tatsächlich erledigt wurde. Standard ist jetzt. Das nächste Fälligkeitsdatum wird ab diesem Zeitpunkt berechnet. Darf nicht in der Zukunft liegen."
         }
       }
     },
@@ -277,6 +281,25 @@
           "description": "Die Aufgaben-Sensor- oder Button-Entität, die zurückgesetzt werden soll."
         }
       }
+    },
+    "postpone_task": {
+      "name": "Aufgabe verschieben",
+      "description": "Verschiebt das Fälligkeitsdatum, ohne eine Erledigung zu erfassen. Verlauf, Rangliste und Rotation bleiben unverändert.",
+      "fields": {
+        "entity_id": {
+          "name": "Entität",
+          "description": "Der Aufgaben-Sensor oder -Button, der verschoben werden soll."
+        },
+        "days": {
+          "name": "Tage",
+          "description": "Um wie viele Tage verschoben wird. Gerechnet ab dem aktuellen Fälligkeitsdatum, bei überfälligen Aufgaben ab heute."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "completed_at_in_future": {
+      "message": "Der Zeitpunkt der Erledigung darf nicht in der Zukunft liegen."
     }
   }
 }
