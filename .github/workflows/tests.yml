@@ -1,0 +1,21 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    name: Pytest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Install test dependencies
+        run: |
+          pip install -r requirements_test.txt
+          pip install "$(python -c "import json, pathlib, homeassistant; print(json.loads((pathlib.Path(homeassistant.__file__).parent / 'components/frontend/manifest.json').read_text())['requirements'][0])")"
+      - name: Run tests
+        run: pytest
