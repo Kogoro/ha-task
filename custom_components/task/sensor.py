@@ -313,6 +313,7 @@ class TaskSensorEntity(CoordinatorEntity[TaskCoordinator], SensorEntity):
             ATTR_AREA_ID: self.coordinator.data.area_id,
             "subentry_type": task.subentry_type,
             "total_completions": len(history.completions),
+            "away_assignees": task.away_assignees,
             "can_undo": history.undo is not None,
             "undo_completed_at": (
                 history.undo.completed_at.isoformat() if history.undo else None

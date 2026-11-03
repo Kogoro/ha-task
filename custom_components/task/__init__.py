@@ -32,10 +32,12 @@ from .const import (
     CONF_CALENDAR_NAME,
     CONF_UNIFIED_CALENDAR,
     DOMAIN,
+    SERVICE_CLEAR_AWAY,
     SERVICE_COMPLETE_TASK,
     SERVICE_GET_HISTORY,
     SERVICE_POSTPONE_TASK,
     SERVICE_RESET_TASK,
+    SERVICE_SET_AWAY,
     SERVICE_UNDO_COMPLETION,
     SIGNAL_AREAS_CHANGED,
     UNIFIED_CALENDAR_UNIQUE_ID,
@@ -79,6 +81,16 @@ SERVICE_HISTORY_SCHEMA = vol.Schema(
         ),
     }
 )
+
+SERVICE_SET_AWAY_SCHEMA = vol.Schema(
+    {
+        vol.Required("person"): cv.entity_domain("person"),
+        vol.Optional("start"): cv.date,
+        vol.Optional("end"): cv.date,
+    }
+)
+
+SERVICE_CLEAR_AWAY_SCHEMA = vol.Schema({vol.Required("person"): cv.entity_domain("person")})
 
 SERVICE_RESET_SCHEMA = vol.Schema(
     {
@@ -232,6 +244,33 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
             "completions": list(reversed(rows))[: call.data["limit"]],
         }
 
+    async def handle_set_away(call: ServiceCall) -> None:
+        """Mark a person as away; the rotation skips them meanwhile."""
+        today = dt_util.now().date()
+        start = call.data.get("start", today)
+        end = call.data.get("end")
+        if end is not None and end < start:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="away_end_before_start"
+            )
+        if end is not None and end < today:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="away_already_over"
+            )
+        store.set_away(call.data["person"], start, end)
+        await _async_refresh_coordinators(hass)
+
+    async def handle_clear_away(call: ServiceCall) -> None:
+        """Mark a person as present again."""
+        store.clear_away(call.data["person"])
+        await _async_refresh_coordinators(hass)
+
+    hass.services.async_register(
+        DOMAIN, SERVICE_SET_AWAY, handle_set_away, schema=SERVICE_SET_AWAY_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_CLEAR_AWAY, handle_clear_away, schema=SERVICE_CLEAR_AWAY_SCHEMA
+    )
     hass.services.async_register(
         DOMAIN, SERVICE_POSTPONE_TASK, handle_postpone_task, schema=SERVICE_POSTPONE_SCHEMA
     )

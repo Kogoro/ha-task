@@ -381,6 +381,34 @@
           "description": "Maximale Anzahl zurückgegebener Erledigungen."
         }
       }
+    },
+    "set_away": {
+      "name": "Abwesenheit setzen",
+      "description": "Markiert eine Person als abwesend. Die Rotation überspringt sie: Aufgaben, bei denen sie dran wäre, gehen an die nächste Person, und sie bekommt nichts zugewiesen, bis sie zurück ist. Sind alle abwesend, bleibt der nominell Zuständige verantwortlich.",
+      "fields": {
+        "person": {
+          "name": "Person",
+          "description": "Die abwesende Person."
+        },
+        "start": {
+          "name": "Beginn",
+          "description": "Erster Tag der Abwesenheit. Standard ist heute."
+        },
+        "end": {
+          "name": "Ende",
+          "description": "Letzter Tag der Abwesenheit. Leer lassen, bis die Abwesenheit aufgehoben wird."
+        }
+      }
+    },
+    "clear_away": {
+      "name": "Abwesenheit aufheben",
+      "description": "Markiert eine Person wieder als anwesend.",
+      "fields": {
+        "person": {
+          "name": "Person",
+          "description": "Die zurückgekehrte Person."
+        }
+      }
     }
   },
   "exceptions": {
@@ -392,6 +420,12 @@
     },
     "not_a_task": {
       "message": "Das ist keine Aufgaben-Entity der Task-Integration."
+    },
+    "away_end_before_start": {
+      "message": "Das Enddatum darf nicht vor dem Beginn liegen."
+    },
+    "away_already_over": {
+      "message": "Das Enddatum liegt in der Vergangenheit, die Person wäre also nie abwesend."
     }
   }
 }

@@ -21,7 +21,7 @@ Eine Home-Assistant-Integration für wiederkehrende Haushaltsaufgaben und die Wa
 
 - **Wiederkehrende Aufgaben** — Intervalle von 1 bis 365 Tagen, die Fälligkeit wird automatisch berechnet.
 - **Gerätewartung** — Wartungsaufgaben an ein Gerät binden (Filter wechseln, entkalken, reinigen), Intervalle bis 730 Tage.
-- **Reihum-Zuweisung** — Mehrere Personen zuweisen, die Zuständigkeit wechselt reihum oder zufällig.
+- **Reihum-Zuweisung** — Mehrere Personen zuweisen, die Zuständigkeit wechselt reihum oder zufällig. Abwesende (Urlaub, Krankheit) werden übersprungen, optional mit Zeitraum.
 - **„Mir zuweisen“** — Jeder kann eine nicht zugewiesene Aufgabe direkt übernehmen.
 - **Bald fällig und überfällig** — Jede Aufgabe hat einen Status (`ok`, `due_soon`, `overdue`). Die Warntage gelten pro Bereich und lassen sich pro Aufgabe überschreiben.
 - **Summen-Sensoren** — Pro Bereich: Anzahl überfälliger, heute fälliger, diese Woche fälliger und bald fälliger Aufgaben.
@@ -122,6 +122,8 @@ Pro Bereich (am Gerät „<Bereich> Tasks“; die Entity-IDs entstehen aus Berei
 | `task.postpone_task` | Fälligkeit um `days` Tage (Standard 1) nach hinten schieben, ohne eine Erledigung zu zählen. Gerechnet ab der aktuellen Fälligkeit, bei überfälligen Aufgaben ab heute. |
 | `task.undo_completion` | Macht die zuletzt erfasste Erledigung rückgängig (Fehlklick). Stellt Zuständigkeit, Rotation und eine Verschiebung wieder her. Nur dieser eine Schritt, und nicht nach einem Zurücksetzen |
 | `task.get_history` | Liefert den Verlauf einer Aufgabe als Antwort (neueste zuerst, `limit` Standard 50): wer, wann, Tage seit der vorigen Erledigung, durchschnittliche und letzte Zykluslänge und wie oft sie innerhalb des Intervalls erledigt wurde |
+| `task.set_away` | Markiert eine `person` als abwesend (optional `start`, Standard heute, und `end`, einschließlich; ohne Ende bis zur Aufhebung). Die Rotation überspringt sie: Ihr Zug geht an die nächste Person, und sie bekommt nichts zugewiesen, bis sie zurück ist. Sind alle abwesend, bleibt der nominell Zuständige verantwortlich |
+| `task.clear_away` | Markiert eine Person wieder als anwesend |
 | `task.reset_task` | Verlauf und Rotation einer Aufgabe zurücksetzen |
 
 ### Ereignisse

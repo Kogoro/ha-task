@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- **Away:** `task.set_away` / `task.clear_away` mark a person as away, optionally with a start and end date. The rotation (round-robin and random) skips them, hands their task on at once and continues after the person who took it; they return automatically after the end date. New attribute `away_assignees` on the task sensor.
 - **Undo** the most recently recorded completion: `task.undo_completion` and an undo button on that entry in the card's history. It restores who was responsible, the rotation and a postponement. New event `task_completion_undone`.
 - **History and statistics:** `task.get_history` returns the history with the days between completions; the task sensor shows `average_cycle_days`, `last_cycle_days` and `on_time_percent`.
 

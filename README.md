@@ -19,7 +19,7 @@ A Home Assistant integration for managing recurring household tasks and device m
 
 - **Recurring tasks** — Define tasks with customizable intervals (1–365 days) and track due dates automatically.
 - **Device maintenance** — Link maintenance tasks to specific devices (filter changes, cleaning, descaling) with intervals up to 730 days.
-- **Assignee rotation** — Assign multiple household members and rotate responsibility using round-robin or random mode.
+- **Assignee rotation** — Assign multiple household members and rotate responsibility using round-robin or random mode. People who are away (holiday, illness) are skipped, with an optional date range.
 - **"Assign to me" button** — Any user can claim an unassigned task directly from the UI.
 - **Due soon and overdue** — Every task has a status (`ok`, `due_soon`, `overdue`). Warn days are set per area and can be overridden per task. Binary sensors flag overdue tasks.
 - **Summary sensors** — Per area: how many tasks are overdue, due today, due this week and due soon.
@@ -146,6 +146,8 @@ The household overview adds the same four counters (on a "Household" device) for
 | `task.postpone_task` | Push the due date back by `days` (default 1) without recording a completion; counts from the current due date, or from today if overdue |
 | `task.undo_completion` | Undo the most recently recorded completion (a mis-tap). Restores who was responsible, the rotation and a postponement. Only that one step, and not after a reset |
 | `task.get_history` | Return a task's completion history as a response (newest first, `limit` default 50): who, when, days since the previous completion, average and last cycle length and how often it was done within its interval |
+| `task.set_away` | Mark a `person` as away (optional `start`, default today, and `end`, inclusive; without an end until cleared). The rotation skips them: their turn goes to the next person, and they are not assigned anything until they are back. If everyone is away, the nominal assignee stays responsible |
+| `task.clear_away` | Mark a person as present again |
 | `task.reset_task` | Reset a task's completion history and rotation state |
 
 ## Lovelace Cards
