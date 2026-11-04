@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0-beta.2 (pre-release)
 
 ### Added
 - **Household overview:** an optional config entry with totals across all areas (overdue, due today, due this week, due soon) and the unified calendar with the tasks of all areas.
