@@ -2,7 +2,7 @@
 
 import datetime
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -53,6 +53,7 @@ class TaskData:
     device_id: str | None = None
     warn_days: int = DEFAULT_WARN_DAYS
     status: TaskStatus = TaskStatus.OK
+    away_assignees: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -107,19 +108,35 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
         subentry_id: str,
         assignees: list[str],
         rotation_mode: str,
+        away: frozenset[str] | set[str] = frozenset(),
     ) -> str | None:
-        """Compute current assignee from rotation state."""
+        """Compute current assignee from rotation state, skipping people who are away.
+
+        If everyone is away the nominal assignee stays responsible, so the task
+        is never left without someone.
+        """
         if not assignees:
             return self.store.get_history(subentry_id).claimed_by
 
         history = self.store.get_history(subentry_id)
 
         if rotation_mode == RotationMode.ROUND_ROBIN:
-            index = history.current_assignee_index % len(assignees)
-            return assignees[index]
+            start = history.current_assignee_index % len(assignees)
+            for offset in range(len(assignees)):
+                candidate = assignees[(start + offset) % len(assignees)]
+                if candidate not in away:
+                    return candidate
+            return assignees[start]
 
         self.store.init_random_pool(subentry_id, assignees)
         remaining = history.remaining_assignees
+        for candidate in remaining:
+            if candidate not in away:
+                return candidate
+        # Everyone left in this round is away: let someone who is here take it.
+        for candidate in assignees:
+            if candidate not in away:
+                return candidate
         return remaining[0] if remaining else None
 
     def _compute_subentry_data(
@@ -130,6 +147,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
         title: str,
         today: datetime.date,
         area_warn_days: int,
+        away: frozenset[str] | set[str] = frozenset(),
     ) -> TaskData:
         """Compute derived state for a single subentry."""
         history = self.store.get_history(subentry_id)
@@ -170,7 +188,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             CONF_ROTATION_MODE, RotationMode.ROUND_ROBIN
         )
         current_assignee = self._compute_current_assignee(
-            subentry_id, assignees, rotation_mode
+            subentry_id, assignees, rotation_mode, away
         )
 
         last_completed_by = None
@@ -195,6 +213,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             device_id=data.get(CONF_DEVICE_ID),
             warn_days=warn_days,
             status=status,
+            away_assignees=[a for a in assignees if a in away],
         )
 
     async def _async_update_data(self) -> TaskCoordinatorData:
@@ -208,6 +227,8 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
 
         today = dt_util.now().date()
         area_warn_days = int(entry.data.get(CONF_WARN_DAYS, DEFAULT_WARN_DAYS))
+        self.store.prune_away(today)
+        away = frozenset(self.store.away_persons(today))
         tasks: dict[str, TaskData] = {}
         maintenance: dict[str, TaskData] = {}
 
@@ -220,6 +241,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
                     subentry.title,
                     today,
                     area_warn_days,
+                    away,
                 )
             elif subentry.subentry_type == SUBENTRY_TYPE_MAINTENANCE:
                 maintenance[subentry.subentry_id] = self._compute_subentry_data(
@@ -229,6 +251,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
                     subentry.title,
                     today,
                     area_warn_days,
+                    away,
                 )
 
         all_items = {**tasks, **maintenance}
@@ -324,16 +347,24 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             assignees = item.assignees
             rotation_mode = item.rotation_mode
 
+        away = self.store.away_persons(dt_util.now().date())
+        responsible = (
+            self._compute_current_assignee(subentry_id, assignees, rotation_mode, away)
+            if assignees
+            else None
+        )
         now = completed_at or dt_util.utcnow()
         self.store.record_completion(
             subentry_id, completed_by=completed_by, completed_at=now
         )
         self.store.clear_claim(subentry_id)
         if assignees:
-            self.store.advance_rotation(subentry_id, assignees, rotation_mode)
+            self.store.advance_rotation(
+                subentry_id, assignees, rotation_mode, done_by=responsible, away=away
+            )
 
         next_assignee = (
-            self._compute_current_assignee(subentry_id, assignees, rotation_mode)
+            self._compute_current_assignee(subentry_id, assignees, rotation_mode, away)
             if assignees
             else None
         )

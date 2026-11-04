@@ -51,6 +51,30 @@ get_history:
           max: 500
           mode: box
 
+set_away:
+  fields:
+    person:
+      required: true
+      selector:
+        entity:
+          domain: person
+    start:
+      required: false
+      selector:
+        date:
+    end:
+      required: false
+      selector:
+        date:
+
+clear_away:
+  fields:
+    person:
+      required: true
+      selector:
+        entity:
+          domain: person
+
 reset_task:
   fields:
     entity_id:

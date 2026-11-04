@@ -32,6 +32,18 @@ class UndoSnapshot:
 
 
 @dataclass
+class AwayPeriod:
+    """A person is away from ``start`` through ``end`` (inclusive); no end means until cleared."""
+
+    start: datetime.date
+    end: datetime.date | None = None
+
+    def covers(self, day: datetime.date) -> bool:
+        """Return True if the person is away on the given day."""
+        return self.start <= day and (self.end is None or day <= self.end)
+
+
+@dataclass
 class TaskHistory:
     """History for a single task."""
 
@@ -54,13 +66,25 @@ class TaskStore:
             hass, STORAGE_VERSION, STORAGE_KEY
         )
         self._data: dict[str, TaskHistory] = {}
+        self._away: dict[str, AwayPeriod] = {}
 
     async def async_load(self) -> None:
         """Load data from storage."""
         raw = await self._store.async_load()
+        self._away = {}
         if raw is None:
             self._data = {}
             return
+
+        for person, period in raw.get("away", {}).items():
+            self._away[person] = AwayPeriod(
+                start=datetime.date.fromisoformat(period["start"]),
+                end=(
+                    datetime.date.fromisoformat(period["end"])
+                    if period.get("end")
+                    else None
+                ),
+            )
 
         self._data = {}
         for subentry_id, history_data in raw.get("tasks", {}).items():
@@ -184,21 +208,34 @@ class TaskStore:
         subentry_id: str,
         assignees: list[str],
         rotation_mode: str,
+        done_by: str | None = None,
+        away: frozenset[str] | set[str] = frozenset(),
     ) -> None:
-        """Advance to the next assignee after completion."""
+        """Advance to the next assignee after completion.
+
+        ``done_by`` is the person who was responsible when the task was
+        completed. It can differ from the nominal next one when someone is away,
+        and the rotation continues after that person.
+        """
         history = self.get_history(subentry_id)
 
         if not assignees:
             return
 
         if rotation_mode == RotationMode.ROUND_ROBIN:
-            history.current_assignee_index = (
-                (history.current_assignee_index + 1) % len(assignees)
+            base = (
+                assignees.index(done_by)
+                if done_by in assignees
+                else history.current_assignee_index
             )
+            history.current_assignee_index = (base + 1) % len(assignees)
         else:
-            if history.remaining_assignees:
+            if done_by in history.remaining_assignees:
+                history.remaining_assignees.remove(done_by)
+            elif done_by is None and history.remaining_assignees:
                 history.remaining_assignees.pop(0)
-            if not history.remaining_assignees:
+            # The round is over once nobody who is here is left in the pool.
+            if all(p in away for p in history.remaining_assignees):
                 pool = list(assignees)
                 random.shuffle(pool)
                 history.remaining_assignees = pool
@@ -221,6 +258,43 @@ class TaskStore:
         else:
             return
         self._schedule_save()
+
+    @callback
+    def set_away(
+        self, person: str, start: datetime.date, end: datetime.date | None
+    ) -> None:
+        """Mark a person as away from ``start`` through ``end``."""
+        self._away[person] = AwayPeriod(start=start, end=end)
+        self._schedule_save()
+
+    @callback
+    def clear_away(self, person: str) -> bool:
+        """Mark a person as present again; return False if they were not away."""
+        if self._away.pop(person, None) is None:
+            return False
+        self._schedule_save()
+        return True
+
+    @callback
+    def away_persons(self, today: datetime.date) -> set[str]:
+        """Return the persons who are away on the given day."""
+        return {p for p, period in self._away.items() if period.covers(today)}
+
+    @callback
+    def away_periods(self) -> dict[str, AwayPeriod]:
+        """Return all stored away periods."""
+        return dict(self._away)
+
+    @callback
+    def prune_away(self, today: datetime.date) -> None:
+        """Forget periods that have ended."""
+        ended = [
+            p for p, period in self._away.items() if period.end and period.end < today
+        ]
+        for person in ended:
+            del self._away[person]
+        if ended:
+            self._schedule_save()
 
     @callback
     def claim_task(self, subentry_id: str, person_id: str) -> None:
@@ -296,4 +370,11 @@ class TaskStore:
                     else None
                 ),
             }
-        return {"tasks": tasks}
+        away = {
+            person: {
+                "start": period.start.isoformat(),
+                "end": period.end.isoformat() if period.end else None,
+            }
+            for person, period in self._away.items()
+        }
+        return {"tasks": tasks, "away": away}
