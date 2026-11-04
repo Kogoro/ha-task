@@ -410,7 +410,7 @@
               <div class="task-detail-row">
                 <span class="detail-item">
                   <ha-icon icon="mdi:repeat" class="detail-icon"></ha-icon>
-                  Every ${attrs.interval_days} day${attrs.interval_days !== 1 ? "s" : ""}
+                  Every ${(attrs.interval_value ?? attrs.interval_days)} ${(attrs.interval_unit || "days").replace(/s$/, "")}${(attrs.interval_value ?? attrs.interval_days) !== 1 ? "s" : ""}${attrs.in_season === false ? " · out of season" : ""}
                 </span>
                 <span class="meta-dot">·</span>
                 <span class="detail-item detail-clickable" @click=${() => this._toggleHistory(entityId)}>
@@ -1722,7 +1722,7 @@
             <div class="single-details">
               <span class="detail-item">
                 <ha-icon icon="mdi:repeat" class="detail-icon"></ha-icon>
-                Every ${attrs.interval_days} day${attrs.interval_days !== 1 ? "s" : ""}
+                Every ${(attrs.interval_value ?? attrs.interval_days)} ${(attrs.interval_unit || "days").replace(/s$/, "")}${(attrs.interval_value ?? attrs.interval_days) !== 1 ? "s" : ""}${attrs.in_season === false ? " · out of season" : ""}
               </span>
               <span class="meta-dot">·</span>
               <span class="detail-item detail-clickable" @click=${() => this._toggleHistory()}>

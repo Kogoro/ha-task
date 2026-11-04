@@ -19,6 +19,7 @@ from .const import (
 )
 from .coordinator import TaskConfigEntry, TaskCoordinator, TaskData
 from .household import HouseholdCoordinator, household_entry, is_household
+from .schedule import occurrences, rrule
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,6 +47,11 @@ def _collect_items(coordinator: TaskCoordinator) -> list[TaskData]:
     )
 
 
+def _task_rrule(task: TaskData) -> str:
+    """Return the recurrence rule of a task."""
+    return rrule(task.interval_value, task.interval_unit, task.active_months)
+
+
 def _generate_events_for_items(
     items: list[TaskData],
     start: datetime.date,
@@ -55,33 +61,30 @@ def _generate_events_for_items(
     """Generate calendar events for a list of task items within a date range."""
     events: list[CalendarEvent] = []
     for task in items:
-        if task.next_due is None or task.interval_days <= 0:
+        if task.next_due is None or task.interval_value <= 0:
             continue
 
         desc = _build_event_description(task, area_name)
-        rrule = f"FREQ=DAILY;INTERVAL={task.interval_days}"
-
-        occurrence = task.next_due
-        while occurrence > start:
-            prev = occurrence - datetime.timedelta(days=task.interval_days)
-            if prev < start:
-                break
-            occurrence = prev
-
-        while occurrence < end:
-            if occurrence >= start:
-                events.append(
-                    CalendarEvent(
-                        start=occurrence,
-                        end=occurrence + datetime.timedelta(days=1),
-                        summary=task.name,
-                        description=desc,
-                        uid=task.subentry_id,
-                        rrule=rrule,
-                        recurrence_id=occurrence.isoformat(),
-                    )
+        recurrence = _task_rrule(task)
+        for occurrence in occurrences(
+            task.next_due,
+            task.interval_value,
+            task.interval_unit,
+            task.active_months,
+            start,
+            end,
+        ):
+            events.append(
+                CalendarEvent(
+                    start=occurrence,
+                    end=occurrence + datetime.timedelta(days=1),
+                    summary=task.name,
+                    description=desc,
+                    uid=task.subentry_id,
+                    rrule=recurrence,
+                    recurrence_id=occurrence.isoformat(),
                 )
-            occurrence += datetime.timedelta(days=task.interval_days)
+            )
 
     return events
 
@@ -164,7 +167,7 @@ class TaskCalendarEntity(CoordinatorEntity[TaskCoordinator], CalendarEntity):
             summary=soonest.name,
             description=_build_event_description(soonest),
             uid=soonest.subentry_id,
-            rrule=f"FREQ=DAILY;INTERVAL={soonest.interval_days}",
+            rrule=_task_rrule(soonest),
         )
 
     async def async_get_events(
@@ -228,7 +231,7 @@ class UnifiedTaskCalendarEntity(CoordinatorEntity[HouseholdCoordinator], Calenda
             summary=soonest.name,
             description=_build_event_description(soonest, soonest_entry.area_name),
             uid=soonest.subentry_id,
-            rrule=f"FREQ=DAILY;INTERVAL={soonest.interval_days}",
+            rrule=_task_rrule(soonest),
         )
 
     async def async_get_events(

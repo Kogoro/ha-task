@@ -75,7 +75,8 @@ Benötigt Home Assistant 2025.4 oder neuer.
 Alles läuft über die Oberfläche, YAML ist nicht nötig.
 
 - **Bereich:** Jeder Bereich hat seinen eigenen Eintrag. Dort stellst du die **Warntage** ein (Standard 7). Aufgaben zählen so viele Tage vor der Fälligkeit als „bald fällig“.
-- **Aufgabe:** Name, Intervall (1–365 Tage), Beschreibung, Symbol, optional **Warntage** (überschreibt den Wert des Bereichs, leer lassen für den Bereichswert) und Zuständige mit Rotation.
+- **Aufgabe:** Name, Intervall (1–365 in **Tagen, Wochen oder Kalendermonaten**; Monate behalten den Tag im Monat), optional **Aktive Monate**, Beschreibung, Symbol, optional **Warntage** (überschreibt den Wert des Bereichs, leer lassen für den Bereichswert) und Zuständige mit Rotation.
+- **Aktive Monate (saisonale Aufgaben):** Außerhalb davon ist die Aufgabe weder fällig noch überfällig, zählt nicht in den Summen und hat keine Kalendereinträge. Sie kommt am ersten Tag des nächsten aktiven Monats wieder. Beispiel: Am 25. September erledigt, aktive Monate April–September, wöchentlich: Die nächste Fälligkeit ist der 1. April, nicht der 2. Oktober. Eine nie erledigte Aufgabe außerhalb der Saison ist erst zu Saisonbeginn fällig. Bestehende Aufgaben behalten ihr Tage-Intervall und verhalten sich wie bisher.
 - **Aufwand (Punkte):** wie viel Arbeit eine Aufgabe ist (Standard 1). Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung nutzt sie.
 - **Rotation:** reihum, zufällig oder **geringste Auslastung**. Bei der Auslastung bekommt die Aufgabe, wer in den letzten 30 Tagen (über alle Aufgaben) die wenigsten Punkte erledigt hat. Gleichstand geht an die Person, die zuletzt am längsten nichts erledigt hat. Wer als Nächstes dran ist, wird beim Erledigen festgelegt und ändert sich nicht, nur weil jemand anderes etwas erledigt. Abwesende werden immer übersprungen.
 - **Wartung:** wie eine Aufgabe, zusätzlich mit Gerät und Intervall bis 730 Tage.
