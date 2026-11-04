@@ -11,7 +11,13 @@ from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntryState
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant, ServiceCall, callback
+from homeassistant.core import (
+    HomeAssistant,
+    ServiceCall,
+    ServiceResponse,
+    SupportsResponse,
+    callback,
+)
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
@@ -27,12 +33,15 @@ from .const import (
     CONF_UNIFIED_CALENDAR,
     DOMAIN,
     SERVICE_COMPLETE_TASK,
+    SERVICE_GET_HISTORY,
     SERVICE_POSTPONE_TASK,
     SERVICE_RESET_TASK,
+    SERVICE_UNDO_COMPLETION,
     SIGNAL_AREAS_CHANGED,
     UNIFIED_CALENDAR_UNIQUE_ID,
 )
 from .coordinator import TaskConfigEntry, TaskCoordinator
+from .history import cycle_days, cycle_stats
 from .household import HouseholdCoordinator, household_entry, is_household
 from .store import TaskStore
 
@@ -56,6 +65,17 @@ SERVICE_POSTPONE_SCHEMA = vol.Schema(
         vol.Required("entity_id"): cv.entity_id,
         vol.Optional("days", default=1): vol.All(
             vol.Coerce(int), vol.Range(min=1, max=365)
+        ),
+    }
+)
+
+SERVICE_UNDO_SCHEMA = vol.Schema({vol.Required("entity_id"): cv.entity_id})
+
+SERVICE_HISTORY_SCHEMA = vol.Schema(
+    {
+        vol.Required("entity_id"): cv.entity_id,
+        vol.Optional("limit", default=50): vol.All(
+            vol.Coerce(int), vol.Range(min=1, max=500)
         ),
     }
 )
@@ -156,8 +176,74 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
         coordinator.postpone_task(subentry_id, call.data["days"])
         await _async_refresh_coordinators(hass)
 
+    def _coordinator_for_entity(entity_id: str) -> tuple[TaskCoordinator, str] | None:
+        entity_entry = er.async_get(hass).async_get(entity_id)
+        if entity_entry is None or entity_entry.config_subentry_id is None:
+            return None
+        coordinator = _find_coordinator_for_subentry(
+            hass, entity_entry.config_subentry_id
+        )
+        if coordinator is None:
+            return None
+        return coordinator, entity_entry.config_subentry_id
+
+    async def handle_undo_completion(call: ServiceCall) -> None:
+        """Handle the undo_completion service call."""
+        found = _coordinator_for_entity(call.data["entity_id"])
+        if found is None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="not_a_task"
+            )
+        coordinator, subentry_id = found
+        if coordinator.undo_completion(subentry_id) is None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="nothing_to_undo"
+            )
+        await _async_refresh_coordinators(hass)
+
+    async def handle_get_history(call: ServiceCall) -> ServiceResponse:
+        """Return the completion history of a task, newest first."""
+        found = _coordinator_for_entity(call.data["entity_id"])
+        if found is None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="not_a_task"
+            )
+        coordinator, subentry_id = found
+        item = coordinator.find_item(subentry_id)
+        completions = coordinator.store.get_history(subentry_id).completions
+        interval = item.interval_days if item else 7
+        stats = cycle_stats(completions, interval)
+        cycles = cycle_days(completions)
+        rows = [
+            {
+                "completed_at": entry.completed_at.isoformat(),
+                "completed_by": entry.completed_by,
+                "days_since_previous": cycle,
+            }
+            for entry, cycle in zip(completions, cycles, strict=True)
+        ]
+        return {
+            "task": item.name if item else None,
+            "interval_days": interval,
+            "total_completions": len(completions),
+            "average_cycle_days": stats.average_cycle_days,
+            "last_cycle_days": stats.last_cycle_days,
+            "on_time_percent": stats.on_time_percent,
+            "completions": list(reversed(rows))[: call.data["limit"]],
+        }
+
     hass.services.async_register(
         DOMAIN, SERVICE_POSTPONE_TASK, handle_postpone_task, schema=SERVICE_POSTPONE_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_UNDO_COMPLETION, handle_undo_completion, schema=SERVICE_UNDO_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_GET_HISTORY,
+        handle_get_history,
+        schema=SERVICE_HISTORY_SCHEMA,
+        supports_response=SupportsResponse.ONLY,
     )
     hass.services.async_register(
         DOMAIN, SERVICE_RESET_TASK, handle_reset_task, schema=SERVICE_RESET_SCHEMA

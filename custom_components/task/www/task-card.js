@@ -286,6 +286,16 @@
       }, 1500);
     }
 
+    async _handleUndo(entityId) {
+      try {
+        await this.hass.callService("task", "undo_completion", {
+          entity_id: entityId,
+        });
+      } catch (e) {
+        console.error("Failed to undo completion:", e);
+      }
+    }
+
     async _handlePostpone(entityId) {
       try {
         await this.hass.callService("task", "postpone_task", {
@@ -338,6 +348,11 @@
                   : html`<span class="avatar avatar-fallback">?</span>`}
                 <span class="inline-history-person">${this._getPersonName(entry.completed_by) || "Unknown user"}</span>
                 <span class="inline-history-time">${this._formatRelativeTime(entry.completed_at)}</span>
+                ${state?.attributes?.undo_completed_at === entry.completed_at
+                  ? html`<button class="undo-btn" title="Undo this completion" aria-label="Undo this completion" @click=${() => this._handleUndo(entityId)}>
+                      <ha-icon icon="mdi:undo" class="btn-icon"></ha-icon>
+                    </button>`
+                  : ""}
               </div>
             `
           )}
@@ -994,6 +1009,32 @@
           flex-shrink: 0;
         }
 
+        .undo-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-left: auto;
+          padding: 2px 6px;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          background: transparent;
+          color: var(--secondary-text-color);
+          font-family: inherit;
+        }
+
+        .undo-btn:hover {
+          background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+          color: var(--primary-color);
+        }
+
+        .undo-btn:focus-visible {
+          outline: 2px solid var(--primary-color);
+          outline-offset: 2px;
+        }
+
+        .undo-btn .btn-icon { --mdc-icon-size: 16px; }
+
         .inline-history-empty {
           font-size: 12px;
           color: var(--secondary-text-color);
@@ -1542,6 +1583,16 @@
       }, 1500);
     }
 
+    async _handleUndo(entityId) {
+      try {
+        await this.hass.callService("task", "undo_completion", {
+          entity_id: entityId,
+        });
+      } catch (e) {
+        console.error("Failed to undo completion:", e);
+      }
+    }
+
     async _handlePostpone() {
       const entityId = this._getTaskSensor();
       if (!entityId) return;
@@ -1581,6 +1632,11 @@
                   : html`<span class="avatar avatar-fallback">?</span>`}
                 <span class="inline-history-person">${this._getPersonName(entry.completed_by) || "Unknown user"}</span>
                 <span class="inline-history-time">${this._formatRelativeTime(entry.completed_at)}</span>
+                ${state?.attributes?.undo_completed_at === entry.completed_at
+                  ? html`<button class="undo-btn" title="Undo this completion" aria-label="Undo this completion" @click=${() => this._handleUndo(entityId)}>
+                      <ha-icon icon="mdi:undo" class="btn-icon"></ha-icon>
+                    </button>`
+                  : ""}
               </div>
             `
           )}
@@ -1990,6 +2046,32 @@
           white-space: nowrap;
           flex-shrink: 0;
         }
+
+        .undo-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-left: auto;
+          padding: 2px 6px;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          background: transparent;
+          color: var(--secondary-text-color);
+          font-family: inherit;
+        }
+
+        .undo-btn:hover {
+          background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+          color: var(--primary-color);
+        }
+
+        .undo-btn:focus-visible {
+          outline: 2px solid var(--primary-color);
+          outline-offset: 2px;
+        }
+
+        .undo-btn .btn-icon { --mdc-icon-size: 16px; }
 
         .inline-history-empty {
           font-size: 12px;

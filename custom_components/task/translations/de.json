@@ -357,11 +357,41 @@
           "description": "Um wie viele Tage verschoben wird. Gerechnet ab dem aktuellen Fälligkeitsdatum, bei überfälligen Aufgaben ab heute."
         }
       }
+    },
+    "undo_completion": {
+      "name": "Erledigung rückgängig machen",
+      "description": "Macht die zuletzt erfasste Erledigung einer Aufgabe rückgängig. Stellt Zuständigkeit, Rotation und eine Verschiebung wieder her.",
+      "fields": {
+        "entity_id": {
+          "name": "Entität",
+          "description": "Der Aufgaben-Sensor oder -Button."
+        }
+      }
+    },
+    "get_history": {
+      "name": "Verlauf abrufen",
+      "description": "Liefert den Erledigungsverlauf einer Aufgabe, neueste zuerst, mit den Tagen zwischen den Erledigungen und dem Anteil, der innerhalb des Intervalls erledigt wurde.",
+      "fields": {
+        "entity_id": {
+          "name": "Entität",
+          "description": "Der Aufgaben-Sensor oder -Button."
+        },
+        "limit": {
+          "name": "Limit",
+          "description": "Maximale Anzahl zurückgegebener Erledigungen."
+        }
+      }
     }
   },
   "exceptions": {
     "completed_at_in_future": {
       "message": "Der Zeitpunkt der Erledigung darf nicht in der Zukunft liegen."
+    },
+    "nothing_to_undo": {
+      "message": "Es gibt keine Erledigung zum Rückgängigmachen. Nur die zuletzt erfasste Erledigung kann zurückgenommen werden, nicht nach einem Zurücksetzen."
+    },
+    "not_a_task": {
+      "message": "Das ist keine Aufgaben-Entity der Task-Integration."
     }
   }
 }

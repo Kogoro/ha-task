@@ -29,7 +29,7 @@ Eine Home-Assistant-Integration für wiederkehrende Haushaltsaufgaben und die Wa
 - **Rückdatierte Erledigung** — Festhalten, dass etwas gestern erledigt wurde. Die nächste Fälligkeit rechnet ab dann.
 - **Kalender** — Alle Fälligkeiten erscheinen im Home-Assistant-Kalender.
 - **Todo-Liste** — Aufgaben als native HA-Todo-Einträge, erledigen direkt in der Todo-Ansicht.
-- **Verlauf** — Wer hat was wann erledigt, mit Statistik pro Person.
+- **Verlauf** — Wer hat was wann erledigt, mit Statistik pro Person, der tatsächlichen Zykluslänge im Vergleich zum Plan und einem Rückgängig für die letzte Erledigung (Service und Knopf im Verlauf der Karte).
 - **Ereignisse** — `task_completed`, `task_due_soon`, `task_overdue` und die `maintenance_*`-Gegenstücke für Automationen.
 - **Katalog-Import** — Starte mit 80 fertigen Haushaltsaufgaben auf Deutsch oder Englisch.
 - **Blueprints** — Benachrichtigungs-Blueprints werden automatisch installiert.
@@ -120,6 +120,8 @@ Pro Bereich (am Gerät „<Bereich> Tasks“; die Entity-IDs entstehen aus Berei
 |---------|--------------|
 | `task.complete_task` | Aufgabe als erledigt festhalten und die Zuständigkeit weiterschalten. Mit `completed_at` lässt sich eine frühere Erledigung nachtragen. |
 | `task.postpone_task` | Fälligkeit um `days` Tage (Standard 1) nach hinten schieben, ohne eine Erledigung zu zählen. Gerechnet ab der aktuellen Fälligkeit, bei überfälligen Aufgaben ab heute. |
+| `task.undo_completion` | Macht die zuletzt erfasste Erledigung rückgängig (Fehlklick). Stellt Zuständigkeit, Rotation und eine Verschiebung wieder her. Nur dieser eine Schritt, und nicht nach einem Zurücksetzen |
+| `task.get_history` | Liefert den Verlauf einer Aufgabe als Antwort (neueste zuerst, `limit` Standard 50): wer, wann, Tage seit der vorigen Erledigung, durchschnittliche und letzte Zykluslänge und wie oft sie innerhalb des Intervalls erledigt wurde |
 | `task.reset_task` | Verlauf und Rotation einer Aufgabe zurücksetzen |
 
 ### Ereignisse
@@ -127,6 +129,7 @@ Pro Bereich (am Gerät „<Bereich> Tasks“; die Entity-IDs entstehen aus Berei
 | Ereignis | Wird ausgelöst, wenn |
 |----------|----------------------|
 | `task_completed` / `maintenance_completed` | eine Aufgabe erledigt wird |
+| `task_completion_undone` / `maintenance_completion_undone` | eine Erledigung rückgängig gemacht wird |
 | `task_due_soon` / `maintenance_due_soon` | eine Aufgabe ihre Warntage erreicht (einmal pro Fälligkeit) |
 | `task_overdue` / `maintenance_overdue` | eine Aufgabe überfällig wird |
 

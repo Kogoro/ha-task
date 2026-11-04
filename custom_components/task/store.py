@@ -21,6 +21,17 @@ class CompletionEntry:
 
 
 @dataclass
+class UndoSnapshot:
+    """The state before the most recently recorded completion, to undo it."""
+
+    completed_at: datetime.datetime
+    current_assignee_index: int
+    remaining_assignees: list[str]
+    claimed_by: str | None
+    postponed_until: datetime.date | None
+
+
+@dataclass
 class TaskHistory:
     """History for a single task."""
 
@@ -30,6 +41,7 @@ class TaskHistory:
     remaining_assignees: list[str] = field(default_factory=list)
     claimed_by: str | None = None
     postponed_until: datetime.date | None = None
+    undo: UndoSnapshot | None = None
 
 
 class TaskStore:
@@ -70,7 +82,21 @@ class TaskStore:
                 postponed_until = datetime.date.fromisoformat(
                     history_data["postponed_until"]
                 )
+            undo = None
+            if undo_data := history_data.get("undo"):
+                undo = UndoSnapshot(
+                    completed_at=dt_util.parse_datetime(undo_data["completed_at"]),
+                    current_assignee_index=undo_data.get("current_assignee_index", 0),
+                    remaining_assignees=list(undo_data.get("remaining_assignees", [])),
+                    claimed_by=undo_data.get("claimed_by"),
+                    postponed_until=(
+                        datetime.date.fromisoformat(undo_data["postponed_until"])
+                        if undo_data.get("postponed_until")
+                        else None
+                    ),
+                )
             self._data[subentry_id] = TaskHistory(
+                undo=undo,
                 postponed_until=postponed_until,
                 last_completed=last_completed,
                 completions=completions,
@@ -100,6 +126,13 @@ class TaskStore:
         """Record a task completion, optionally at an earlier time."""
         completed_at = completed_at or dt_util.utcnow()
         history = self.get_history(subentry_id)
+        history.undo = UndoSnapshot(
+            completed_at=completed_at,
+            current_assignee_index=history.current_assignee_index,
+            remaining_assignees=list(history.remaining_assignees),
+            claimed_by=history.claimed_by,
+            postponed_until=history.postponed_until,
+        )
         history.completions.append(
             CompletionEntry(completed_at=completed_at, completed_by=completed_by)
         )
@@ -107,6 +140,37 @@ class TaskStore:
         history.last_completed = history.completions[-1].completed_at
         history.postponed_until = None
         self._schedule_save()
+
+    @callback
+    def undo_last_completion(self, subentry_id: str) -> CompletionEntry | None:
+        """Undo the most recently recorded completion.
+
+        Removes it and restores who was responsible, the rotation and a
+        postponement. Returns the removed completion, or None if there is
+        nothing to undo (nothing recorded, already undone, or after a reset).
+        """
+        history = self.get_history(subentry_id)
+        snapshot = history.undo
+        if snapshot is None:
+            return None
+        history.undo = None
+        removed = next(
+            (e for e in history.completions if e.completed_at == snapshot.completed_at),
+            None,
+        )
+        if removed is None:
+            self._schedule_save()
+            return None
+        history.completions.remove(removed)
+        history.last_completed = (
+            history.completions[-1].completed_at if history.completions else None
+        )
+        history.current_assignee_index = snapshot.current_assignee_index
+        history.remaining_assignees = list(snapshot.remaining_assignees)
+        history.claimed_by = snapshot.claimed_by
+        history.postponed_until = snapshot.postponed_until
+        self._schedule_save()
+        return removed
 
     @callback
     def postpone(self, subentry_id: str, until: datetime.date) -> None:
@@ -214,6 +278,21 @@ class TaskStore:
                 "postponed_until": (
                     history.postponed_until.isoformat()
                     if history.postponed_until
+                    else None
+                ),
+                "undo": (
+                    {
+                        "completed_at": history.undo.completed_at.isoformat(),
+                        "current_assignee_index": history.undo.current_assignee_index,
+                        "remaining_assignees": history.undo.remaining_assignees,
+                        "claimed_by": history.undo.claimed_by,
+                        "postponed_until": (
+                            history.undo.postponed_until.isoformat()
+                            if history.undo.postponed_until
+                            else None
+                        ),
+                    }
+                    if history.undo
                     else None
                 ),
             }

@@ -48,6 +48,12 @@
     },
     "reset_task": {
       "service": "mdi:restart"
+    },
+    "undo_completion": {
+      "service": "mdi:undo"
+    },
+    "get_history": {
+      "service": "mdi:history"
     }
   }
 }

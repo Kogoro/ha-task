@@ -63,4 +63,6 @@ ATTR_AREA_ID = "area_id"
 
 SERVICE_COMPLETE_TASK = "complete_task"
 SERVICE_POSTPONE_TASK = "postpone_task"
+SERVICE_UNDO_COMPLETION = "undo_completion"
+SERVICE_GET_HISTORY = "get_history"
 SERVICE_RESET_TASK = "reset_task"

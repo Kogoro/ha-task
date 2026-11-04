@@ -32,6 +32,7 @@ from .coordinator import (
     TaskData,
 )
 from .device import area_device_info, household_device_info, task_device_info
+from .history import cycle_stats
 from .household import HouseholdCoordinator, is_household
 
 PARALLEL_UPDATES = 0
@@ -281,6 +282,7 @@ class TaskSensorEntity(CoordinatorEntity[TaskCoordinator], SensorEntity):
             return {}
 
         history = self.coordinator.store.get_history(self.subentry_id)
+        stats = cycle_stats(history.completions, task.interval_days)
 
         completions_by_person: dict[str, int] = {}
         recent_completions: list[dict[str, str | None]] = []
@@ -311,6 +313,13 @@ class TaskSensorEntity(CoordinatorEntity[TaskCoordinator], SensorEntity):
             ATTR_AREA_ID: self.coordinator.data.area_id,
             "subentry_type": task.subentry_type,
             "total_completions": len(history.completions),
+            "can_undo": history.undo is not None,
+            "undo_completed_at": (
+                history.undo.completed_at.isoformat() if history.undo else None
+            ),
+            "average_cycle_days": stats.average_cycle_days,
+            "last_cycle_days": stats.last_cycle_days,
+            "on_time_percent": stats.on_time_percent,
             "completions_by_person": completions_by_person,
             "recent_completions": recent_completions,
         }
