@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- **Export and import** of the whole configuration: `task.export_config` (response and an optional file in `task_exports`) and `task.import_config` (from data or a file, with a dry run). Everything is validated first and nothing is changed on errors, duplicates (same type and name in an area) are skipped, missing area entries are created, and the history can be included.
 - **Reminders** without an automation: set notify entities and/or a notify service, whether to remind when due soon and/or overdue, and the time of day on an area; a task can opt out. Once per due date and kind (also across restarts), a summary when many are pending, never for tasks that were never completed.
 - **Month and week intervals** (in addition to days) and **active months** for seasonal tasks: outside the season a task is neither due nor overdue, is not counted and has no calendar events, and it returns at the start of the next active month. New attributes `interval_value`, `interval_unit`, `active_months`, `in_season`; the cards show "out of season". Existing tasks are unchanged (their interval is still stored in days).
 - **Effort (points)** per task and a new rotation mode, **least workload**: the person with the fewest completed points over the last 30 days gets the task; who is next is fixed when the task is completed. `task-ranking-card` counts points (option `use_points`, on by default; the same as before while no task has points). The completion event and `task.get_history` include `points`.

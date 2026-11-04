@@ -29,6 +29,7 @@ A Home Assistant integration for managing recurring household tasks and device m
 - **Todo list** — Interact with tasks as native HA todo items; create tasks and mark them complete from the todo panel.
 - **Completion history** — Persistent per-task history tracks who completed what and when, with per-person statistics, the actual cycle length compared with the plan, and an undo for the last completion (service and a button in the card's history).
 - **Events** — Fires `task_completed`, `task_due_soon`, `task_overdue` and their `maintenance_*` counterparts for use in automations.
+- **Backup and import** — Export everything to JSON or YAML and import it again, e.g. to move to another instance, with checks and duplicate detection.
 - **Catalog import** — Start with 80 ready-made household tasks in English or German.
 - **Blueprints** — Notification blueprints are installed automatically.
 - **Lovelace cards** — Four cards with a built-in visual editor: `task-card` (area view), `task-single-card` (single task), `task-activity-card` (recent completions) and `task-ranking-card` (household leaderboard).
@@ -182,6 +183,29 @@ The household overview adds the same four counters (on a "Household" device) for
 | `task.set_away` | Mark a `person` as away (optional `start`, default today, and `end`, inclusive; without an end until cleared). The rotation skips them: their turn goes to the next person, and they are not assigned anything until they are back. If everyone is away, the nominal assignee stays responsible |
 | `task.clear_away` | Mark a person as present again |
 | `task.reset_task` | Reset a task's completion history and rotation state |
+
+### Backup and moving to another instance
+
+`task.export_config` returns all areas, their settings, tasks and maintenance items (not the history unless `include_history: true`) as a response, which **Developer tools → Actions** shows as YAML. With `filename` it also writes a `.json` or `.yaml` file to the `task_exports` folder in your configuration directory (only a plain file name; folders and other file types are refused, so a service call cannot touch other files).
+
+`task.import_config` creates what an export describes, from `data` or from a `filename` in that folder:
+
+- **Everything is checked first**; if anything is wrong nothing is changed and the problems are listed with their place (for example `areas[0].tasks[2].interval_value`).
+- **Duplicates are skipped:** a task or maintenance item that already exists in the area (same type and name, ignoring case) is not created again. Settings of an area that already exists are left as they are.
+- **Areas must exist in Home Assistant** (matched by ID, then by name). The Task entry for an area is created if it is missing.
+- Maintenance items find their **device** by ID, then by name.
+- `dry_run: true` only reports what would be created.
+- The **household overview** is created if the export has one and there is none yet.
+- If the export contains history it is restored.
+
+The services exist once the integration is set up on the instance, so add the Household overview (or any area) first, then import. Assignees are kept as person entity IDs, so they only work if the same persons exist.
+
+```yaml
+action: task.export_config
+data:
+  filename: backup.json
+  include_history: true
+```
 
 ## Lovelace Cards
 

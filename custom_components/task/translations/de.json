@@ -462,6 +462,38 @@
           "description": "Die zurückgekehrte Person."
         }
       }
+    },
+    "export_config": {
+      "name": "Konfiguration exportieren",
+      "description": "Liefert alle Bereiche, Aufgaben und Wartungen als Antwort, zum Sichern oder für den Umzug auf eine andere Instanz. Der Verlauf ist nur auf Wunsch enthalten. Optional wird zusätzlich eine .json- oder .yaml-Datei im Konfigurationsverzeichnis geschrieben.",
+      "fields": {
+        "include_history": {
+          "name": "Verlauf einschließen",
+          "description": "Auch den Erledigungsverlauf jeder Aufgabe exportieren."
+        },
+        "filename": {
+          "name": "Dateiname",
+          "description": "Den Export in diese Datei im Ordner task_exports des Konfigurationsverzeichnisses schreiben (.json, .yaml oder .yml)."
+        }
+      }
+    },
+    "import_config": {
+      "name": "Konfiguration importieren",
+      "description": "Legt die Bereiche, Aufgaben und Wartungen eines Exports an. Zuerst wird alles geprüft, und bei einem Fehler wird nichts geändert. Aufgaben, die es in einem Bereich schon gibt (gleicher Typ und Name), werden übersprungen, bestehende Einstellungen bleiben. Die Bereiche müssen in Home Assistant existieren.",
+      "fields": {
+        "data": {
+          "name": "Daten",
+          "description": "Der Export, wie ihn „Konfiguration exportieren“ liefert."
+        },
+        "filename": {
+          "name": "Dateiname",
+          "description": "Den Export aus dieser Datei im Ordner task_exports des Konfigurationsverzeichnisses lesen (.json, .yaml oder .yml)."
+        },
+        "dry_run": {
+          "name": "Probelauf",
+          "description": "Nur prüfen und melden, was angelegt würde."
+        }
+      }
     }
   },
   "exceptions": {
@@ -479,6 +511,15 @@
     },
     "away_already_over": {
       "message": "Das Enddatum liegt in der Vergangenheit, die Person wäre also nie abwesend."
+    },
+    "import_invalid": {
+      "message": "Der Import wurde wegen dieser Probleme nicht ausgeführt:\n{errors}"
+    },
+    "bad_filename": {
+      "message": "Der Dateiname muss ein einfacher Name sein, der auf .json, .yaml oder .yml endet (keine Ordner). Die Dateien liegen im Ordner task_exports Ihres Konfigurationsverzeichnisses."
+    },
+    "cannot_read_file": {
+      "message": "Die Datei konnte nicht gelesen werden: {error}"
     }
   },
   "selector": {
