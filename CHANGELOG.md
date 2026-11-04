@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0-beta.3 (pre-release)
 
 ### Added
 - **Export and import** of the whole configuration: `task.export_config` (response and an optional file in `task_exports`) and `task.import_config` (from data or a file, with a dry run). Everything is validated first and nothing is changed on errors, duplicates (same type and name in an area) are skipped, missing area entries are created, and the history can be included.
