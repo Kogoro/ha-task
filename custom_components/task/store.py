@@ -70,15 +70,19 @@ class TaskStore:
         )
         self._data: dict[str, TaskHistory] = {}
         self._away: dict[str, AwayPeriod] = {}
+        # "<subentry>|<kind>" -> the due date a reminder was already sent for
+        self._notified: dict[str, str] = {}
 
     async def async_load(self) -> None:
         """Load data from storage."""
         raw = await self._store.async_load()
         self._away = {}
+        self._notified = {}
         if raw is None:
             self._data = {}
             return
 
+        self._notified = dict(raw.get("notified", {}))
         for person, period in raw.get("away", {}).items():
             self._away[person] = AwayPeriod(
                 start=datetime.date.fromisoformat(period["start"]),
@@ -301,6 +305,19 @@ class TaskStore:
         self._schedule_save()
 
     @callback
+    def reminder_sent(self, subentry_id: str, kind: str, due: datetime.date | None) -> bool:
+        """Return True if a reminder of this kind was already sent for this due date."""
+        return self._notified.get(f"{subentry_id}|{kind}") == (due.isoformat() if due else "")
+
+    @callback
+    def mark_reminder_sent(
+        self, subentry_id: str, kind: str, due: datetime.date | None
+    ) -> None:
+        """Remember that a reminder was sent for this due date."""
+        self._notified[f"{subentry_id}|{kind}"] = due.isoformat() if due else ""
+        self._schedule_save()
+
+    @callback
     def set_away(
         self, person: str, start: datetime.date, end: datetime.date | None
     ) -> None:
@@ -362,6 +379,8 @@ class TaskStore:
     def remove_history(self, subentry_id: str) -> None:
         """Remove history for a deleted task."""
         self._data.pop(subentry_id, None)
+        for key in [k for k in self._notified if k.startswith(f"{subentry_id}|")]:
+            del self._notified[key]
         self._schedule_save()
 
     @callback
@@ -421,4 +440,4 @@ class TaskStore:
             }
             for person, period in self._away.items()
         }
-        return {"tasks": tasks, "away": away}
+        return {"tasks": tasks, "away": away, "notified": self._notified}

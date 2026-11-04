@@ -20,6 +20,16 @@ CONF_UNIFIED_CALENDAR = "unified_calendar"
 CONF_WARN_DAYS = "warn_days"
 CONF_ENTRY_TYPE = "entry_type"
 CONF_POINTS = "points"
+CONF_REMINDER_TARGETS = "reminder_targets"
+CONF_REMINDER_SERVICE = "reminder_service"
+CONF_REMINDER_DUE_SOON = "reminder_due_soon"
+CONF_REMINDER_OVERDUE = "reminder_overdue"
+CONF_REMINDER_TIME = "reminder_time"
+CONF_REMINDERS = "reminders"
+
+DEFAULT_REMINDER_TIME = "08:00:00"
+# More reminders than this at once are sent as one summary.
+REMINDER_GROUP_SIZE = 3
 
 DEFAULT_POINTS = 1
 # Recent period over which a person's workload is summed for the workload rotation.

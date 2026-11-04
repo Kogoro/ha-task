@@ -16,13 +16,23 @@
           "area_id": "Area",
           "calendar_name": "Calendar name",
           "unified_calendar": "Hide this area's separate calendar",
-          "warn_days": "Warn days"
+          "warn_days": "Warn days",
+          "reminder_targets": "Notify entities",
+          "reminder_service": "Notify service (optional)",
+          "reminder_due_soon": "Remind when due soon",
+          "reminder_overdue": "Remind when overdue",
+          "reminder_time": "Reminder time"
         },
         "data_description": {
           "area_id": "Select a different area for this task group.",
           "calendar_name": "Custom name for the calendar entity. Leave empty to use the area name.",
           "unified_calendar": "Show this area's tasks only in the household calendar instead of a separate one. Needs a household overview.",
-          "warn_days": "Tasks count as \"due soon\" this many days before they are due. Individual tasks can override this."
+          "warn_days": "Tasks count as \"due soon\" this many days before they are due. Individual tasks can override this.",
+          "reminder_targets": "Notification entities (notify.*) that get the reminders, e.g. a phone or a messaging service. Leave empty (and the service empty) for no reminders.",
+          "reminder_service": "Alternatively a classic notify service such as notify.mobile_app_my_phone. Both can be used together.",
+          "reminder_due_soon": "Send a reminder when a task enters its warn days.",
+          "reminder_overdue": "Send a reminder when a task becomes overdue.",
+          "reminder_time": "Reminders are sent at the first update after this time of day, so nothing arrives at night."
         }
       },
       "area": {
@@ -32,13 +42,23 @@
           "area_id": "Area",
           "calendar_name": "Calendar name",
           "unified_calendar": "Hide this area's separate calendar",
-          "warn_days": "Warn days"
+          "warn_days": "Warn days",
+          "reminder_targets": "Notify entities",
+          "reminder_service": "Notify service (optional)",
+          "reminder_due_soon": "Remind when due soon",
+          "reminder_overdue": "Remind when overdue",
+          "reminder_time": "Reminder time"
         },
         "data_description": {
           "area_id": "The area where tasks will be tracked.",
           "calendar_name": "Custom name for the calendar entity. Leave empty to use the area name.",
           "unified_calendar": "Show this area's tasks only in the household calendar instead of a separate one. Needs a household overview.",
-          "warn_days": "Tasks count as \"due soon\" this many days before they are due. Individual tasks can override this."
+          "warn_days": "Tasks count as \"due soon\" this many days before they are due. Individual tasks can override this.",
+          "reminder_targets": "Notification entities (notify.*) that get the reminders, e.g. a phone or a messaging service. Leave empty (and the service empty) for no reminders.",
+          "reminder_service": "Alternatively a classic notify service such as notify.mobile_app_my_phone. Both can be used together.",
+          "reminder_due_soon": "Send a reminder when a task enters its warn days.",
+          "reminder_overdue": "Send a reminder when a task becomes overdue.",
+          "reminder_time": "Reminders are sent at the first update after this time of day, so nothing arrives at night."
         }
       },
       "household": {
@@ -63,7 +83,8 @@
       }
     },
     "error": {
-      "area_required": "Please select an area."
+      "area_required": "Please select an area.",
+      "invalid_notify_service": "Enter a notify service like notify.mobile_app_my_phone."
     },
     "abort": {
       "already_configured": "This area already has task management set up."
@@ -89,7 +110,8 @@
             "points": "Effort (points)",
             "interval_value": "Repeat every",
             "interval_unit": "Unit",
-            "active_months": "Active months (optional)"
+            "active_months": "Active months (optional)",
+            "reminders": "Send reminders"
           },
           "data_description": {
             "name": "A short, descriptive name like \"Vacuum living room\" or \"Water plants\".",
@@ -100,7 +122,8 @@
             "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal.",
             "interval_value": "How often this task repeats, in the unit below.",
             "interval_unit": "Days, weeks, or calendar months. Months keep the day of the month (31 January + 1 month is 28 February).",
-            "active_months": "Only due in these months, e.g. March to May for window cleaning. Outside them the task is neither due nor overdue and comes back at the start of the next active month. Leave empty for all year."
+            "active_months": "Only due in these months, e.g. March to May for window cleaning. Outside them the task is neither due nor overdue and comes back at the start of the next active month. Leave empty for all year.",
+            "reminders": "Turn off to never remind for this task, even if its area sends reminders."
           }
         },
         "assignees": {
@@ -127,7 +150,8 @@
             "points": "Effort (points)",
             "interval_value": "Repeat every",
             "interval_unit": "Unit",
-            "active_months": "Active months (optional)"
+            "active_months": "Active months (optional)",
+            "reminders": "Send reminders"
           },
           "data_description": {
             "name": "A short, descriptive name like \"Vacuum living room\" or \"Water plants\".",
@@ -138,7 +162,8 @@
             "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal.",
             "interval_value": "How often this task repeats, in the unit below.",
             "interval_unit": "Days, weeks, or calendar months. Months keep the day of the month (31 January + 1 month is 28 February).",
-            "active_months": "Only due in these months, e.g. March to May for window cleaning. Outside them the task is neither due nor overdue and comes back at the start of the next active month. Leave empty for all year."
+            "active_months": "Only due in these months, e.g. March to May for window cleaning. Outside them the task is neither due nor overdue and comes back at the start of the next active month. Leave empty for all year.",
+            "reminders": "Turn off to never remind for this task, even if its area sends reminders."
           }
         },
         "reconfigure_assignees": {
@@ -233,7 +258,8 @@
             "points": "Effort (points)",
             "interval_value": "Repeat every",
             "interval_unit": "Unit",
-            "active_months": "Active months (optional)"
+            "active_months": "Active months (optional)",
+            "reminders": "Send reminders"
           },
           "data_description": {
             "name": "A short name like \"Replace filter\" or \"Descale\".",
@@ -245,7 +271,8 @@
             "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal.",
             "interval_value": "How often this task repeats, in the unit below.",
             "interval_unit": "Days, weeks, or calendar months. Months keep the day of the month (31 January + 1 month is 28 February).",
-            "active_months": "Only due in these months, e.g. March to May for window cleaning. Outside them the task is neither due nor overdue and comes back at the start of the next active month. Leave empty for all year."
+            "active_months": "Only due in these months, e.g. March to May for window cleaning. Outside them the task is neither due nor overdue and comes back at the start of the next active month. Leave empty for all year.",
+            "reminders": "Turn off to never remind for this task, even if its area sends reminders."
           }
         },
         "assignees": {
@@ -273,7 +300,8 @@
             "points": "Effort (points)",
             "interval_value": "Repeat every",
             "interval_unit": "Unit",
-            "active_months": "Active months (optional)"
+            "active_months": "Active months (optional)",
+            "reminders": "Send reminders"
           },
           "data_description": {
             "name": "A short name like \"Replace filter\" or \"Descale\".",
@@ -285,7 +313,8 @@
             "points": "How much work the task is. The ranking counts points instead of completions, and the workload rotation gives tasks to whoever did the least recently. 1 if all tasks are about equal.",
             "interval_value": "How often this task repeats, in the unit below.",
             "interval_unit": "Days, weeks, or calendar months. Months keep the day of the month (31 January + 1 month is 28 February).",
-            "active_months": "Only due in these months, e.g. March to May for window cleaning. Outside them the task is neither due nor overdue and comes back at the start of the next active month. Leave empty for all year."
+            "active_months": "Only due in these months, e.g. March to May for window cleaning. Outside them the task is neither due nor overdue and comes back at the start of the next active month. Leave empty for all year.",
+            "reminders": "Turn off to never remind for this task, even if its area sends reminders."
           }
         },
         "reconfigure_assignees": {

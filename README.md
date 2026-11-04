@@ -91,6 +91,19 @@ Once a household overview exists, an area offers **Hide this area's separate cal
 
 Upgrading from a version where an area used the unified calendar: the household overview is created automatically and takes over the calendar's name, entity ID and history.
 
+### Reminders
+
+Set where reminders go on the area (add or reconfigure it) and Task notifies you without any automation:
+
+- **Notify entities** (`notify.*`) and/or a classic **notify service** such as `notify.mobile_app_my_phone`.
+- **Remind when due soon** (the task enters its warn days) and **when overdue**, each switchable.
+- **Reminder time** (default 08:00): reminders are sent at the first update after this time, so nothing arrives at night.
+- A task can opt out with **Send reminders** off.
+
+Each task is reminded **once per due date and kind**; this is stored, so a restart does not repeat it. More than three at once (for example when you turn reminders on) are sent as one summary. Tasks that were never completed are not reminded, so importing many tasks does not cause a flood. The text names the person responsible and follows your language (English or German). If a target cannot be reached the reminder is retried at the next update and a warning is logged.
+
+Reminders go to the targets you pick; to notify the person who is responsible on their own phone, use the events (`task_due_soon`, `task_overdue`) with the included blueprints, which stay available for that.
+
 ### Adding Tasks
 
 1. Navigate to the Task integration entry for an area.
