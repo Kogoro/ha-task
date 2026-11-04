@@ -16,12 +16,15 @@ from .const import (
     CONF_ASSIGNEES,
     CONF_DEVICE_ID,
     CONF_INTERVAL_DAYS,
+    CONF_POINTS,
     CONF_ROTATION_MODE,
     CONF_WARN_DAYS,
+    DEFAULT_POINTS,
     DEFAULT_WARN_DAYS,
     DOMAIN,
     SUBENTRY_TYPE_MAINTENANCE,
     SUBENTRY_TYPE_TASK,
+    WORKLOAD_WINDOW_DAYS,
     RotationMode,
     TaskStatus,
 )
@@ -54,6 +57,7 @@ class TaskData:
     warn_days: int = DEFAULT_WARN_DAYS
     status: TaskStatus = TaskStatus.OK
     away_assignees: list[str] = field(default_factory=list)
+    points: int = DEFAULT_POINTS
 
 
 @dataclass
@@ -103,6 +107,29 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
                 assignees = [old_assignee]
         return assignees
 
+    def _pick_by_workload(
+        self, assignees: list[str], away: frozenset[str] | set[str]
+    ) -> str | None:
+        """Return the assignee who has done the least recently, skipping the away.
+
+        Workload is the points a person completed over the recent period across
+        all tasks. Ties go to whoever completed something longest ago, then to
+        the order of the assignees. If everyone is away the first assignee is used.
+        """
+        candidates = [a for a in assignees if a not in away]
+        if not candidates:
+            return assignees[0] if assignees else None
+        since = dt_util.utcnow() - datetime.timedelta(days=WORKLOAD_WINDOW_DAYS)
+        oldest = datetime.datetime.min.replace(tzinfo=datetime.UTC)
+        return min(
+            candidates,
+            key=lambda person: (
+                self.store.workload(person, since),
+                self.store.last_completion_by(person) or oldest,
+                assignees.index(person),
+            ),
+        )
+
     def _compute_current_assignee(
         self,
         subentry_id: str,
@@ -119,6 +146,12 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             return self.store.get_history(subentry_id).claimed_by
 
         history = self.store.get_history(subentry_id)
+
+        if rotation_mode == RotationMode.WORKLOAD:
+            fixed = history.workload_assignee
+            if fixed in assignees and fixed not in away:
+                return fixed
+            return self._pick_by_workload(assignees, away)
 
         if rotation_mode == RotationMode.ROUND_ROBIN:
             start = history.current_assignee_index % len(assignees)
@@ -214,6 +247,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             warn_days=warn_days,
             status=status,
             away_assignees=[a for a in assignees if a in away],
+            points=int(data.get(CONF_POINTS) or DEFAULT_POINTS),
         )
 
     async def _async_update_data(self) -> TaskCoordinatorData:
@@ -355,8 +389,17 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
         )
         now = completed_at or dt_util.utcnow()
         self.store.record_completion(
-            subentry_id, completed_by=completed_by, completed_at=now
+            subentry_id,
+            completed_by=completed_by,
+            completed_at=now,
+            points=item.points if item else DEFAULT_POINTS,
         )
+        if assignees and rotation_mode == RotationMode.WORKLOAD:
+            # Counted after recording this completion, so the person who just did
+            # it is behind the others on a tie.
+            self.store.set_workload_assignee(
+                subentry_id, self._pick_by_workload(assignees, away)
+            )
         self.store.clear_claim(subentry_id)
         if assignees:
             self.store.advance_rotation(
@@ -383,6 +426,7 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             "area_name": self.data.area_name if self.data else None,
             "completed_by": completed_by,
             "completed_at": now.isoformat(),
+            "points": item.points if item else DEFAULT_POINTS,
             "next_due": next_due.isoformat(),
             "next_assignee": next_assignee,
         }
@@ -426,7 +470,9 @@ class TaskCoordinator(DataUpdateCoordinator[TaskCoordinatorData]):
             return
 
         if person_id in item.assignees:
-            if item.rotation_mode == RotationMode.ROUND_ROBIN:
+            if item.rotation_mode == RotationMode.WORKLOAD:
+                self.store.set_workload_assignee(subentry_id, person_id)
+            elif item.rotation_mode == RotationMode.ROUND_ROBIN:
                 index = item.assignees.index(person_id)
                 history = self.store.get_history(subentry_id)
                 history.current_assignee_index = index

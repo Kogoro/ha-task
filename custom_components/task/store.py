@@ -18,6 +18,7 @@ class CompletionEntry:
 
     completed_at: datetime.datetime
     completed_by: str | None = None
+    points: int = 1
 
 
 @dataclass
@@ -29,6 +30,7 @@ class UndoSnapshot:
     remaining_assignees: list[str]
     claimed_by: str | None
     postponed_until: datetime.date | None
+    workload_assignee: str | None = None
 
 
 @dataclass
@@ -54,6 +56,7 @@ class TaskHistory:
     claimed_by: str | None = None
     postponed_until: datetime.date | None = None
     undo: UndoSnapshot | None = None
+    workload_assignee: str | None = None
 
 
 class TaskStore:
@@ -94,6 +97,7 @@ class TaskStore:
                     CompletionEntry(
                         completed_at=dt_util.parse_datetime(entry["completed_at"]),
                         completed_by=entry.get("completed_by"),
+                        points=entry.get("points", 1),
                     )
                 )
             last_completed = None
@@ -113,6 +117,7 @@ class TaskStore:
                     current_assignee_index=undo_data.get("current_assignee_index", 0),
                     remaining_assignees=list(undo_data.get("remaining_assignees", [])),
                     claimed_by=undo_data.get("claimed_by"),
+                    workload_assignee=undo_data.get("workload_assignee"),
                     postponed_until=(
                         datetime.date.fromisoformat(undo_data["postponed_until"])
                         if undo_data.get("postponed_until")
@@ -131,6 +136,7 @@ class TaskStore:
                     "remaining_assignees", []
                 ),
                 claimed_by=history_data.get("claimed_by"),
+                workload_assignee=history_data.get("workload_assignee"),
             )
 
     @callback
@@ -146,6 +152,7 @@ class TaskStore:
         subentry_id: str,
         completed_by: str | None = None,
         completed_at: datetime.datetime | None = None,
+        points: int = 1,
     ) -> None:
         """Record a task completion, optionally at an earlier time."""
         completed_at = completed_at or dt_util.utcnow()
@@ -156,9 +163,12 @@ class TaskStore:
             remaining_assignees=list(history.remaining_assignees),
             claimed_by=history.claimed_by,
             postponed_until=history.postponed_until,
+            workload_assignee=history.workload_assignee,
         )
         history.completions.append(
-            CompletionEntry(completed_at=completed_at, completed_by=completed_by)
+            CompletionEntry(
+                completed_at=completed_at, completed_by=completed_by, points=points
+            )
         )
         history.completions.sort(key=lambda entry: entry.completed_at)
         history.last_completed = history.completions[-1].completed_at
@@ -193,6 +203,7 @@ class TaskStore:
         history.remaining_assignees = list(snapshot.remaining_assignees)
         history.claimed_by = snapshot.claimed_by
         history.postponed_until = snapshot.postponed_until
+        history.workload_assignee = snapshot.workload_assignee
         self._schedule_save()
         return removed
 
@@ -221,6 +232,9 @@ class TaskStore:
 
         if not assignees:
             return
+
+        if rotation_mode == RotationMode.WORKLOAD:
+            return  # decided from the workload when the task is completed
 
         if rotation_mode == RotationMode.ROUND_ROBIN:
             base = (
@@ -257,6 +271,33 @@ class TaskStore:
             history.remaining_assignees = valid
         else:
             return
+        self._schedule_save()
+
+    @callback
+    def workload(self, person: str, since: datetime.datetime) -> int:
+        """Return the points a person completed since ``since``, across all tasks."""
+        return sum(
+            entry.points
+            for history in self._data.values()
+            for entry in history.completions
+            if entry.completed_by == person and entry.completed_at >= since
+        )
+
+    @callback
+    def last_completion_by(self, person: str) -> datetime.datetime | None:
+        """Return when a person last completed any task."""
+        times = [
+            entry.completed_at
+            for history in self._data.values()
+            for entry in history.completions
+            if entry.completed_by == person
+        ]
+        return max(times) if times else None
+
+    @callback
+    def set_workload_assignee(self, subentry_id: str, person: str | None) -> None:
+        """Fix who is next for a task assigned by workload."""
+        self.get_history(subentry_id).workload_assignee = person
         self._schedule_save()
 
     @callback
@@ -343,12 +384,14 @@ class TaskStore:
                     {
                         "completed_at": entry.completed_at.isoformat(),
                         "completed_by": entry.completed_by,
+                        "points": entry.points,
                     }
                     for entry in history.completions
                 ],
                 "current_assignee_index": history.current_assignee_index,
                 "remaining_assignees": history.remaining_assignees,
                 "claimed_by": history.claimed_by,
+                "workload_assignee": history.workload_assignee,
                 "postponed_until": (
                     history.postponed_until.isoformat()
                     if history.postponed_until
@@ -360,6 +403,7 @@ class TaskStore:
                         "current_assignee_index": history.undo.current_assignee_index,
                         "remaining_assignees": history.undo.remaining_assignees,
                         "claimed_by": history.undo.claimed_by,
+                        "workload_assignee": history.undo.workload_assignee,
                         "postponed_until": (
                             history.undo.postponed_until.isoformat()
                             if history.undo.postponed_until

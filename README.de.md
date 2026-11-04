@@ -76,6 +76,8 @@ Alles läuft über die Oberfläche, YAML ist nicht nötig.
 
 - **Bereich:** Jeder Bereich hat seinen eigenen Eintrag. Dort stellst du die **Warntage** ein (Standard 7). Aufgaben zählen so viele Tage vor der Fälligkeit als „bald fällig“.
 - **Aufgabe:** Name, Intervall (1–365 Tage), Beschreibung, Symbol, optional **Warntage** (überschreibt den Wert des Bereichs, leer lassen für den Bereichswert) und Zuständige mit Rotation.
+- **Aufwand (Punkte):** wie viel Arbeit eine Aufgabe ist (Standard 1). Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung nutzt sie.
+- **Rotation:** reihum, zufällig oder **geringste Auslastung**. Bei der Auslastung bekommt die Aufgabe, wer in den letzten 30 Tagen (über alle Aufgaben) die wenigsten Punkte erledigt hat. Gleichstand geht an die Person, die zuletzt am längsten nichts erledigt hat. Wer als Nächstes dran ist, wird beim Erledigen festgelegt und ändert sich nicht, nur weil jemand anderes etwas erledigt. Abwesende werden immer übersprungen.
 - **Wartung:** wie eine Aufgabe, zusätzlich mit Gerät und Intervall bis 730 Tage.
 
 ### Haushaltsübersicht (optional)

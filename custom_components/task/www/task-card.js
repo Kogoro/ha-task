@@ -2857,6 +2857,7 @@
         period: "all_time",
         show_streak: true,
         show_bar: true,
+        use_points: true,
         ...config,
       };
       this._period = this._config.period;
@@ -2954,7 +2955,8 @@
         for (const entry of completions) {
           if (cutoff && new Date(entry.completed_at) < cutoff) continue;
           const person = entry.completed_by || "__unknown__";
-          counts[person] = (counts[person] || 0) + 1;
+          const weight = this._config.use_points === false ? 1 : (entry.points || 1);
+          counts[person] = (counts[person] || 0) + weight;
         }
       }
 
@@ -3409,6 +3411,7 @@
         period: "all_time",
         show_streak: true,
         show_bar: true,
+        use_points: true,
         ...config,
       };
     }
@@ -3456,6 +3459,10 @@
           name: "show_bar",
           selector: { boolean: {} },
         },
+        {
+          name: "use_points",
+          selector: { boolean: {} },
+        },
       ];
 
       return html`
@@ -3471,6 +3478,7 @@
               period: "Default period",
               show_streak: "Show streak badges",
               show_bar: "Show visual bar",
+              use_points: "Count points instead of completions",
             };
             return labels[s.name] || s.name;
           }}

@@ -112,3 +112,39 @@ async def test_reconfigure_can_clear_warn_days(hass: HomeAssistant) -> None:
     assert "warn_days" not in entry.subentries["t1"].data
     status = hass.states.get(status_sensor(hass, entry, "t1"))
     assert status.attributes["warn_days"] == 4
+
+
+async def test_task_points_default_to_one(hass: HomeAssistant) -> None:
+    """A task without a chosen effort counts as one point."""
+    entry = await setup_entry(hass, [])
+
+    result = await _add_task(hass, entry)
+
+    assert result["data"]["points"] == 1
+
+
+async def test_task_with_points(hass: HomeAssistant) -> None:
+    """The effort is stored as an integer."""
+    entry = await setup_entry(hass, [])
+
+    result = await _add_task(hass, entry, points=8.0)
+
+    assert result["data"]["points"] == 8
+
+
+async def test_workload_rotation_can_be_chosen(hass: HomeAssistant) -> None:
+    """The assignees step offers the workload mode next to round-robin and random."""
+    entry = await setup_entry(hass, [])
+    result = await hass.config_entries.subentries.async_init(
+        (entry.entry_id, "task"), context={"source": SOURCE_USER}
+    )
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"],
+        {"name": "Vacuum", "interval_days": 7, "unassigned": False},
+    )
+    assert result["step_id"] == "assignees"
+    schema = {str(key): key for key in result["data_schema"].schema}
+    selector = result["data_schema"].schema[schema["rotation_mode"]]
+    values = [option["value"] for option in selector.config["options"]]
+
+    assert values == ["round_robin", "random", "workload"]

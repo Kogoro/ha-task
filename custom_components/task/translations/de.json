@@ -86,7 +86,8 @@
             "description": "Beschreibung",
             "icon": "Symbol",
             "unassigned": "Nicht zugewiesen lassen",
-            "warn_days": "Warntage (optional)"
+            "warn_days": "Warntage (optional)",
+            "points": "Aufwand (Punkte)"
           },
           "data_description": {
             "name": "Ein kurzer, beschreibender Name wie \"Wohnzimmer saugen\" oder \"Pflanzen gießen\".",
@@ -94,7 +95,8 @@
             "description": "Optionale Hinweise oder Anweisungen für die ausführende Person.",
             "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Aufgabe.",
             "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen.",
-            "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden."
+            "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden.",
+            "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind."
           }
         },
         "assignees": {
@@ -118,7 +120,8 @@
             "description": "Beschreibung",
             "icon": "Symbol",
             "unassigned": "Nicht zugewiesen lassen",
-            "warn_days": "Warntage (optional)"
+            "warn_days": "Warntage (optional)",
+            "points": "Aufwand (Punkte)"
           },
           "data_description": {
             "name": "Ein kurzer, beschreibender Name wie \"Wohnzimmer saugen\" oder \"Pflanzen gießen\".",
@@ -126,7 +129,8 @@
             "description": "Optionale Hinweise oder Anweisungen für die ausführende Person.",
             "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Aufgabe.",
             "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen.",
-            "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden."
+            "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden.",
+            "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind."
           }
         },
         "reconfigure_assignees": {
@@ -218,7 +222,8 @@
             "description": "Beschreibung",
             "icon": "Symbol",
             "unassigned": "Nicht zugewiesen lassen",
-            "warn_days": "Warntage (optional)"
+            "warn_days": "Warntage (optional)",
+            "points": "Aufwand (Punkte)"
           },
           "data_description": {
             "name": "Ein kurzer Name wie \"Filter wechseln\" oder \"Entkalken\".",
@@ -227,7 +232,8 @@
             "description": "Optionale Hinweise oder Wartungsanweisungen.",
             "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Wartungsaufgabe.",
             "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen.",
-            "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden."
+            "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden.",
+            "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind."
           }
         },
         "assignees": {
@@ -252,7 +258,8 @@
             "description": "Beschreibung",
             "icon": "Symbol",
             "unassigned": "Nicht zugewiesen lassen",
-            "warn_days": "Warntage (optional)"
+            "warn_days": "Warntage (optional)",
+            "points": "Aufwand (Punkte)"
           },
           "data_description": {
             "name": "Ein kurzer Name wie \"Filter wechseln\" oder \"Entkalken\".",
@@ -261,7 +268,8 @@
             "description": "Optionale Hinweise oder Wartungsanweisungen.",
             "icon": "Wählen Sie ein Symbol zur visuellen Darstellung dieser Wartungsaufgabe.",
             "unassigned": "Aktivieren, wenn keine bestimmte Person verantwortlich ist. Deaktivieren, um im nächsten Schritt Personen zuzuweisen.",
-            "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden."
+            "warn_days": "Überschreibt die Warntage des Bereichs für diesen Eintrag. Leer lassen, um den Wert des Bereichs zu verwenden.",
+            "points": "Wie viel Arbeit die Aufgabe ist. Die Rangliste zählt Punkte statt Erledigungen, und die Rotation nach Auslastung gibt Aufgaben an die Person, die zuletzt am wenigsten geschafft hat. 1, wenn alle Aufgaben etwa gleich aufwendig sind."
           }
         },
         "reconfigure_assignees": {
